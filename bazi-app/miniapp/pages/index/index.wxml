@@ -1,4 +1,4 @@
-<scroll-view class="wrap" scroll-y enhanced show-scrollbar="{{false}}">
+<scroll-view class="wrap" scroll-y scroll-x="{{false}}" enhanced show-scrollbar="{{false}}">
   <view class="hero">
     <view class="hero-bg">
       <view class="hero-ring r1"></view>
@@ -77,4 +77,5 @@
   </view>
 
   <view class="foot">— 古籍级 · 纯正子平术 · 本地离线 —</view>
+  <view class="foot-ver">版本 1.0 · 收展专支特别版</view>
 </scroll-view>

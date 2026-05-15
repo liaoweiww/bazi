@@ -44,7 +44,7 @@ def api_lunar_to_solar():
     """农历转公历接口"""
     try:
         data = request.get_json()
-        from calendar.lunar_solar import lunar_to_solar
+        from lunarcal.lunar_solar import lunar_to_solar
         result = lunar_to_solar(
             year=int(data['year']),
             month=int(data['month']),
@@ -104,7 +104,7 @@ def api_paipan():
 
         # 支持农历输入
         if data.get('calendar_type') == 'lunar':
-            from calendar.lunar_solar import lunar_to_solar
+            from lunarcal.lunar_solar import lunar_to_solar
             lunar_year = int(data.get('lunar_year', 0))
             lunar_month = int(data.get('lunar_month', 0))
             lunar_day = int(data.get('lunar_day', 0))
@@ -183,7 +183,7 @@ def api_solar_to_lunar():
     """公历转农历接口"""
     try:
         data = request.get_json()
-        from calendar.lunar_solar import solar_to_lunar
+        from lunarcal.lunar_solar import solar_to_lunar
 
         result = solar_to_lunar(
             year=int(data['year']),
@@ -201,7 +201,7 @@ def api_solar_terms():
     """获取指定年份节气列表"""
     try:
         year = int(request.args.get('year', datetime.now().year))
-        from calendar.solar_terms import get_all_solar_terms
+        from lunarcal.solar_terms import get_all_solar_terms
 
         terms = get_all_solar_terms(year)
         return jsonify({"success": True, "data": terms})
@@ -324,6 +324,21 @@ def api_reference_books():
     try:
         from texts.extended import REFERENCE_BOOKS
         return jsonify({"success": True, "data": REFERENCE_BOOKS})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/life-summary', methods=['POST'])
+def api_life_summary():
+    """四大运势白话总结接口"""
+    try:
+        data = request.get_json()
+        paipan_result = data.get('paipan_result', {})
+        if not paipan_result:
+            return jsonify({"error": "缺少排盘结果"}), 400
+        from texts.extended import generate_life_summary
+        result = generate_life_summary(paipan_result)
+        return jsonify({"success": True, "data": result})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

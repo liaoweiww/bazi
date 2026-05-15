@@ -39,8 +39,8 @@
     }
   },
   "compileType": "miniprogram",
-  "libVersion": "3.3.4",
-  "appid": "wx0f0b3f8df2b93bba",
+  "libVersion": "3.16.0",
+  "appid": "wx74e01db66a0b1e5b",
   "projectname": "yijing-bazi",
   "condition": {},
   "simulatorPluginLibVersion": {},

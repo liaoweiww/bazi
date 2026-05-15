@@ -414,7 +414,7 @@ def _generate_year_advice(is_yong: bool, is_ji: bool, shishen: str, year_wx: str
 
 def generate_current_fortune(paipan_result: Dict) -> Dict:
     """生成当前时运分析（当前所处的运势阶段）"""
-    from datetime import datetime, date as date_cls
+    from datetime import datetime
 
     day_master = paipan_result.get('day_master', '')
     strength = paipan_result.get('strength', {})
@@ -427,12 +427,13 @@ def generate_current_fortune(paipan_result: Dict) -> Dict:
     liunian = dayun.get('liunian_current', {})
     start_age = dayun.get('start_age', 0)
 
-    # 计算当前年龄
+    # 计算当前年龄 (不用 date.today() 避免 calendar 模块冲突)
     solar_str = birth_info.get('solar_date', '')
-    today_val = date_cls.today()
     try:
-        birth_date = datetime.strptime(solar_str, '%Y-%m-%d').date()
-        current_age = today_val.year - birth_date.year - ((today_val.month, today_val.day) < (birth_date.month, birth_date.day))
+        parts = solar_str.split('-')
+        by, bm, bd = int(parts[0]), int(parts[1]), int(parts[2])
+        now = datetime.now()
+        current_age = now.year - by - (1 if (now.month, now.day) < (bm, bd) else 0)
     except:
         current_age = 30
 
@@ -459,8 +460,9 @@ def generate_current_fortune(paipan_result: Dict) -> Dict:
     ln_analysis = liunian.get('analysis', '')
 
     # 综合判断
-    today_str = today_val.strftime('%Y-%m-%d')
-    this_year = today_val.year
+    now = datetime.now()
+    today_str = now.strftime('%Y-%m-%d')
+    this_year = now.year
 
     # 当前阶段建议
     stage_results = _analyze_current_stage(four_pillars, current_dayun, liunian, strength, yongji)
@@ -598,3 +600,242 @@ def generate_remedy(paipan_result: Dict) -> Dict:
         "personalized": personalized,
         "summary": "以上化解方法均为传统文化中的辅助手段，核心还是在于自身修德、明理、进取。命好不如心好，运好不如德好。"
     }
+
+
+# =============================================================================
+# 四大运势白话总结
+# =============================================================================
+
+def generate_life_summary(paipan_result: Dict) -> Dict:
+    """生成四大运势白话总结：事业、爱情、财运、身体"""
+    from datetime import datetime
+
+    day_master = paipan_result.get('day_master', '')
+    dm_wx = paipan_result.get('day_master_wuxing', '')
+    dm_yy = paipan_result.get('day_master_yinyang', '')
+    strength = paipan_result.get('strength', {})
+    geju = paipan_result.get('geju', {})
+    yongji = paipan_result.get('yongji', {})
+    pillars = paipan_result.get('four_pillars', {})
+    month_zhi = paipan_result.get('month_zhi', '')
+    wx_count = paipan_result.get('wuxing_count', {})
+    dayun = paipan_result.get('dayun', {})
+
+    level = strength.get('level', '中和')
+    geju_name = geju.get('name', '')
+    yong_wx = [y['wuxing'] for y in yongji.get('yong_shen', [])]
+    ji_wx = [j['wuxing'] for j in yongji.get('ji_shen', [])]
+    yong_str = '、'.join(yong_wx) if yong_wx else '随运而定'
+    ji_str = '、'.join(ji_wx) if ji_wx else '随运而变'
+    current_dayun = dayun.get('current_dayun', {})
+    dy_ganzhi = current_dayun.get('ganzhi', '当前大运')
+
+    # 四柱十神
+    shishens = {}
+    for pk, pl in pillars.items():
+        gan = pl.get('gan', '')
+        if pk == 'day':
+            shishens[pk] = '日主'
+        else:
+            from algorithm.analysis import GAN_WUXING, WUXING_SHENG, WUXING_KE, GAN_YINYANG
+            ri_wx = GAN_WUXING.get(day_master, '')
+            other_wx = GAN_WUXING.get(gan, '')
+            same = GAN_YINYANG.get(day_master) == GAN_YINYANG.get(gan)
+            if ri_wx == other_wx:
+                ss = '比肩' if same else '劫财'
+            elif WUXING_SHENG.get(ri_wx) == other_wx:
+                ss = '食神' if same else '伤官'
+            elif WUXING_KE.get(ri_wx) == other_wx:
+                ss = '偏财' if same else '正财'
+            elif WUXING_SHENG.get(other_wx) == ri_wx:
+                ss = '偏印' if same else '正印'
+            elif WUXING_KE.get(other_wx) == ri_wx:
+                ss = '七杀' if same else '正官'
+            else:
+                ss = '未知'
+            shishens[pk] = ss
+
+    # 日主五行气质
+    wx_traits = {
+        '木': '你属木命，木主生发，性格直率向上，有进取心，像树木一样不断成长。',
+        '火': '你属火命，火主热情，性格开朗外向，充满活力，像火焰一样温暖身边的人。',
+        '土': '你属土命，土主诚信，性格稳重踏实，值得信赖，像大地一样包容承载。',
+        '金': '你属金命，金主义气，性格刚毅果断，有正义感，像宝剑一样锐利通透。',
+        '水': '你属水命，水主智慧，性格灵活机敏，善于变通，像流水一样适应环境。',
+    }
+
+    base = wx_traits.get(dm_wx, f'你属于{dm_wx}命，有着独特的个性和气质。')
+
+    # 身强身弱特质
+    if '强' in level:
+        strength_trait = '你命局身强，精力充沛，做事有魄力，能担当重任，也善于在竞争中脱颖而出。'
+    elif '弱' in level:
+        strength_trait = '你命局偏弱，性格较为内敛敏感，不喜争斗，但善用智慧和人际关系来弥补自身力量不足。'
+    else:
+        strength_trait = '你命局中和，性格平衡，处事圆融，能屈能伸，是比较稳妥的类型。'
+
+    # ---- 事业 ----
+    career = _build_career_advice(day_master, dm_wx, level, shishens, geju_name, yong_wx, ji_wx, yong_str, dy_ganzhi)
+
+    # ---- 爱情 ----
+    love = _build_love_advice(day_master, dm_yy, level, shishens, yong_wx, wx_count)
+
+    # ---- 财运 ----
+    wealth = _build_wealth_advice(dm_wx, level, shishens, geju_name, yong_wx, ji_wx, yong_str, dy_ganzhi)
+
+    # ---- 身体 ----
+    health = _build_health_advice(dm_wx, level, wx_count, month_zhi, ji_wx)
+
+    return {
+        "base": base,
+        "strength_trait": strength_trait,
+        "overview": f"{base}{strength_trait}",
+        "career": career,
+        "love": love,
+        "wealth": wealth,
+        "health": health,
+        "tags": {
+            "yong_shen": yong_str,
+            "ji_shen": ji_str,
+            "geju": geju_name,
+            "level": level,
+        }
+    }
+
+
+def _build_career_advice(dm, dm_wx, level, shishens, geju_name, yong_wx, ji_wx, yong_str, dy_ganzhi):
+    """生成事业建议"""
+    parts = []
+
+    # 正官/七杀看事业
+    hour_ss = shishens.get('hour', '')
+    month_ss = shishens.get('month', '')
+
+    if '正官' in [month_ss, hour_ss] or '七杀' in [month_ss, hour_ss]:
+        parts.append('你命带官杀星，天生有领导才能和组织能力，适合从事管理类、公务员、大型机构等工作。做事有条理，对规则敏感，能在体制内获得良好发展。')
+    elif '食神' in [month_ss, hour_ss] or '伤官' in [month_ss, hour_ss]:
+        parts.append('你命带食伤星，有很强的创造力和表达欲，适合从事艺术、设计、写作、策划等需要创意的工作。不喜欢被束缚，自由职业或创业比朝九晚五更适合你。')
+    elif '正财' in [month_ss, hour_ss] or '偏财' in [month_ss, hour_ss]:
+        parts.append('你命带财星，商业头脑灵活，善于发现机会和资源整合，适合做生意、金融投资或市场销售类工作。对数字和金钱有天然的敏感度。')
+    elif '正印' in [month_ss, hour_ss] or '偏印' in [month_ss, hour_ss]:
+        parts.append('你命带印星，学习能力强、悟性高，适合教育、科研、咨询等知识密集型行业。善于沉淀和钻研，做事有耐心，可能在中年后因学识积累而获得声誉。')
+    else:
+        parts.append('你的事业发展需要结合自身兴趣和特长来规划。每个人都有自己独特的天赋领域，找到适合自己的方向比盲目跟风更重要。')
+
+    # 当前大运事业提示
+    if '强' in level:
+        parts.append(f'你身强能担重任，工作中敢于挑战和担当。适合你的行业方向是五行属{",".join(yong_wx) if yong_wx else "水木"}的领域，对你的发展最为有利。注意避免五行属{",".join(ji_wx) if ji_wx else "土金"}行业中的过度竞争。')
+    else:
+        parts.append(f'你身弱需要借力，事业上宜与人合作、借助团队力量，不宜单打独斗。多向五行属{",".join(yong_wx) if yong_wx else "木火"}的贵人请教，他们能在关键时刻拉你一把。')
+
+    parts.append(f'当前正处于{dy_ganzhi}大运，这十年的运势走向直接影响你的事业高度。建议结合上方大运分析，找到这十年的最佳发力点。')
+
+    return '\n\n'.join(parts)
+
+
+def _build_love_advice(day_master, dm_yy, level, shishens, yong_wx, wx_count):
+    """生成爱情建议"""
+    parts = []
+
+    # 日主+阴阳看感情特质
+    dm_desc = {
+        '甲': '甲木人像参天大树，性格直爽有担当，在感情中愿意为对方遮风挡雨。但有时过于刚直，需要一个温柔体贴、能包容你直脾气的人。',
+        '乙': '乙木人像藤萝花草，温柔细腻善解人意，在感情中很能为对方着想。但也容易太依赖对方，需要找一个有责任感、能给你安全感的伴侣。',
+        '丙': '丙火人热情似火，浪漫主动，恋爱中充满惊喜和激情。但热情来得快去得也可能快，需要找一个能持续吸引你、包容你多变情绪的人。',
+        '丁': '丁火人如烛光般温暖柔和，善解人意有同理心，在感情中很专一。但有时内心敏感，需要对方多些耐心和关注，懂得爱护你的柔软。',
+        '戊': '戊土人像大地一样稳重可靠，是值得托付的类型。在感情中踏实诚恳，但有时过于固执己见，需要一个灵活变通、善于沟通的另一半来互补。',
+        '己': '己土人包容大度，像田园般滋养身边的人，是极好的伴侣。但在感情中也渴望被理解和关注，不要只付出而忽略了自己的需求。',
+        '庚': '庚金人刚正不阿，讲原则敢担当，在感情中坦诚直接、不藏心机。但有时过于刚硬强势，需要找性格温和、能软化和包容你棱角的伴侣。',
+        '辛': '辛金人如珠宝般精致优雅，对感情有较高要求，宁缺毋滥。一旦真正动心便非常专一，希望找个有品位、懂欣赏、能给你足够尊重的人。',
+        '壬': '壬水人聪明洒脱、思维活跃，在感情中追求精神契合和自由度。不喜欢被束缚，需要一个能跟上你节奏、理解你独立空间的伴侣。',
+        '癸': '癸水人温柔含蓄，感情细腻深沉，表面平静但内心世界丰富。是慢热长情的类型，需要对方有耐心去了解和欣赏你丰富的内在。',
+    }
+
+    trait = dm_desc.get(day_master)
+    if trait:
+        parts.append(trait)
+
+    # 财星/官星看姻缘
+    day_zhi = ''  # can't get this directly, skip
+
+    if '正财' in shishens.values() or '偏财' in shishens.values():
+        parts.append('你命带财星，财星也代表吸引异性的能力（男命财为妻），你异性缘不错，身边不乏追求或欣赏你的人。你的务实和真诚是吸引对方的关键。')
+    elif '正官' in shishens.values() or '七杀' in shishens.values():
+        parts.append('你命带官杀星（女命官为夫），在感情中容易遇到有能力有担当的另一半。官杀也代表责任，你对待感情认真专一，值得珍惜。')
+
+    # 普遍建议
+    if '强' in level:
+        parts.append('身强的人在感情中较为主动，但也容易因为太过主导而让对方感到压力。适当放慢节奏，多倾听对方的想法，感情会更加顺遂。')
+    else:
+        parts.append('身弱的人在感情中容易付出过多、委屈自己。记住好的感情是相互的，学会保护自己的情感边界，找一个真正懂你疼你的人。')
+
+    if yong_wx:
+        parts.append(f'五行喜{yong_wx[0]}的人对你有助力，在择偶时可以留意五行属{",".join(yong_wx)}的异性，你们的互补性更强、相处更和谐。')
+
+    return '\n\n'.join(parts)
+
+
+def _build_wealth_advice(dm_wx, level, shishens, geju_name, yong_wx, ji_wx, yong_str, dy_ganzhi):
+    """生成财运建议"""
+    parts = []
+
+    if '正财' in shishens.values() or '偏财' in shishens.values():
+        parts.append('你命带财星，天生对财富有追求和敏感度。正财代表稳定收入，偏财代表额外进账。你适合多渠道打理钱财，工资之外也应有投资或副业意识。')
+    elif '食神' in shishens.values() or '伤官' in shishens.values():
+        parts.append('你命带食伤星，食伤能生财，你的才华和创意就是最大的财富来源。把技能打磨好，财富会随着你的个人能力提升而水涨船高。')
+    elif '正印' in shishens.values() or '偏印' in shishens.values():
+        parts.append('你命带印星，印星守护着你，财富的积累是渐进式的——通过不断学习提升认知，靠知识和专业能力获取稳健收入。不宜做高风险投机。')
+    else:
+        parts.append('你的财富密码在于踏实积累，一步一个脚印。大财靠运、小财靠勤，把每一分钱都用在刀刃上，时间会给你回报。')
+
+    if '强' in level:
+        parts.append('你身强能担财，有能力驾驭较大体量的财富，适合积极理财和多元投资。但仍需注意风险控制，好机会值得去争取，但要给每笔大额支出和投资留足余量。')
+    else:
+        parts.append('你身弱财重则易被财所累，不宜冒太大风险，稳健理财为上。不建议借钱投资或做超出自己能力范围的生意。守住钱袋子比赚快钱更重要。')
+
+    parts.append(f'五行喜用{yong_str}，投资方向偏向喜用神行业更为稳妥。当前{dy_ganzhi}大运对财运的影响要看大运干支与命局的配合，喜用大运财来就手，忌神大运则以保本为先。')
+
+    return '\n\n'.join(parts)
+
+
+def _build_health_advice(dm_wx, level, wx_count, month_zhi, ji_wx):
+    """生成健康建议"""
+    parts = []
+
+    # 五行对应身体
+    body_map = {
+        '木': '肝、胆、筋骨',
+        '火': '心、小肠、血液循环系统',
+        '土': '脾、胃、消化系统',
+        '金': '肺、大肠、呼吸系统',
+        '水': '肾、膀胱、泌尿生殖系统',
+    }
+
+    # 自身五行需关注
+    parts.append(f'你属{dm_wx}命，五行之中{dm_wx}代表的身体部位是{body_map.get(dm_wx, "")}。这一系统是你天生需要多加留意的，平时注意保养，定期体检。')
+
+    # 忌神五行对应的身体部位
+    if ji_wx:
+        ji_body = [f'{wx}（{body_map.get(wx, "")}）' for wx in ji_wx[:2]]
+        parts.append(f'你的忌神五行是{"、".join(ji_body)}，这些五行过旺时对应的身体系统容易出现问题。遇到忌神大运或流年时，要特别注意这些部位的健康。')
+
+    # 月令季节提示
+    season_tips = {
+        '寅卯辰': '春季万物生发，适合户外运动，但要预防过敏。肝胆方面在这个季节容易有反应，少喝酒熬夜。',
+        '巳午未': '夏季炎热，注意防暑降温。心火易旺，保持心态平和，避免暴怒暴喜。多喝水，作息规律。',
+        '申酉戌': '秋季干燥，注意肺咽保养。多吃润肺食物如梨、百合，注意呼吸道健康，早晚温差大要预防感冒。',
+        '亥子丑': '冬季寒冷，注意保暖养肾。早睡晚起，减少剧烈运动，多吃温性食物，注意腰部保暖。',
+    }
+    for k, tip in season_tips.items():
+        if month_zhi in k:
+            parts.append(tip)
+
+    # 普遍建议
+    if '弱' in level:
+        parts.append('身弱之人容易疲劳，免疫力较低，需要更多的休息和营养补充。不能硬扛，感觉累就及时休息。适度的温和运动如散步、瑜伽、太极是很好的选择。')
+    else:
+        parts.append('身强之人精力旺盛，但也要注意不过度透支。可以多做运动来消耗多余能量，但要规律作息，避免因过于拼命而积劳成疾。')
+
+    parts.append('心态是最好的养生。保持乐观开朗的心境，凡事往好处想，遇到困难多与亲友商量。无论命格如何，好的生活习惯和心态胜过一切良药。')
+
+    return '\n\n'.join(parts)

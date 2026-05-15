@@ -667,7 +667,19 @@ def paipan(solar_year: int, solar_month: int, solar_day: int,
     day_master = day_gan
     dm_wx = GAN_WUXING_LIST[_gan_index(day_gan)]
 
-    lunar_date = _solar_to_lunar_approx(solar_year, solar_month, solar_day, bazi_year)
+    try:
+        from lunarcal.lunar_solar import solar_to_lunar
+        lunar_info = solar_to_lunar(solar_year, solar_month, solar_day)
+        lunar_year_str = f"{GAN[(lunar_info['lunar_year'] - 4) % 10]}{ZHI[(lunar_info['lunar_year'] - 4) % 12]}"
+        lunar_month_num = lunar_info['lunar_month']
+        lunar_day_num = lunar_info['lunar_day']
+        is_leap = lunar_info.get('is_leap', False)
+        month_str = LUNAR_NUMBERS[lunar_month_num]
+        day_str = LUNAR_DAY_NUMBERS[lunar_day_num] if lunar_day_num <= 30 else '初一'
+        leap_prefix = '闰' if is_leap else ''
+        lunar_date = f"{lunar_year_str}年{leap_prefix}{month_str}月{day_str}"
+    except Exception:
+        lunar_date = _solar_to_lunar_approx(solar_year, solar_month, solar_day, bazi_year)
 
     true_h_int = int(true_h)
     true_m_int = int(round(true_m))
@@ -747,7 +759,8 @@ def paipan(solar_year: int, solar_month: int, solar_day: int,
     try:
         from algorithm.analysis import (
             count_wuxing, determine_strength, determine_geju,
-            determine_yongji, calculate_dayun, calculate_liunian
+            determine_yongji, calculate_dayun, calculate_liunian,
+            generate_dayun_analysis
         )
         result['wuxing_count'] = count_wuxing(result['four_pillars'])
         result['strength'] = determine_strength(result['four_pillars'], day_master, month_zhi)
@@ -755,6 +768,10 @@ def paipan(solar_year: int, solar_month: int, solar_day: int,
         result['yongji'] = determine_yongji(result['four_pillars'], day_master, result['strength'], result['geju'], month_zhi)
         solar_birth = datetime(solar_year, solar_month, solar_day, hour, minute)
         result['dayun'] = calculate_dayun(solar_birth, result['four_pillars'], gender)
+        result['dayun']['dayun_list'] = generate_dayun_analysis(
+            result['four_pillars'], day_master, result['dayun']['dayun_list'],
+            result['yongji'], result['strength'], month_zhi
+        )
         result['dayun']['liunian_current'] = calculate_liunian(result['four_pillars'], result['dayun'], datetime.now().year, day_master)
     except Exception as e:
         import traceback; traceback.print_exc()

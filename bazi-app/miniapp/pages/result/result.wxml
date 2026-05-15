@@ -1,4 +1,4 @@
-<scroll-view class="wrap" scroll-y enhanced show-scrollbar="{{false}}" wx:if="{{loaded}}">
+<scroll-view class="wrap" scroll-y scroll-x="{{false}}" enhanced show-scrollbar="{{false}}" wx:if="{{loaded}}">
   <!-- ====== 八字命盘 ====== -->
   <view class="card">
     <view class="ct">
@@ -112,13 +112,17 @@
       <view class="dim" style="font-size:12px;margin-bottom:8px">起运 <text class="gold">{{dayun.start_age}}</text> 岁 · {{dayun.direction}}</view>
       <scroll-view class="dy-scroll" scroll-x enhanced show-scrollbar="{{false}}">
         <block wx:for="{{dayun.dayun_list}}" wx:key="start_age">
-          <view class="dy-node {{item.start_age<=currentAge&&currentAge<item.start_age+10?'cur':''}}">
+          <view class="dy-node {{item.start_age<=currentAge&&currentAge<item.start_age+10?'cur':''}} {{selectedDayunIndex===index?'sel':''}}" data-index="{{index}}" bindtap="selectDayun">
             <view class="dy-ages">{{item.age_range}}</view>
             <view class="dy-gz">{{item.ganzhi}}</view>
             <view class="dy-ny">{{item.nayin}}</view>
           </view>
         </block>
       </scroll-view>
+      <view wx:if="{{selectedDayunIndex>=0 && dayun.dayun_list[selectedDayunIndex].analysis}}" class="dy-analysis mt8">
+        <view class="gold" style="font-size:15px;margin-bottom:6px">{{dayun.dayun_list[selectedDayunIndex].ganzhi}}大运 · {{dayun.dayun_list[selectedDayunIndex].age_range}}岁</view>
+        <view class="fn-text">{{dayun.dayun_list[selectedDayunIndex].analysis}}</view>
+      </view>
       <view wx:if="{{dayun.liunian_current.ganzhi}}" class="ln-box mt8">
         <view class="ln-gz">{{dayun.liunian_current.ganzhi}}</view>
         <view class="dim" style="font-size:10px">{{dayun.liunian_current.wuxing}} · {{dayun.liunian_current.shishen}} · {{dayun.liunian_current.nayin}}</view>
@@ -211,13 +215,13 @@
       <text class="ct-arrow">{{showVernacular?'▲':'▼'}}</text>
     </view>
     <view wx:if="{{showVernacular}}">
-      <view wx:if="{{vernacular.日主概述}}" class="vd">{{vernacular.日主概述}}</view>
-      <view wx:if="{{vernacular.格局解读}}" class="vd">{{vernacular.格局解读}}</view>
-      <view wx:if="{{vernacular.喜用神建议}}" class="vd">{{vernacular.喜用神建议}}</view>
-      <view wx:if="{{vernacular.综合建议}}" class="vd">{{vernacular.综合建议}}</view>
-      <view wx:if="{{vernacular.四柱解读}}" class="vd">
+      <view wx:if="{{vernacular['日主概述']}}" class="vd">{{vernacular['日主概述']}}</view>
+      <view wx:if="{{vernacular['格局解读']}}" class="vd">{{vernacular['格局解读']}}</view>
+      <view wx:if="{{vernacular['喜用神建议']}}" class="vd">{{vernacular['喜用神建议']}}</view>
+      <view wx:if="{{vernacular['综合建议']}}" class="vd">{{vernacular['综合建议']}}</view>
+      <view wx:if="{{vernacular['四柱解读']}}" class="vd">
         <block wx:for="{{['年柱','月柱','日柱','时柱']}}" wx:for-item="label" wx:key="label">
-          <view wx:if="{{vernacular.四柱解读[label]}}" style="margin-bottom:8px"><text class="gold">{{label}}</text>：{{vernacular.四柱解读[label]}}</view>
+          <view wx:if="{{vernacular['四柱解读'][label]}}" style="margin-bottom:8px"><text class="gold">{{label}}</text>：{{vernacular['四柱解读'][label]}}</view>
         </block>
       </view>
     </view>
@@ -286,6 +290,43 @@
         </view>
         <view class="book-divider" wx:if="{{index < books.length - 1}}"></view>
       </block>
+    </view>
+  </view>
+
+  <!-- ====== 四大运势总结 ====== -->
+  <view class="card" wx:if="{{lifeSummary}}">
+    <view class="ct ct-tap" data-key="showLifeSummary" bindtap="toggleSection">
+      <text class="ct-icon">🌟</text>四 大 运 势 总 结
+      <text class="ct-arrow">{{showLifeSummary?'▲':'▼'}}</text>
+    </view>
+    <view wx:if="{{showLifeSummary}}">
+      <view class="dim fn-text" style="margin-bottom:12px">{{lifeSummary.overview}}</view>
+      <view class="life-tags">
+        <text class="life-tag tag-yl">格局：{{lifeSummary.tags.geju}}</text>
+        <text class="life-tag tag-yg">喜用：{{lifeSummary.tags.yong_shen}}</text>
+        <text class="life-tag tag-yr">忌神：{{lifeSummary.tags.ji_shen}}</text>
+        <text class="life-tag tag-yb">日主：{{lifeSummary.tags.level}}</text>
+      </view>
+
+      <view class="life-block">
+        <view class="life-title">💼 事业运势</view>
+        <view class="fn-text">{{lifeSummary.career}}</view>
+      </view>
+
+      <view class="life-block">
+        <view class="life-title">💕 爱情运势</view>
+        <view class="fn-text">{{lifeSummary.love}}</view>
+      </view>
+
+      <view class="life-block">
+        <view class="life-title">💰 财运分析</view>
+        <view class="fn-text">{{lifeSummary.wealth}}</view>
+      </view>
+
+      <view class="life-block">
+        <view class="life-title">🏥 身体健康</view>
+        <view class="fn-text">{{lifeSummary.health}}</view>
+      </view>
     </view>
   </view>
 

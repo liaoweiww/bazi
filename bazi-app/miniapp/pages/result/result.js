@@ -12,8 +12,11 @@ Page({
     showControl: false,
     showBooks: false,
     showVernacular: true,
+    showLifeSummary: true,
     // 年运年份
-    fortuneYear: new Date().getFullYear()
+    fortuneYear: new Date().getFullYear(),
+    // 大运选中
+    selectedDayunIndex: -1
   },
   onLoad() {
     const d = app.globalData.paipanResult
@@ -23,6 +26,8 @@ Page({
       return
     }
     const now = new Date()
+    const [by, bm, bd] = d.birth_info.solar_date.split('-').map(Number)
+    const age = now.getFullYear() - by - ((now.getMonth() + 1 < bm) || (now.getMonth() + 1 === bm && now.getDate() < bd) ? 1 : 0)
     this.setData({
       loaded: true,
       name: d.name || '',
@@ -41,67 +46,86 @@ Page({
       minggong: d.minggong || '',
       shengong: d.shengong || '',
       kongwang: (d.kongwang || []).join('、'),
-      currentAge: now.getFullYear() - parseInt(d.birth_info.solar_date.split('-')[0]),
+      currentAge: age,
       fortuneYear: now.getFullYear()
     })
 
     const api = app.globalData.apiBase
     const postData = { paipan_result: d }
 
+    const fail = (label, err) => console.error('API fail:', label, err)
+
     // 加载白话解读
     wx.request({
       url: api + '/vernacular', method: 'POST',
       header: { 'Content-Type': 'application/json' },
-      data: postData,
+      data: postData, timeout: 15000,
       success: resp => {
         if (resp.data.success) this.setData({ vernacular: resp.data.data })
-      }
+      },
+      fail: err => fail('vernacular', err)
     })
 
     // 加载年运
     wx.request({
       url: api + '/year-fortune', method: 'POST',
       header: { 'Content-Type': 'application/json' },
-      data: { ...postData, year: now.getFullYear() },
+      data: { ...postData, year: now.getFullYear() }, timeout: 15000,
       success: resp => {
         if (resp.data.success) this.setData({ yearFortune: resp.data.data })
-      }
+      },
+      fail: err => fail('year-fortune', err)
     })
 
     // 加载时运
     wx.request({
       url: api + '/current-fortune', method: 'POST',
       header: { 'Content-Type': 'application/json' },
-      data: postData,
+      data: postData, timeout: 15000,
       success: resp => {
         if (resp.data.success) this.setData({ currentFortune: resp.data.data })
-      }
+      },
+      fail: err => fail('current-fortune', err)
     })
 
     // 加载破解法
     wx.request({
       url: api + '/remedy', method: 'POST',
       header: { 'Content-Type': 'application/json' },
-      data: postData,
+      data: postData, timeout: 15000,
       success: resp => {
         if (resp.data.success) this.setData({ remedy: resp.data.data })
-      }
+      },
+      fail: err => fail('remedy', err)
     })
 
     // 加载把控指南
     wx.request({
-      url: api + '/control-guide', method: 'GET',
+      url: api + '/control-guide', method: 'GET', timeout: 15000,
       success: resp => {
         if (resp.data.success) this.setData({ controlGuide: resp.data.data })
-      }
+      },
+      fail: err => fail('control-guide', err)
     })
 
     // 加载参考书籍
     wx.request({
-      url: api + '/reference-books', method: 'GET',
+      url: api + '/reference-books', method: 'GET', timeout: 15000,
       success: resp => {
         if (resp.data.success) this.setData({ books: resp.data.data })
-      }
+      },
+      fail: err => fail('reference-books', err)
+    })
+
+    // 加载四大运势总结
+    wx.request({
+      url: api + '/life-summary', method: 'POST',
+      header: { 'Content-Type': 'application/json' },
+      data: postData, timeout: 15000,
+      success: resp => {
+        if (resp.data.success) this.setData({ lifeSummary: resp.data.data })
+      },
+      fail: err => fail('life-summary', err)
     })
   },
 
@@ -109,6 +133,12 @@ Page({
   toggleSection(e) {
     const key = e.currentTarget.dataset.key
     this.setData({ [key]: !this.data[key] })
+  },
+
+  // 选中大运节点
+  selectDayun(e) {
+    const idx = e.currentTarget.dataset.index
+    this.setData({ selectedDayunIndex: this.data.selectedDayunIndex === idx ? -1 : idx })
   },
 
   // 切换年运年份

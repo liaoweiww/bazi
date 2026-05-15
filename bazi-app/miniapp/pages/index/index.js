@@ -37,7 +37,7 @@ Page({
 
     try {
       const resp = await new Promise((resolve, reject) => {
-        wx.request({url:api+'/paipan',method:'POST',header:{'Content-Type':'application/json'},data:body,success:resolve,fail:reject})
+        wx.request({url:api+'/paipan',method:'POST',header:{'Content-Type':'application/json'},data:body,timeout:30000,success:resolve,fail:reject})
       })
       wx.hideLoading()
       if(resp.data.success){

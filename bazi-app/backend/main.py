@@ -154,7 +154,7 @@ def cmd_serve(args):
 
 def cmd_solar_terms(args):
     """查询节气"""
-    from calendar.solar_terms import get_all_solar_terms
+    from lunarcal.solar_terms import get_all_solar_terms
     year = args.year or datetime.now().year
     terms = get_all_solar_terms(year)
     print(f"\n{year}年 二十四节气:")
@@ -166,7 +166,7 @@ def cmd_solar_terms(args):
 
 def cmd_lunar(args):
     """公历转农历"""
-    from calendar.lunar_solar import solar_to_lunar
+    from lunarcal.lunar_solar import solar_to_lunar
     result = solar_to_lunar(args.year, args.month, args.day)
     print(f"\n公历 {args.year}-{args.month:02d}-{args.day:02d}")
     print(f"农历 {result.get('lunar_year', '')}年{result.get('lunar_month', '')}月{result.get('lunar_day', '')}")

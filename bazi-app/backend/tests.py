@@ -72,7 +72,7 @@ def test_calendar():
     print("=" * 60)
 
     try:
-        from calendar.solar_terms import get_all_solar_terms
+        from lunarcal.solar_terms import get_all_solar_terms
         terms = get_all_solar_terms(2024)
         assert len(terms) == 24, f"节气数量应为24: {len(terms)}"
         # 节气可能从冬至或立春开始，检查是否包含关键节气
@@ -83,12 +83,12 @@ def test_calendar():
         assert '秋分' in term_names, "应包含秋分"
         print(f"  ✓ 节气查询: 2024年24节气完整")
 
-        from calendar.lunar_solar import solar_to_lunar
+        from lunarcal.lunar_solar import solar_to_lunar
         lunar = solar_to_lunar(2024, 2, 10)
         assert 'lunar_year' in lunar, "农历转换应返回lunar_year"
         print(f"  ✓ 公历转农历: 功能正常")
 
-        from calendar.true_solar import get_true_solar_time
+        from lunarcal.true_solar import get_true_solar_time
         true_time = get_true_solar_time(
             datetime(2024, 6, 15, 8, 0),
             longitude=116.4,
@@ -97,7 +97,7 @@ def test_calendar():
         assert isinstance(true_time, datetime), "真太阳时应返回datetime对象"
         print(f"  ✓ 真太阳时矫正: 功能正常")
 
-        from calendar.month_pillar import get_month_pillar, get_hour_pillar
+        from lunarcal.month_pillar import get_month_pillar, get_hour_pillar
         mp = get_month_pillar(2024, datetime(2024, 2, 5))
         assert len(mp) == 2, "月柱应返回(天干, 地支)"
         hp = get_hour_pillar('甲', 8)

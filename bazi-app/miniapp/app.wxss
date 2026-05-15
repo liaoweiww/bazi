@@ -1,4 +1,4 @@
-page{background:#0d0a05;color:#e8dfd4;font-size:14px;font-family:-apple-system,'PingFang SC','STKaiti',serif}
+page{background:#0d0a05;color:#e8dfd4;font-size:14px;font-family:-apple-system,'PingFang SC','STKaiti',serif;overflow-x:hidden;box-sizing:border-box}
 .gold{color:#c9a96e}.red{color:#b22222}.dim{color:#9a8e7e}.muted{color:#6b5e4e}.tc{text-align:center}
 .card{background:linear-gradient(180deg,#1f1510,#261a12);border:1px solid #332418;border-radius:10px;padding:16px;margin-bottom:14px;position:relative;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.3)}
 .card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(201,169,110,.15),transparent)}
