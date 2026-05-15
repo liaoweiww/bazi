@@ -1,0 +1,59 @@
+/* 易经八字 - 国风高端设计 全局样式变量 */
+
+/* ===== 配色方案 ===== */
+$bg-primary: #1a0a00;
+$bg-secondary: #2d1810;
+$bg-card: rgba(42, 26, 16, 0.85);
+$bg-card-solid: #2a1a10;
+
+$color-gold: #c9a96e;
+$color-gold-light: #d4af37;
+$color-gold-dark: #a08040;
+$color-vermillion: #c41e3a;
+$color-vermillion-dark: #8b0000;
+
+$text-primary: #f5f0e8;
+$text-secondary: #c9a96e;
+$text-muted: #8b7355;
+
+$border-color: #3d2b1a;
+$border-light: #5a3e2a;
+
+/* ===== 五行配色 ===== */
+$wuxing-wood: #4a7c59;
+$wuxing-fire: #c41e3a;
+$wuxing-earth: #c9a96e;
+$wuxing-metal: #f5f0e8;
+$wuxing-water: #2c3e6b;
+
+/* ===== 字体 ===== */
+$font-serif: 'STKaiti', 'KaiTi', '楷体', 'Noto Serif SC', serif;
+$font-regular: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif;
+$font-ganzhi: 'STKaiti', 'KaiTi', '楷体', serif;
+
+/* ===== 尺寸 ===== */
+$radius-sm: 8px;
+$radius-md: 12px;
+$radius-lg: 16px;
+$radius-round: 50%;
+
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-md: 16px;
+$spacing-lg: 24px;
+$spacing-xl: 32px;
+
+/* ===== 阴影 ===== */
+$shadow-card: 0 4px 20px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(201, 169, 110, 0.1);
+$shadow-gold: 0 2px 12px rgba(201, 169, 110, 0.3);
+$shadow-btn: 0 4px 14px rgba(139, 0, 0, 0.5);
+
+/* ===== 渐变 ===== */
+$gradient-bg: linear-gradient(180deg, #1a0a00 0%, #2d1810 50%, #1a0a00 100%);
+$gradient-gold: linear-gradient(135deg, #c9a96e 0%, #d4af37 50%, #a08040 100%);
+$gradient-card: linear-gradient(135deg, rgba(42, 26, 16, 0.9) 0%, rgba(58, 42, 26, 0.85) 100%);
+$gradient-btn: linear-gradient(135deg, #c41e3a 0%, #8b0000 100%);
+
+/* ===== 动画 ===== */
+$transition-ink: 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+$transition-smooth: 0.3s ease;

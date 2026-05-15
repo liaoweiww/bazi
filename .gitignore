@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+bazi-app/backend/data/bazi.db
+.DS_Store
+skills-lock.json

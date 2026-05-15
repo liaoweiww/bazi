@@ -1,0 +1,15 @@
+{
+  "pages": ["pages/index/index", "pages/result/result"],
+  "window": {
+    "navigationBarBackgroundColor": "#1a1008",
+    "navigationBarTitleText": "易经八字",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#0d0a05",
+    "backgroundTextStyle": "light"
+  },
+  "networkTimeout": {
+    "request": 30000
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

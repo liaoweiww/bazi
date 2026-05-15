@@ -1,0 +1,65 @@
+{
+  "pages": [
+    {
+      "path": "pages/index/index",
+      "style": {
+        "navigationBarTitleText": "易经八字",
+        "navigationBarBackgroundColor": "#1a0a00",
+        "navigationBarTextStyle": "white",
+        "navigationStyle": "custom",
+        "enablePullDownRefresh": false
+      }
+    },
+    {
+      "path": "pages/result/result",
+      "style": {
+        "navigationBarTitleText": "命盘解读",
+        "navigationBarBackgroundColor": "#1a0a00",
+        "navigationBarTextStyle": "white",
+        "enablePullDownRefresh": false
+      }
+    },
+    {
+      "path": "pages/reference/reference",
+      "style": {
+        "navigationBarTitleText": "古籍参考",
+        "navigationBarBackgroundColor": "#1a0a00",
+        "navigationBarTextStyle": "white",
+        "enablePullDownRefresh": false
+      }
+    }
+  ],
+  "globalStyle": {
+    "navigationBarBackgroundColor": "#1a0a00",
+    "navigationBarTextStyle": "white",
+    "navigationBarTitleText": "易经八字",
+    "backgroundColor": "#1a0a00",
+    "backgroundTextStyle": "light"
+  },
+  "tabBar": {
+    "color": "#8b7355",
+    "selectedColor": "#d4af37",
+    "backgroundColor": "#2a1a10",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "iconPath": "static/tab-home.png",
+        "selectedIconPath": "static/tab-home-active.png",
+        "text": "排盘"
+      },
+      {
+        "pagePath": "pages/result/result",
+        "iconPath": "static/tab-chart.png",
+        "selectedIconPath": "static/tab-chart-active.png",
+        "text": "命盘"
+      },
+      {
+        "pagePath": "pages/reference/reference",
+        "iconPath": "static/tab-book.png",
+        "selectedIconPath": "static/tab-book-active.png",
+        "text": "古籍"
+      }
+    ]
+  }
+}

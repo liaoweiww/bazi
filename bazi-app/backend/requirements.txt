@@ -1,0 +1,10 @@
+# 易经八字APP - Python后端依赖
+# 核心依赖（纯Python标准库为主，最小化外部依赖）
+
+# Web框架
+flask>=3.0,<4.0
+flask-cors>=4.0,<5.0
+
+# 数据库（Python自带sqlite3，无需额外安装）
+# 如需性能监控可开启
+# gunicorn>=21.2

@@ -1,0 +1,82 @@
+<scroll-view class="wrap" scroll-y enhanced show-scrollbar="{{false}}">
+  <view class="hero">
+    <view class="hero-bg">
+      <view class="hero-ring r1"></view>
+      <view class="hero-ring r2"></view>
+      <view class="hero-ring r3"></view>
+    </view>
+    <view class="hero-title">易 经 八 字</view>
+    <view class="hero-sub">探寻命理玄机 · 洞悉人生轨迹</view>
+  </view>
+
+  <view class="bagua">
+    <view class="bline"></view>
+    <view class="yy-wrap">
+      <view class="yy-left"></view>
+      <view class="yy-right"></view>
+    </view>
+    <view class="bline"></view>
+  </view>
+
+  <view class="card">
+    <view class="fg">
+      <view class="fl"><text class="fl-icon">👤</text>姓 名</view>
+      <input class="fi" placeholder="请输入姓名" value="{{name}}" bindinput="onName" maxlength="20"/>
+    </view>
+
+    <view class="fg">
+      <view class="fl"><text class="fl-icon">⚧</text>性 别</view>
+      <view class="tog">
+        <view class="{{gender==='男'?'on':''}}" data-v="男" bindtap="onGender">☰ 乾 造（男）</view>
+        <view class="{{gender==='女'?'on':''}}" data-v="女" bindtap="onGender">☷ 坤 造（女）</view>
+      </view>
+    </view>
+
+    <view class="fg">
+      <view class="fl"><text class="fl-icon">📅</text>历 法</view>
+      <view class="tog">
+        <view class="{{calType==='solar'?'on':''}}" data-v="solar" bindtap="onCal">☀ 公 历</view>
+        <view class="{{calType==='lunar'?'on':''}}" data-v="lunar" bindtap="onCal">🌙 农 历</view>
+      </view>
+    </view>
+
+    <view class="fg" wx:if="{{calType==='solar'}}">
+      <view class="fl"><text class="fl-icon">🎂</text>出生日期（公历）</view>
+      <view class="dr">
+        <input class="fi" type="number" placeholder="年" value="{{sy}}" bindinput="onSy"/>
+        <input class="fi" type="number" placeholder="月" value="{{sm}}" bindinput="onSm"/>
+        <input class="fi" type="number" placeholder="日" value="{{sd}}" bindinput="onSd"/>
+      </view>
+    </view>
+
+    <view class="fg" wx:else>
+      <view class="fl"><text class="fl-icon">🎂</text>出生日期（农历）</view>
+      <view class="dr">
+        <input class="fi" type="number" placeholder="年" value="{{ly}}" bindinput="onLy"/>
+        <input class="fi" type="number" placeholder="月" value="{{lm}}" bindinput="onLm"/>
+        <input class="fi" type="number" placeholder="日" value="{{ld}}" bindinput="onLd"/>
+      </view>
+      <view class="tog" style="margin-top:6px">
+        <view class="{{!leap?'on':''}}" data-v="0" bindtap="onLeap">正常月</view>
+        <view class="{{leap?'on':''}}" data-v="1" bindtap="onLeap">闰 月</view>
+      </view>
+    </view>
+
+    <view class="fg">
+      <view class="fl"><text class="fl-icon">🕐</text>出生时间</view>
+      <view class="dr">
+        <input class="fi" type="number" placeholder="时" value="{{fh}}" bindinput="onFh"/>
+        <input class="fi" type="number" placeholder="分" value="{{fm}}" bindinput="onFm"/>
+      </view>
+    </view>
+
+    <view class="btn-go" bindtap="doPaipan">
+      <view class="btn-go-inner">
+        <text class="btn-go-main">开 始 排 盘</text>
+        <text class="btn-go-sub">一窥命理玄机</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="foot">— 古籍级 · 本地离线 · 纯正子平术 —</view>
+</scroll-view>

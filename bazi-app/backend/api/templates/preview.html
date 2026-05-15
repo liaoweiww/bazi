@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>易经八字 - 预览</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0d0805;color:#e8dcc8;font-family:'STKaiti','KaiTi','楷体',serif;min-height:100vh}
+.wrap{max-width:420px;margin:0 auto;padding:8px 12px 30px}
+
+/* 标题 */
+.hero{text-align:center;padding:24px 0 14px}
+.hero h1{font-size:38px;color:#d4af37;letter-spacing:10px;text-shadow:0 2px 10px rgba(212,175,55,.2)}
+.hero p{font-size:12px;color:#8b7355;letter-spacing:3px;margin-top:6px}
+
+/* logo */
+.logo{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:18px}
+.logo-line{width:30px;height:1px;background:rgba(201,169,110,.25)}
+.logo-circle{width:32px;height:32px;border-radius:50%;border:1px solid rgba(201,169,110,.2);background:rgba(201,169,110,.06)}
+
+/* 卡片 */
+.card{background:rgba(19,12,6,.6);border:1px solid #2a1f14;border-top:1px solid rgba(201,169,110,.15);border-radius:10px;padding:14px;margin-bottom:10px}
+.ct{text-align:center;font-size:17px;color:#d4af37;margin-bottom:10px;letter-spacing:4px;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;user-select:none}
+.ct-arrow{font-size:9px;color:#6b5e4e;margin-left:4px;transition:transform .2s}
+.collapsed .ct-arrow{transform:rotate(-90deg)}
+.card-body{transition:all .3s;overflow:hidden}
+.card-body.hide{display:none}
+
+/* 表单 */
+.fg{margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid rgba(51,36,24,.3)}
+.fg:last-child{border-bottom:none;margin-bottom:0}
+.fl{font-size:14px;color:#c9a96e;margin-bottom:8px;letter-spacing:2px}
+.fi{width:100%;height:40px;background:rgba(0,0,0,.2);border:1px solid rgba(51,36,24,.5);border-radius:8px;padding:0 10px;font-size:14px;color:#f5f0e8;outline:none}
+.fi:focus{border-color:rgba(201,169,110,.4)}
+.dr{display:flex;gap:6px}
+.dr .fi{flex:1;text-align:center}
+.tog{display:flex;border-radius:8px;overflow:hidden;border:1px solid rgba(51,36,24,.5)}
+.tog-btn{flex:1;text-align:center;padding:10px;font-size:13px;color:#9a8e7e;background:rgba(0,0,0,.15);border:none;cursor:pointer;font-family:inherit}
+.tog-btn.on{background:rgba(201,169,110,.12);color:#d4af37;font-weight:700}
+select.fi{appearance:none;-webkit-appearance:none}
+
+.btn-go{width:100%;background:linear-gradient(135deg,#b22222,#8b0000);border:none;border-radius:12px;padding:16px;color:#e0c68c;font-size:20px;letter-spacing:8px;font-family:inherit;font-weight:700;cursor:pointer;margin-top:12px;box-shadow:0 4px 16px rgba(139,0,0,.3)}
+
+/* 结果 */
+.result{margin-top:10px}
+.loading{text-align:center;padding:30px;color:#8b7355}
+.error{text-align:center;padding:20px;color:#e06070;font-size:13px}
+
+/* 四柱 */
+.pgrid{display:flex;gap:4px}
+.pc{flex:1;text-align:center;padding:10px 2px;border-radius:8px;background:rgba(0,0,0,.2);border:1px solid #332418}
+.pc.dm{border-color:#b22222;box-shadow:0 0 12px rgba(178,34,34,.1);background:rgba(178,34,34,.05)}
+.gz{font-size:22px;color:#e0c68c;font-weight:700}.ss{font-size:9px;color:#d44444;margin:2px 0}.ny{font-size:8px;color:#6b5e4e}.cg{font-size:8px;color:#9a8e7e}
+.dm-badge{display:inline-block;padding:1px 6px;background:#b22222;color:#fff;border-radius:8px;font-size:7px;margin-top:2px}
+.dm-info{text-align:center;margin-top:8px;font-size:12px;color:#9a8e7e}
+
+.gold{color:#d4af37}.dim{color:#9a8e7e}.muted{color:#6b5e4e}.red{color:#d44444}.tc{text-align:center}.mt8{margin-top:8px}.mb8{margin-bottom:8px}
+
+/* 标签 */
+.tags{display:flex;flex-wrap:wrap;gap:4px}
+.tag{display:inline-flex;align-items:center;gap:2px;padding:3px 10px;border-radius:12px;font-size:10px}
+.tag-y{background:rgba(196,69,54,.1);color:#d44444;border:1px solid rgba(196,69,54,.2)}
+.tag-j{background:rgba(74,112,152,.1);color:#7aa8d0;border:1px solid rgba(74,112,152,.2)}
+.dot{width:4px;height:4px;border-radius:50%;background:#d44444}
+.tag-j .dot{background:#7aa8d0}
+.st-badge{display:inline-block;padding:5px 16px;border-radius:16px;font-size:14px;font-weight:700}
+.st-s{background:rgba(178,34,34,.15);color:#d44444;border:1px solid rgba(178,34,34,.3)}
+.st-w{background:rgba(74,112,152,.15);color:#7aa8d0;border:1px solid rgba(74,112,152,.3)}
+.st-n{background:rgba(201,169,110,.1);color:#e0c68c;border:1px solid rgba(201,169,110,.3)}
+
+/* 大运 */
+.dy-scroll{display:flex;gap:4px;overflow-x:auto;padding:4px 0;-webkit-overflow-scrolling:touch}
+.dy-node{min-width:60px;text-align:center;padding:8px 4px;border-radius:8px;background:rgba(0,0,0,.2);border:1px solid #332418;flex-shrink:0}
+.dy-node.cur{border-color:#c9a96e;background:rgba(201,169,110,.08)}
+.dy-ages{font-size:8px;color:#6b5e4e}.dy-gz{font-size:15px;color:#e0c68c;font-weight:700}.dy-ny{font-size:7px;color:#6b5e4e}
+
+/* 年运 */
+.year-nav{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:10px}
+.year-btn{width:32px;height:32px;border-radius:50%;border:1px solid rgba(201,169,110,.2);background:rgba(201,169,110,.06);color:#c9a96e;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.year-num{font-size:22px;color:#e0c68c;font-weight:700}
+.fn-gz{text-align:center;font-size:15px;color:#d4af37;margin-bottom:4px}
+.fn-rating{display:inline-block;padding:2px 14px;border-radius:10px;font-size:11px;font-weight:700;margin-bottom:8px}
+.rt-great{background:rgba(212,175,55,.15);color:#d4af37;border:1px solid rgba(212,175,55,.3)}
+.rt-good{background:rgba(90,154,106,.12);color:#5a9a6a;border:1px solid rgba(90,154,106,.25)}
+.rt-warn{background:rgba(196,30,58,.1);color:#e06070;border:1px solid rgba(196,30,58,.2)}
+.rt-mid{background:rgba(139,115,85,.1);color:#8b7355;border:1px solid rgba(139,115,85,.2)}
+.fn-text{font-size:11px;color:#c0b090;line-height:1.7}
+.fn-dy{font-size:10px;color:#9a8e7e;margin-top:6px;padding:8px;background:rgba(0,0,0,.12);border-radius:6px}
+.fn-rel{font-size:10px;color:#c9a96e;padding:3px 0 3px 8px;border-left:2px solid rgba(201,169,110,.25);margin-bottom:3px}
+.fn-advice{font-size:11px;color:#f5f0e8;line-height:1.7;padding:8px;background:rgba(212,175,55,.05);border-radius:8px;border:1px solid rgba(212,175,55,.1);margin-top:6px}
+
+/* 破解法 */
+.rem-block{margin-bottom:10px;padding:8px;background:rgba(0,0,0,.1);border-radius:8px;border-left:3px solid rgba(201,169,110,.2)}
+.rem-title{font-size:12px;color:#d4af37;margin-bottom:3px;font-weight:700}
+.rem-method{display:flex;gap:6px;padding:4px 0;font-size:10px;color:#c0b090;line-height:1.5}
+.rem-badge{font-size:8px;padding:1px 6px;border-radius:6px;background:rgba(201,169,110,.12);color:#c9a96e;border:1px solid rgba(201,169,110,.2);white-space:nowrap;flex-shrink:0}
+.rem-badge-gen{background:rgba(90,154,106,.1);color:#5a9a6a}
+.rem-mname{color:#e0c68c;white-space:nowrap;font-weight:700}
+
+/* 把控指南 */
+.ctrl-block{margin-bottom:12px;padding:8px;background:rgba(0,0,0,.1);border-radius:8px;border-left:3px solid rgba(74,112,152,.2)}
+.ctrl-title{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.ctrl-icon-wrap{width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:rgba(74,112,152,.1);border:1px solid rgba(74,112,152,.2);border-radius:6px;font-size:14px;color:#7aa8d0}
+.ctrl-tips{margin-top:6px}
+.ctrl-tip{font-size:10px;color:#9a8e7e;padding:2px 0;padding-left:12px}
+
+/* 书籍 */
+.book-card{display:flex;gap:10px;margin-bottom:12px}
+.book-cover{width:40px;height:50px;display:flex;align-items:center;justify-content:center;background:rgba(201,169,110,.06);border:1px solid rgba(201,169,110,.15);border-radius:6px;font-size:20px;color:#d4af37;flex-shrink:0}
+.book-info{flex:1}
+.book-cat{display:inline-block;font-size:8px;padding:1px 6px;background:rgba(201,169,110,.08);border:1px solid rgba(201,169,110,.15);border-radius:4px;color:#c9a96e;margin-top:2px}
+.book-chapter{font-size:10px;color:#9a8e7e;padding:1px 0 1px 6px}
+.book-quote{font-size:10px;color:#c9a96e;padding:2px 0 2px 8px;border-left:2px solid rgba(201,169,110,.2);margin-bottom:2px}
+.book-reading{margin-top:6px;padding:6px;background:rgba(0,0,0,.1);border-radius:6px}
+.book-divider{margin:10px 0;border-bottom:1px dashed rgba(51,36,24,.4)}
+
+.btn-back{display:block;width:100%;padding:12px;background:rgba(201,169,110,.06);border:1px solid rgba(201,169,110,.15);border-radius:10px;color:#c9a96e;font-size:14px;text-align:center;margin-top:12px;cursor:pointer;font-family:inherit}
+
+/* 出生信息行 */
+.ir{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(51,36,24,.3);font-size:12px}
+.ir:last-child{border-bottom:none}
+
+/* 五行条 */
+.wx-bar-wrap{margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.wx-bar-name{width:16px;font-size:13px;font-weight:700;text-align:center}
+.wx-bar-bg{flex:1;height:7px;background:rgba(0,0,0,.25);border-radius:4px;overflow:hidden}
+.wx-bar-fill{height:100%;border-radius:4px}
+.wx-bar-score{font-size:10px;color:#9a8e7e;width:28px;text-align:right}
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+  <!-- 首页 -->
+  <div id="pageIndex">
+    <div class="hero">
+      <h1>易 经 八 字</h1>
+      <p>探寻命理玄机 · 洞悉人生轨迹</p>
+    </div>
+    <div class="logo">
+      <div class="logo-line"></div>
+      <div class="logo-circle"></div>
+      <div class="logo-line"></div>
+    </div>
+
+    <div class="card" id="formCard">
+      <div class="fg">
+        <div class="fl">👤 姓 名</div>
+        <input class="fi" id="name" placeholder="请输入姓名" maxlength="20" value="测试">
+      </div>
+      <div class="fg">
+        <div class="fl">⚧ 性 别</div>
+        <div class="tog" id="genderTog">
+          <button class="tog-btn on" data-v="男">☰ 乾 造（男）</button>
+          <button class="tog-btn" data-v="女">☷ 坤 造（女）</button>
+        </div>
+      </div>
+      <div class="fg">
+        <div class="fl">📅 历 法</div>
+        <div class="tog" id="calTog">
+          <button class="tog-btn on" data-v="solar">☀ 公 历</button>
+          <button class="tog-btn" data-v="lunar">🌙 农 历</button>
+        </div>
+      </div>
+      <div class="fg" id="solarDate">
+        <div class="fl">🎂 出生日期（公历）</div>
+        <div class="dr">
+          <input class="fi" type="number" id="sy" placeholder="年" value="1990">
+          <input class="fi" type="number" id="sm" placeholder="月" value="6">
+          <input class="fi" type="number" id="sd" placeholder="日" value="15">
+        </div>
+      </div>
+      <div class="fg" id="lunarDate" style="display:none">
+        <div class="fl">🎂 出生日期（农历）</div>
+        <div class="dr">
+          <input class="fi" type="number" id="ly" placeholder="年" value="1990">
+          <input class="fi" type="number" id="lm" placeholder="月" value="5">
+          <input class="fi" type="number" id="ld" placeholder="日" value="21">
+        </div>
+        <div class="tog" style="margin-top:6px" id="leapTog">
+          <button class="tog-btn on" data-v="0">正常月</button>
+          <button class="tog-btn" data-v="1">闰 月</button>
+        </div>
+      </div>
+      <div class="fg">
+        <div class="fl">🕐 出生时间</div>
+        <div class="dr">
+          <input class="fi" type="number" id="fh" placeholder="时" value="8" min="0" max="23">
+          <input class="fi" type="number" id="fm" placeholder="分" value="0" min="0" max="59">
+        </div>
+      </div>
+      <button class="btn-go" onclick="doPaipan()">开 始 排 盘</button>
+    </div>
+  </div>
+
+  <!-- 结果页 -->
+  <div id="pageResult" style="display:none" class="result"></div>
+</div>
+
+<script>
+const API = '/api';
+let paipanData = null;
+let currentFortuneYear = new Date().getFullYear();
+
+// 性别/历法切换
+document.querySelectorAll('.tog').forEach(tog => {
+  tog.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', function(){
+      this.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('on'));
+      this.classList.add('on');
+      if(this.parentElement.id === 'calTog'){
+        document.getElementById('solarDate').style.display = this.dataset.v === 'solar' ? '' : 'none';
+        document.getElementById('lunarDate').style.display = this.dataset.v === 'lunar' ? '' : 'none';
+      }
+    });
+  });
+});
+
+function getFormData(){
+  const gender = document.querySelector('#genderTog .on').dataset.v;
+  const calType = document.querySelector('#calTog .on').dataset.v;
+  const hour = parseInt(document.getElementById('fh').value) || 0;
+  const minute = parseInt(document.getElementById('fm').value) || 0;
+  const name = document.getElementById('name').value || '未命名';
+
+  let body = {name, gender, hour, minute, longitude:120, latitude:30, calendar_type: calType};
+
+  if(calType === 'lunar'){
+    body.lunar_year = parseInt(document.getElementById('ly').value);
+    body.lunar_month = parseInt(document.getElementById('lm').value);
+    body.lunar_day = parseInt(document.getElementById('ld').value);
+    body.leap_month = document.querySelector('#leapTog .on').dataset.v === '1';
+  } else {
+    body.solar_year = parseInt(document.getElementById('sy').value);
+    body.solar_month = parseInt(document.getElementById('sm').value);
+    body.solar_day = parseInt(document.getElementById('sd').value);
+  }
+  return body;
+}
+
+async function doPaipan(){
+  const form = document.getElementById('formCard');
+  form.style.opacity = '0.5';
+  form.style.pointerEvents = 'none';
+
+  const res = await fetch(API + '/paipan', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(getFormData())
+  });
+  const json = await res.json();
+  form.style.opacity = '';
+  form.style.pointerEvents = '';
+
+  if(!json.success){ alert(json.error); return; }
+  paipanData = json.data;
+  document.getElementById('pageIndex').style.display = 'none';
+  document.getElementById('pageResult').style.display = '';
+  showResult();
+  loadModules();
+}
+
+function showResult(){
+  const d = paipanData;
+  let html = '';
+
+  // 八字命盘
+  html += '<div class="card"><div class="ct" onclick="toggleCard(this)">☯ 八 字 命 盘</div>';
+  html += '<div class="pgrid">';
+  ['year','month','day','hour'].forEach((pk,i) => {
+    const p = d.four_pillars[pk];
+    const dm = pk === 'day';
+    html += `<div class="pc${dm?' dm':''}">
+      <div class="gz">${p.ganzhi}</div>
+      ${dm?'<div class="dm-badge">日主</div>':`<div class="ss">${p.shishen||''}</div>`}
+      <div class="ny">${p.nayin||''}</div>
+      <div class="cg">藏: ${(p.canggan||[]).join('')}</div>
+    </div>`;
+  });
+  html += '</div>';
+  html += `<div class="dm-info">日 主：<span class="gold">${d.day_master}</span>（${d.day_master_wuxing}）</div></div>`;
+
+  // 出生信息
+  const b = d.birth_info;
+  html += '<div class="card"><div class="ct" onclick="toggleCard(this)">📋 出 生 信 息 <span class="ct-arrow">▼</span></div>';
+  html += '<div class="card-body hide">';
+  html += `<div class="ir"><span class="dim">公历</span><span>${b.solar_date} ${b.solar_time}</span></div>`;
+  html += `<div class="ir"><span class="dim">农历</span><span>${b.lunar_date||'-'}</span></div>`;
+  html += `<div class="ir"><span class="dim">真太阳时</span><span>${b.true_solar_time}</span></div>`;
+  html += `<div class="ir"><span class="dim">性别</span><span>${b.gender==='男'?'☰ 乾造':'☷ 坤造'}</span></div>`;
+  html += '</div></div>';
+
+  // 格局喜用
+  const gj = d.geju, yj = d.yongji;
+  html += '<div class="card"><div class="ct">🏛 格 局 与 喜 用 神</div>';
+  html += `<div class="gold" style="font-size:16px">${gj.type} · ${gj.name}</div>`;
+  html += `<div class="dim" style="font-size:12px;margin:4px 0">${gj.analysis||''}</div>`;
+  html += '<div class="mb8"><div class="dim" style="font-size:10px">喜用神</div><div class="tags">';
+  (yj.yong_shen||[]).forEach(y => html += `<span class="tag tag-y"><span class="dot"></span>${y.wuxing} ${y.shishen}</span>`);
+  html += '</div></div><div><div class="dim" style="font-size:10px">忌神</div><div class="tags">';
+  (yj.ji_shen||[]).forEach(j => html += `<span class="tag tag-j"><span class="dot"></span>${j.wuxing} ${j.shishen}</span>`);
+  html += '</div></div>';
+  if(yj.tiao_hou) html += `<div class="gold mt8" style="font-size:11px">${yj.tiao_hou}</div>`;
+  html += '</div>';
+
+  // 五行力量
+  const wc = d.wuxing_count;
+  const colors = {金:'#ddd5c5',木:'#5b8c5a',水:'#4a7098',火:'#c44536',土:'#c9a96e'};
+  html += '<div class="card"><div class="ct">⭐ 五 行 力 量</div>';
+  ['金','木','水','火','土'].forEach(wx => {
+    const info = wc[wx] || {score:0};
+    html += `<div class="wx-bar-wrap">
+      <span class="wx-bar-name" style="color:${colors[wx]}">${wx}</span>
+      <div class="wx-bar-bg"><div class="wx-bar-fill" style="width:${Math.min(100,info.score/3*100)}%;background:${colors[wx]}"></div></div>
+      <span class="wx-bar-score">${info.score||0}分</span>
+    </div>`;
+  });
+  const sl = d.strength||{};
+  const hasQ = (sl.level||'').indexOf('强')>=0, hasW = (sl.level||'').indexOf('弱')>=0;
+  html += `<div class="tc mt8"><span class="st-badge ${hasQ?'st-s':hasW?'st-w':'st-n'}">${sl.level||'?'}</span></div>`;
+  html += `<div class="dim tc" style="font-size:10px">${sl.details||''}</div></div>`;
+
+  // 年运分析
+  html += '<div class="card"><div class="ct" onclick="toggleCard(this)">🔮 年 运 分 析 <span class="ct-arrow">▼</span></div>';
+  html += '<div class="card-body hide" id="yearFortuneBox"><div class="loading">加载中...</div></div></div>';
+
+  // 时运分析
+  html += '<div class="card"><div class="ct" onclick="toggleCard(this)">⏳ 时 运 分 析 <span class="ct-arrow">▼</span></div>';
+  html += '<div class="card-body hide" id="currentFortuneBox"><div class="loading">加载中...</div></div></div>';
+
+  // 大运
+  const dy = d.dayun||{};
+  html += '<div class="card"><div class="ct" onclick="toggleCard(this)">📈 大 运 流 程 <span class="ct-arrow">▼</span></div>';
+  html += '<div class="card-body hide">';
+  html += `<div class="dim" style="font-size:11px;margin-bottom:6px">起运 <span class="gold">${dy.start_age||0}</span> 岁 · ${dy.direction||''}</div>`;
+  html += '<div class="dy-scroll">';
+  const now = new Date();
+  const curAge = now.getFullYear() - parseInt(b.solar_date.split('-')[0]);
+  (dy.dayun_list||[]).forEach(dn => {
+    const isCur = dn.start_age <= curAge && curAge < dn.start_age + 10;
+    html += `<div class="dy-node${isCur?' cur':''}">
+      <div class="dy-ages">${dn.age_range||''}</div>
+      <div class="dy-gz">${dn.ganzhi||''}</div>
+      <div class="dy-ny">${dn.nayin||''}</div>
+    </div>`;
+  });
+  html += '</div>';
+  if(dy.liunian_current && dy.liunian_current.ganzhi){
+    const lc = dy.liunian_current;
+    html += `<div class="ln-box mt8"><div class="ln-gz">${lc.ganzhi}</div>`;
+    html += `<div class="dim" style="font-size:9px">${lc.wuxing||''} · ${lc.shishen||''} · ${lc.nayin||''}</div>`;
+    html += `<div class="muted" style="font-size:10px">${lc.analysis||''}</div></div>`;
+  }
+  html += '</div></div>';
+
+  // 破解法
+  html += '<div class="card"><div class="ct" onclick="toggleCard(this)">💡 破 解 与 补 益 <span class="ct-arrow">▼</span></div>';
+  html += '<div class="card-body hide" id="remedyBox"><div class="loading">加载中...</div></div></div>';
+
+  // 胎元命宫身宫
+  html += '<div class="card"><div class="ct">🏠 胎 元 · 命 宫 · 身 宫</div>';
+  html += '<div style="display:flex;gap:16px;justify-content:center;text-align:center">';
+  html += `<div><div class="dim" style="font-size:9px">胎元</div><div class="gold" style="font-size:17px">${d.taiyuan||'-'}</div></div>`;
+  html += `<div><div class="dim" style="font-size:9px">命宫</div><div class="gold" style="font-size:17px">${d.minggong||'-'}</div></div>`;
+  html += `<div><div class="dim" style="font-size:9px">身宫</div><div class="gold" style="font-size:17px">${d.shengong||'-'}</div></div>`;
+  html += '</div>';
+  if(d.kongwang && d.kongwang.length) html += `<div class="tc mt8" style="font-size:11px"><span class="dim">空亡：</span><span class="red">${d.kongwang.join('、')}</span></div>`;
+  html += '</div>';
+
+  // 神煞
+  if(d.shensha && Object.keys(d.shensha).length){
+    html += '<div class="card"><div class="ct" onclick="toggleCard(this)">🔱 神 煞 <span class="ct-arrow">▼</span></div>';
+    html += '<div class="card-body hide"><div class="tags">';
+    for(const [name, items] of Object.entries(d.shensha)){
+      items.forEach(it => {
+        const pn = it.pillar==='year'?'年':it.pillar==='month'?'月':it.pillar==='day'?'日':'时';
+        html += `<span class="tag tag-y">${name}(${pn})</span>`;
+      });
+    }
+    html += '</div></div></div>';
+  }
+
+  // 十二长生
+  if(d.changsheng){
+    html += '<div class="card"><div class="ct">🌱 十 二 长 生</div>';
+    html += '<div style="display:flex;gap:6px;text-align:center;font-size:10px">';
+    ['year','month','day','hour'].forEach(pk => {
+      const cs = d.changsheng[pk];
+      if(cs){
+        const pn = pk==='year'?'年':pk==='month'?'月':pk==='day'?'日':'时';
+        html += `<div style="flex:1"><div class="dim">${pn}</div><div class="gold" style="font-size:13px">${cs.zhi}</div><div class="dim" style="font-size:9px">${cs.state}</div></div>`;
+      }
+    });
+    html += '</div></div>';
+  }
+
+  // 白话解读
+  html += '<div class="card"><div class="ct" onclick="toggleCard(this)">📜 白 话 解 读 <span class="ct-arrow">▼</span></div>';
+  html += '<div class="card-body hide" id="vernacularBox"><div class="loading">加载中...</div></div></div>';
+
+  // 如何把控
+  html += '<div class="card"><div class="ct" onclick="toggleCard(this)">🎯 如 何 把 控 人 生 <span class="ct-arrow">▼</span></div>';
+  html += '<div class="card-body hide" id="controlBox"><div class="loading">加载中...</div></div></div>';
+
+  // 参考书籍
+  html += '<div class="card"><div class="ct" onclick="toggleCard(this)">📚 参 考 书 籍 <span class="ct-arrow">▼</span></div>';
+  html += '<div class="card-body hide" id="booksBox"><div class="loading">加载中...</div></div></div>';
+
+  html += '<button class="btn-back" onclick="goBack()">🔄 重 新 排 盘</button>';
+  html += '<div style="height:30px"></div>';
+
+  document.getElementById('pageResult').innerHTML = html;
+}
+
+async function loadModules(){
+  if(!paipanData) return;
+  const postData = {paipan_result: paipanData};
+
+  // 白话解读
+  fetch(API+'/vernacular',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(postData)})
+    .then(r=>r.json()).then(j=>{
+      if(!j.success) return;
+      let h='';
+      if(j.data.日主概述) h+=`<div class="vd">${j.data.日主概述}</div>`;
+      if(j.data.格局解读) h+=`<div class="vd">${j.data.格局解读}</div>`;
+      if(j.data.喜用神建议) h+=`<div class="vd">${j.data.喜用神建议}</div>`;
+      if(j.data.综合建议) h+=`<div class="vd">${j.data.综合建议}</div>`;
+      if(j.data.四柱解读){
+        h+='<div class="vd">';
+        ['年柱','月柱','日柱','时柱'].forEach(l => {
+          if(j.data.四柱解读[l]) h+=`<div style="margin-bottom:6px"><span class="gold">${l}</span>：${j.data.四柱解读[l]}</div>`;
+        });
+        h+='</div>';
+      }
+      const el = document.getElementById('vernacularBox');
+      if(el) el.innerHTML = h || '<div class="dim tc">暂无解读数据</div>';
+    });
+
+  // 年运
+  fetch(API+'/year-fortune',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...postData,year:currentFortuneYear})})
+    .then(r=>r.json()).then(j=>renderYearFortune(j.data));
+
+  // 时运
+  fetch(API+'/current-fortune',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(postData)})
+    .then(r=>r.json()).then(j=>{
+      if(!j.success) return;
+      const cf = j.data;
+      let h='';
+      h+=`<div class="fn-gz">当前 ${cf.current_age} 岁 · ${cf.dayun.ganzhi}大运</div>`;
+      const tagCls = cf.dayun.tag==='好运'?'rt-great':cf.dayun.tag==='考验期'?'rt-warn':'rt-mid';
+      h+=`<span class="fn-rating ${tagCls}">${cf.dayun.tag}</span>`;
+      h+=`<div class="fn-text">${cf.dayun.evaluation}</div>`;
+      h+=`<div class="dim" style="font-size:10px">距下一步大运还有 ${cf.dayun.remaining_years} 年</div>`;
+      h+=`<div class="fn-text mt8">${cf.stage_analysis}</div>`;
+      h+=`<div class="fn-advice">${cf.overall_advice}</div>`;
+      const el = document.getElementById('currentFortuneBox');
+      if(el) el.innerHTML = h;
+    });
+
+  // 破解法
+  fetch(API+'/remedy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(postData)})
+    .then(r=>r.json()).then(j=>{
+      if(!j.success) return;
+      const rem = j.data;
+      let h='';
+      if(rem.missing_elements && rem.missing_elements.length){
+        h+='<div class="dim" style="font-size:10px;margin-bottom:3px">命局偏弱五行</div>';
+        h+='<div class="tags mb8">';
+        rem.missing_elements.forEach(wx => h+=`<span class="tag tag-j">${wx}</span>`);
+        h+='</div>';
+      }
+      (rem.remedies||[]).forEach(item => {
+        h+=`<div class="rem-block"><div class="rem-title">${item.type}：${item.target}</div>`;
+        h+=`<div class="dim" style="font-size:10px;margin-bottom:4px">${item.description||''}</div>`;
+        (item.methods||[]).forEach(m => {
+          h+=`<div class="rem-method"><span class="rem-badge">${m.level||''}</span><span class="rem-mname">${m.method||''}</span>${m.detail?'：'+m.detail:''}</div>`;
+        });
+        h+='</div>';
+      });
+      h+='<div class="mt8"><div class="dim" style="font-size:10px;margin-bottom:4px">通用化解法</div>';
+      (rem.general_remedies||[]).forEach(g => {
+        h+=`<div class="rem-method"><span class="rem-badge rem-badge-gen">${g.title}</span><span class="dim" style="font-size:10px">${g.content}</span></div>`;
+      });
+      h+='</div>';
+      if(rem.summary) h+=`<div class="tc mt8" style="font-size:10px;color:#9a8e7e">${rem.summary}</div>`;
+      const el = document.getElementById('remedyBox');
+      if(el) el.innerHTML = h || '<div class="dim tc">暂无</div>';
+    });
+
+  // 把控指南
+  fetch(API+'/control-guide').then(r=>r.json()).then(j=>{
+    if(!j.success) return;
+    const cg = j.data;
+    let h=`<div class="dim fn-text">${cg.overview}</div>`;
+    (cg.sections||[]).forEach(sec => {
+      h+=`<div class="ctrl-block"><div class="ctrl-title"><div class="ctrl-icon-wrap">${sec.icon}</div><span class="gold">${sec.title}</span></div>`;
+      h+=`<div class="dim fn-text">${sec.content}</div>`;
+      if(sec.tips && sec.tips.length){
+        h+='<div class="ctrl-tips">';
+        sec.tips.forEach(t => h+=`<div class="ctrl-tip">✦ ${t}</div>`);
+        h+='</div>';
+      }
+      h+='</div>';
+    });
+    const el = document.getElementById('controlBox');
+    if(el) el.innerHTML = h;
+  });
+
+  // 参考书籍
+  fetch(API+'/reference-books').then(r=>r.json()).then(j=>{
+    if(!j.success) return;
+    const books = j.data;
+    let h='';
+    books.forEach((bk,i) => {
+      h+=`<div class="book-card"><div class="book-cover">${bk.cover}</div><div class="book-info">`;
+      h+=`<div class="gold" style="font-size:15px">${bk.title}</div>`;
+      h+=`<div class="dim" style="font-size:9px">${bk.author} · ${bk.dynasty}</div>`;
+      h+=`<span class="book-cat">${bk.category}</span>`;
+      h+=`<div class="fn-text" style="margin-top:4px">${bk.intro}</div></div></div>`;
+      h+=`<div class="fn-text" style="font-size:10px">${bk.content}</div>`;
+      if(bk.chapters && bk.chapters.length){
+        h+='<div class="mt8"><div class="dim" style="font-size:9px;margin-bottom:3px">主要篇章</div>';
+        bk.chapters.forEach(ch => h+=`<div class="book-chapter">▸ <span class="gold">${ch.name}</span>：${ch.desc}</div>`);
+        h+='</div>';
+      }
+      if(bk.quotes && bk.quotes.length){
+        h+='<div class="mt8"><div class="dim" style="font-size:9px;margin-bottom:3px">经典名句</div>';
+        bk.quotes.forEach(q => h+=`<div class="book-quote">"${q}"</div>`);
+        h+='</div>';
+      }
+      h+=`<div class="book-reading"><div class="dim" style="font-size:9px">阅读建议</div><div class="fn-text" style="font-size:10px">${bk.reading_guide}</div></div>`;
+      if(i < books.length-1) h+='<div class="book-divider"></div>';
+    });
+    const el = document.getElementById('booksBox');
+    if(el) el.innerHTML = h;
+  });
+}
+
+function renderYearFortune(yf){
+  if(!yf) return;
+  let h='';
+  h+=`<div class="year-nav">
+    <div class="year-btn" onclick="changeYear(-1)">◀</div>
+    <div class="year-num">${currentFortuneYear}</div>
+    <div class="year-btn" onclick="changeYear(1)">▶</div>
+  </div>`;
+  h+=`<div class="fn-gz">${yf.ganzhi}年 · ${yf.wuxing} · ${yf.shishen}</div>`;
+  const rtCls = yf.rating==='大吉'?'rt-great':yf.rating==='小吉'?'rt-good':yf.rating==='欠佳'?'rt-warn':'rt-mid';
+  h+=`<span class="fn-rating ${rtCls}">${yf.rating}</span>`;
+  h+=`<div class="fn-text mt8">${yf.overall}</div>`;
+  if(yf.dayun_background) h+=`<div class="fn-dy">${yf.dayun_background}</div>`;
+  if(yf.relations && yf.relations.length){
+    h+='<div class="mt8"><div class="dim" style="font-size:9px;margin-bottom:3px">流年关系</div>';
+    yf.relations.forEach(r => h+=`<div class="fn-rel">${r}</div>`);
+    h+='</div>';
+  }
+  if(yf.advice) h+=`<div class="fn-advice">${yf.advice}</div>`;
+  const el = document.getElementById('yearFortuneBox');
+  if(el) el.innerHTML = h;
+}
+
+function changeYear(delta){
+  currentFortuneYear += delta;
+  const el = document.getElementById('yearFortuneBox');
+  if(el) el.innerHTML = '<div class="loading">加载中...</div>';
+  fetch(API+'/year-fortune',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({paipan_result:paipanData,year:currentFortuneYear})
+  }).then(r=>r.json()).then(j=>renderYearFortune(j.data));
+}
+
+function toggleCard(el){
+  const card = el.parentElement;
+  const body = card.querySelector('.card-body');
+  const arrow = el.querySelector('.ct-arrow');
+  if(body){
+    body.classList.toggle('hide');
+    if(arrow) arrow.textContent = body.classList.contains('hide') ? '▼' : '▲';
+  }
+}
+
+function goBack(){
+  document.getElementById('pageIndex').style.display = '';
+  document.getElementById('pageResult').style.display = 'none';
+  document.getElementById('pageResult').innerHTML = '';
+  paipanData = null;
+}
+</script>
+</body>
+</html>
