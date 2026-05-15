@@ -569,16 +569,17 @@ function loadModules(){
 }
 
 function renderPersonalizedBooks(d){
-  const dm = d.day_master;
-  const dmWx = d.day_master_wuxing;
-  const sl = d.strength || {};
-  const gj = d.geju || {};
-  const yj = d.yongji || {};
+  var dm = d.day_master;
+  var dmWx = d.day_master_wuxing;
+  var sl = d.strength || {};
+  var gj = d.geju || {};
+  var yj = d.yongji || {};
 
-  const yongWx = (yj.yong_shen||[]).map(y=>y.wuxing).join('、')||'中和';
-  const jiWx = (yj.ji_shen||[]).map(y=>y.wuxing).join('、')||'无';
+  var yongWx = (yj.yong_shen||[]).map(function(y){return y.wuxing}).join('、')||'中和';
+  var jiWx = (yj.ji_shen||[]).map(function(y){return y.wuxing}).join('、')||'无';
+  var slLevel = sl.level||'中和';
 
-  const wxPersonality = {
+  var wxPersonality = {
     '木':'正直仁德，如大树般挺立，有担当有原则',
     '火':'热情奔放，如烈火般充满能量，行动力强',
     '土':'厚重诚信，如大地般稳重包容，值得信赖',
@@ -586,24 +587,32 @@ function renderPersonalizedBooks(d){
     '水':'智慧灵动，如流水般圆融变通，聪明善谋'
   };
 
-  const books = [
+  var wxBagua = { '木':'震卦、巽卦', '火':'离卦', '土':'坤卦、艮卦', '金':'乾卦、兑卦', '水':'坎卦' };
+  var wxGuaName = { '木':'震', '火':'离', '土':'坤', '金':'乾', '水':'坎' };
+
+  var strengthDesc = '';
+  if(slLevel.indexOf('强')>=0) strengthDesc = '身强能担大任，但需防过刚易折，以柔克刚为上';
+  else if(slLevel.indexOf('弱')>=0) strengthDesc = '身弱需借外力，懂得借力使力，四两拨千斤';
+  else strengthDesc = '中和平衡，能进能退，顺势而为可成大器';
+
+  var books = [
     {
       icon:'易', title:'易经', author:'伏羲、周文王、孔子', dynasty:'上古/周代', category:'群经之首',
       intro:'《易经》是中国最古老的经典，被誉为「群经之首，大道之源」。以六十四卦揭示天地万物变化规律。',
-      content:`《易经》的核心思想是「阴阳变化」与「物极必反」。您日主${dm}（${dmWx}），${wxPersonality[dmWx]||''}。理解易经中阴阳消长、刚柔相推的道理，对把握命局中${yongWx}能量的运用非常有帮助。《系辞传》云：「一阴一阳之谓道」，这与八字学中五行生克、喜忌平衡的思想一脉相承。`,
-      personalized:`您的八字日主为${dm}${dmWx}，${sl.level||'中和'}，格局${gj.name||'待定'}。建议重点研读易经中关于「${dmWx}」属性的卦象——${dmWx==='木'?'震卦、巽卦':dmWx==='火'?'离卦':dmWx==='土'?'坤卦、艮卦':dmWx==='金'?'乾卦、兑卦':'坎卦'}，体会其中蕴含的处世智慧。`,
+      content:'《易经》的核心思想是「阴阳变化」与「物极必反」。您日主'+dm+'（'+dmWx+'），'+ (wxPersonality[dmWx]||'') +'。理解易经中阴阳消长、刚柔相推的道理，对把握命局中'+yongWx+'能量的运用非常有帮助。《系辞传》云：「一阴一阳之谓道」，这与八字学中五行生克、喜忌平衡的思想一脉相承。',
+      personalized:'您的八字日主为'+dm+dmWx+'，'+slLevel+'，格局'+(gj.name||'待定')+'。建议重点研读易经中关于「'+dmWx+'」属性的卦象——'+(wxBagua[dmWx]||'坎卦')+'，体会其中蕴含的处世智慧。',
       chapters:[
         {name:'系辞传',desc:'阐发易理核心，是理解阴阳五行哲学基础的必读篇章'},
         {name:'说卦传',desc:'详解八卦取象，万物类象，对理解十神类象很有启发'},
-        {name:`${dmWx==='木'?'震':dmWx==='火'?'离':dmWx==='土'?'坤':dmWx==='金'?'乾':'坎'}卦`,desc:`与您日主${dmWx}属性对应的卦象，建议重点体会`},
+        {name:(wxGuaName[dmWx]||'坎')+'卦',desc:'与您日主'+dmWx+'属性对应的卦象，建议重点体会'},
       ],
       quotes:['天行健，君子以自强不息。','地势坤，君子以厚德载物。','一阴一阳之谓道，继之者善也。']
     },
     {
       icon:'奇', title:'奇门遁甲', author:'黄帝、姜子牙、张良', dynasty:'上古/周汉', category:'三式之首',
       intro:'中国古代最高层次的时空预测学，结合天时、地利、人和，通过九宫八卦八门九星推测吉凶趋势。',
-      content:`奇门遁甲与八字命理同源互补。八字看命局高低，奇门择时空吉凶。您喜用神为${yongWx}，在奇门遁甲中，可选择与${yongWx}五行相应的方位、时辰来增强运势。例如${yongWx.includes('木')?'东方、寅卯时':'':}${yongWx.includes('火')?'南方、巳午时':'':}${yongWx.includes('金')?'西方、申酉时':'':}${yongWx.includes('水')?'北方、亥子时':'':}出行或决策，可收事半功倍之效。`,
-      personalized:`基于您八字喜${yongWx}、忌${jiWx}的特点，在日常生活中重大决策（签约、开业、出行、谈判等）可选择与喜用神五行相符的奇门吉时吉方。忌神当旺的时空方位则尽量避开。`,
+      content:'奇门遁甲与八字命理同源互补。八字看命局高低，奇门择时空吉凶。您喜用神为'+yongWx+'，在奇门遁甲中，可选择与'+yongWx+'五行相应的方位、时辰来增强运势。出行或决策，可收事半功倍之效。',
+      personalized:'基于您八字喜'+yongWx+'、忌'+jiWx+'的特点，在日常生活中重大决策（签约、开业、出行、谈判等）可选择与喜用神五行相符的奇门吉时吉方。忌神当旺的时空方位则尽量避开。',
       chapters:[
         {name:'烟波钓叟歌',desc:'奇门纲领性文献，以歌诀形式讲述核心法则'},
         {name:'奇门法窍',desc:'详细讲解排盘方法和各类格局判断'},
@@ -613,8 +622,8 @@ function renderPersonalizedBooks(d){
     {
       icon:'命', title:'千里命稿', author:'韦千里', dynasty:'民国', category:'命理实战经典',
       intro:'民国命理大师韦千里的代表作，白话讲解，案例详实，是现代八字命理学最佳入门读物。',
-      content:`《千里命稿》以现代语言阐述命理，打破了古籍晦涩难懂的局限。韦千里强调「中和为贵」——您的八字${sl.level||'中和'}，${sl.level&&sl.level.indexOf('强')>=0?'身强能担大任，但需防过刚易折，以柔克刚为上':'':''}${sl.level&&sl.level.indexOf('弱')>=0?'身弱需借外力，懂得借力使力，四两拨千斤':'':''}${!sl.level||sl.level.indexOf('中')>=0?'中和平衡，能进能退，顺势而为可成大器':''}。书中对用神的精妙论述能帮您更深入理解自身命局。`,
-      personalized:`书中「用神篇」对您最有参考价值：您喜${yongWx}，忌${jiWx}。韦千里特别强调取用神要灵活变通，不可教条。建议结合实际经历来验证和感悟。同时书中「岁运篇」对大运流年的分析方法，对您理解人生各阶段运势起伏很有帮助。`,
+      content:'《千里命稿》以现代语言阐述命理，打破了古籍晦涩难懂的局限。韦千里强调「中和为贵」——您的八字'+slLevel+'，'+strengthDesc+'。书中对用神的精妙论述能帮您更深入理解自身命局。',
+      personalized:'书中「用神篇」对您最有参考价值：您喜'+yongWx+'，忌'+jiWx+'。韦千里特别强调取用神要灵活变通，不可教条。建议结合实际经历来验证和感悟。同时书中「岁运篇」对大运流年的分析方法，对您理解人生各阶段运势起伏很有帮助。',
       chapters:[
         {name:'用神篇',desc:'取用神的方法和技巧，对理解您的喜用神格局至关重要'},
         {name:'岁运篇',desc:'大运和流年的综合判断方法，帮助把握人生节奏'},
