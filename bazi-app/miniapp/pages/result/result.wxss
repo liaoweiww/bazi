@@ -161,3 +161,14 @@
 .btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:var(--spacing-btn-padding);border-radius:var(--radius-btn);font-size:var(--font-size-body);text-align:center;margin-top:12px}
 .btn-back{background:var(--accent-08);border:1px solid var(--accent-20);color:var(--accent)}
 .btn-icon{font-size:16px}
+
+/* ====== 付费墙 ====== */
+.paywall-card{text-align:center;padding:24px 16px;border:2px dashed var(--accent-30);background:var(--accent-04)}
+.pw-icon{font-size:40px;margin-bottom:8px}
+.pw-title{font-size:var(--font-size-title);font-weight:var(--font-weight-title);color:var(--accent-light);margin-bottom:8px}
+.pw-desc{font-size:var(--font-size-caption);color:var(--text-body);line-height:1.6;margin-bottom:14px}
+.pw-price{font-size:36px;font-weight:var(--font-weight-hero);color:var(--accent-light);margin-bottom:12px}
+.pw-btn{display:inline-block;padding:14px 48px;background:var(--btn-go-bg);color:#fff;border-radius:var(--btn-go-border-radius);font-size:var(--btn-go-font-size);font-weight:var(--font-weight-strong);letter-spacing:4px;box-shadow:var(--shadow-btn)}
+.pw-btn:active{opacity:0.8}
+.pw-btn-loading{opacity:0.6}
+.pw-note{font-size:10px;color:var(--text-muted);margin-top:10px}

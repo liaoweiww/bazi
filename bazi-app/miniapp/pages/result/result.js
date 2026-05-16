@@ -1,10 +1,13 @@
 const app = getApp()
 const theme = require('../../utils/theme')
+const payment = require('../../utils/payment')
 const REQ_HEADER = { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': '1' }
 
 Page({
   data: {
     loaded: false,
+    purchased: false,
+    unlocking: false,
     themeStyle: '', currentTheme: '', icons: {},
     showCanvas: false,
     // 折叠状态
@@ -33,6 +36,7 @@ Page({
 
   onLoad() {
     this.applyTheme()
+    this.checkPurchased()
     const d = app.globalData.paipanResult
     if (!d) {
       wx.showToast({ title: '请先排盘', icon: 'none' })
@@ -181,6 +185,34 @@ Page({
 
   goBack() { wx.navigateBack() },
 
+  checkPurchased() {
+    payment.checkPurchaseStatus().then(purchased => {
+      this.setData({ purchased })
+      // 已购买或测试模式自动解锁时加载全部数据
+      this.loadAllData()
+    })
+  },
+
+  doUnlock() {
+    if (this.data.unlocking) return
+    this.setData({ unlocking: true })
+
+    payment.doPay().then(() => {
+      this.setData({ purchased: true, unlocking: false })
+      wx.showToast({ title: '解锁成功！', icon: 'success', duration: 1500 })
+      this.loadAllData()
+    }).catch(err => {
+      this.setData({ unlocking: false })
+      if (err !== 'cancel') {
+        wx.showToast({ title: '支付失败，请重试', icon: 'none' })
+      }
+    })
+  },
+
+  loadAllData() {
+    // 这里触发加载完整数据（已在原onLoad中发起，未购买的用户看到基础信息）
+  },
+
   // 生成分享海报
   generateSharePoster() {
     this.setData({ showCanvas: true })
@@ -250,10 +282,10 @@ Page({
     // 底部
     ctx.setFillStyle('#d4af37')
     ctx.setFontSize(10)
-    ctx.fillText('— 古籍级 · 纯正子平术 · 本地离线 —', 187, 570)
+    ctx.fillText('— 古籍级 · 传统命理学研究 · 仅供文化参考 —', 187, 570)
     ctx.setFillStyle('#5a4a3a')
     ctx.setFontSize(9)
-    ctx.fillText('易经八字 v1.1 · 扫一扫体验', 187, 588)
+    ctx.fillText('易经八字 v1.1 · 传承中华传统文化', 187, 588)
 
     ctx.draw(false, () => {
       setTimeout(() => {

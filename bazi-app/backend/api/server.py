@@ -15,6 +15,9 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 app = Flask(__name__)
 CORS(app)
 
+from api.payment import payment_bp
+app.register_blueprint(payment_bp)
+
 
 def get_paipan_function():
     """延迟导入排盘函数"""

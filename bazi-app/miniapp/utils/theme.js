@@ -342,23 +342,23 @@ var themeIcons = {
     section_collapse: '▼', section_expand: '▲'
   },
   'ink-wash': {
-    name: '·名·', gender: '·性·', gender_male: '【乾】', gender_female: '【坤】',
-    calendar: '·历·', calendar_solar: '【阳】', calendar_lunar: '【阴】',
-    birth: '·生·', time: '·时·', settings: '·设·', back: '·返·',
-    bagua: '⊙', birth_info: '·籍·', geju: '·格·', wuxing: '·衡·',
-    year_fortune: '·运·', current_fortune: '·时·', dayun: '·程·',
-    remedy: '·补·', taiyuan: '·胎·', shensha: '·煞·', changsheng: '·生·',
-    vernacular: '·解·', control: '·持·', books: '·典·', life_summary: '·总·',
+    name: '◇', gender: '◇', gender_male: '【乾】', gender_female: '【坤】',
+    calendar: '◇', calendar_solar: '【阳】', calendar_lunar: '【阴】',
+    birth: '◇', time: '◇', settings: '⚙', back: '←',
+    bagua: '⊙', birth_info: '◇', geju: '◇', wuxing: '◇',
+    year_fortune: '◇', current_fortune: '◇', dayun: '◇',
+    remedy: '◇', taiyuan: '◇', shensha: '◇', changsheng: '◇',
+    vernacular: '◇', control: '◇', books: '◇', life_summary: '◇',
     section_collapse: '∨', section_expand: '∧'
   },
   imperial: {
-    name: '讳', gender: '性', gender_male: '乾', gender_female: '坤',
-    calendar: '历', calendar_solar: '公', calendar_lunar: '农',
-    birth: '御', time: '钦', settings: '设', back: '返',
-    bagua: '⚜', birth_info: '诏', geju: '爵', wuxing: '衡',
-    year_fortune: '运', current_fortune: '时', dayun: '程',
-    remedy: '补', taiyuan: '宫', shensha: '煞', changsheng: '生',
-    vernacular: '谕', control: '持', books: '典', life_summary: '总',
+    name: '▣', gender: '▣', gender_male: '乾', gender_female: '坤',
+    calendar: '▣', calendar_solar: '公', calendar_lunar: '农',
+    birth: '▣', time: '▣', settings: '⚙', back: '⟵',
+    bagua: '⚜', birth_info: '▣', geju: '▣', wuxing: '▣',
+    year_fortune: '▣', current_fortune: '▣', dayun: '▣',
+    remedy: '▣', taiyuan: '▣', shensha: '▣', changsheng: '▣',
+    vernacular: '▣', control: '▣', books: '▣', life_summary: '▣',
     section_collapse: '▽', section_expand: '△'
   },
   celadon: {

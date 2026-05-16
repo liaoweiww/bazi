@@ -73,6 +73,7 @@
 
 /* ====== 脚注 ====== */
 .foot{text-align:center;font-size:var(--font-size-caption);color:var(--text-placeholder);padding:12px 0 4px;letter-spacing:2px}
+.foot-disclaimer{text-align:center;font-size:9px;color:var(--text-subtle);padding:4px 14px 8px;line-height:1.6;opacity:0.6}
 .foot-ver{text-align:center;font-size:var(--font-size-caption);color:var(--text-subtle);padding:0 0 20px;letter-spacing:1px}
 
 /* ====== 主题专属卡片 ====== */

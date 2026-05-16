@@ -78,6 +78,22 @@
     </view>
   </view>
 
+  <!-- ====== 付费解锁墙 ====== -->
+  <view wx:if="{{!purchased}}" class="card paywall-card">
+    <view class="pw-icon">🔒</view>
+    <view class="pw-title">解锁完整命盘解读</view>
+    <view class="pw-desc">格局分析 · 大运流年 · 年运时运 · 白话解读 · 破解补益 · 运势总结</view>
+    <view class="pw-price">¥0.88</view>
+    <view class="pw-btn {{unlocking?'pw-btn-loading':''}}" bindtap="doUnlock">
+      <text wx:if="{{!unlocking}}">立即解锁</text>
+      <text wx:else>支付中...</text>
+    </view>
+    <view class="pw-note">一次购买，永久使用 · 测试阶段特惠价</view>
+  </view>
+
+  <!-- ====== 以下为付费内容 ====== -->
+  <block wx:if="{{purchased}}">
+
   <!-- ====== 格局喜用 ====== -->
   <view class="card">
     <view class="ct"><text class="ct-icon">{{icons.geju}}</text>格 局 与 喜 用 神</view>
@@ -384,6 +400,9 @@
     </view>
   </view>
 
+  </block>
+  <!-- ====== 以上为付费内容 ====== -->
+
   <view class="btn btn-back" bindtap="goBack">
     <text class="btn-icon">{{icons.back}}</text> 重 新 排 盘
   </view>
@@ -394,5 +413,6 @@
   <view style="height:20px"></view>
   <!-- 隐藏canvas用于生成海报 -->
   <canvas canvas-id="shareCanvas" class="share-canvas" wx:if="{{showCanvas}}"></canvas>
+  <view class="foot-disclaimer">基于传统命理学算法，分析结果仅供文化研究参考，不构成任何人生决策依据</view>
   <view style="height:40px"></view>
 </scroll-view>

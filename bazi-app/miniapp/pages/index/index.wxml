@@ -162,5 +162,6 @@
   </view>
 
   <view class="foot">— 古籍级 · 纯正子平术 · 本地离线 —</view>
+  <view class="foot-disclaimer">基于传统命理学算法，仅供文化研究参考，不构成任何人生决策依据</view>
   <view class="foot-ver">版本 1.1 · 档案 · 日运 · 命盘</view>
 </scroll-view>
