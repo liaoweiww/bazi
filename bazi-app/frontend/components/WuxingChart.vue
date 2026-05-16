@@ -71,11 +71,11 @@ onMounted(() => {
 const wuxingOrder = ['金', '木', '水', '火', '土']
 
 const wuxingColors = {
-  '金': '#f5f0e8',
+  '金': 'var(--text-primary)',
   '木': '#4a7c59',
   '水': '#2c3e6b',
-  '火': '#c41e3a',
-  '土': '#c9a96e'
+  '火': 'var(--vermillion)',
+  '土': 'var(--accent)'
 }
 
 const chartData = computed(() => {
@@ -136,7 +136,7 @@ function doDrawRadar(ctx) {
       else ctx.lineTo(x, y)
     }
     ctx.closePath()
-    ctx.strokeStyle = 'rgba(201, 169, 110, 0.15)'
+    ctx.strokeStyle = 'var(--accent-15)'
     ctx.lineWidth = 1
     ctx.stroke()
   }
@@ -147,7 +147,7 @@ function doDrawRadar(ctx) {
     ctx.beginPath()
     ctx.moveTo(cx, cy)
     ctx.lineTo(cx + radius * Math.cos(angle), cy + radius * Math.sin(angle))
-    ctx.strokeStyle = 'rgba(201, 169, 110, 0.2)'
+    ctx.strokeStyle = 'var(--accent-20)'
     ctx.lineWidth = 1
     ctx.stroke()
   }
@@ -164,9 +164,9 @@ function doDrawRadar(ctx) {
     else ctx.lineTo(x, y)
   }
   ctx.closePath()
-  ctx.fillStyle = 'rgba(201, 169, 110, 0.12)'
+  ctx.fillStyle = 'var(--accent-12)'
   ctx.fill()
-  ctx.strokeStyle = 'rgba(201, 169, 110, 0.5)'
+  ctx.strokeStyle = 'var(--accent-50)'
   ctx.lineWidth = 2
   ctx.stroke()
 
@@ -180,14 +180,14 @@ function doDrawRadar(ctx) {
     ctx.arc(x, y, 4, 0, Math.PI * 2)
     ctx.fillStyle = wuxingColors[wuxingOrder[i]]
     ctx.fill()
-    ctx.strokeStyle = 'rgba(26, 10, 0, 0.8)'
+    ctx.strokeStyle = 'var(--bg-root-80, rgba(26,10,0,0.8))'
     ctx.lineWidth = 1
     ctx.stroke()
   }
 
   // 绘制标签
   const labelRadius = radius + 22
-  ctx.fillStyle = '#f5f0e8'
+  ctx.fillStyle = 'var(--text-primary)'
   ctx.font = '14px "STKaiti", "KaiTi", "楷体", serif'
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
@@ -239,7 +239,7 @@ function doDrawRadar(ctx) {
   &__bar-track {
     flex: 1;
     height: 16rpx;
-    background: rgba(61, 43, 26, 0.4);
+    background: var(--border-40);
     border-radius: 8rpx;
     overflow: hidden;
   }
@@ -254,7 +254,7 @@ function doDrawRadar(ctx) {
   &__bar-value {
     width: 40rpx;
     font-size: 22rpx;
-    color: #c9a96e;
+    color: var(--accent);
     text-align: center;
   }
 
@@ -271,18 +271,18 @@ function doDrawRadar(ctx) {
     border: 1rpx solid;
 
     &.conclusion-strong {
-      background: rgba(212, 175, 55, 0.15);
-      border-color: rgba(212, 175, 55, 0.4);
+      background: var(--accent-15);
+      border-color: var(--accent-40);
       .conclusion-text {
-        color: #d4af37;
+        color: var(--accent-light);
       }
     }
 
     &.conclusion-weak {
-      background: rgba(196, 30, 58, 0.12);
-      border-color: rgba(196, 30, 58, 0.35);
+      background: var(--vermillion-12);
+      border-color: var(--vermillion-30);
       .conclusion-text {
-        color: #e06070;
+        color: var(--vermillion-light);
       }
     }
 

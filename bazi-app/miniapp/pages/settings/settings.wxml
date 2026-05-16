@@ -1,0 +1,55 @@
+<view class="wrap theme-root theme-{{currentTheme}}" style="{{themeStyle}}">
+  <view class="section-title">
+    <text class="st-icon">{{icons.settings}}</text>
+    <text>界面主题</text>
+  </view>
+  <view class="desc">4 套完全不同的视觉风格 —— 排版 · 造型 · 装饰 · 图标</view>
+
+  <view class="theme-list">
+    <view
+      wx:for="{{themes}}"
+      wx:key="id"
+      class="theme-card {{current === item.id ? 'active' : ''}}"
+      data-id="{{item.id}}"
+      bindtap="onSelect"
+    >
+      <view class="tc-preview">
+        <view class="tc-swatch" style="background:{{item.id==='classic'?'#1a0a00':item.id==='ink-wash'?'#0a0a0c':item.id==='imperial'?'#0d0005':'#0a1512'}}">
+          <!-- 经典：微型圆环 -->
+          <block wx:if="{{item.id==='classic'}}">
+            <view class="tp-mini tp-mini-classic"><view class="tpmr1"></view><view class="tpmr2"></view></view>
+          </block>
+          <!-- 墨韵：微型墨点+笔触 -->
+          <block wx:elif="{{item.id==='ink-wash'}}">
+            <view class="tp-mini tp-mini-ink"><view class="tpmi-dot"></view><view class="tpmi-line"></view></view>
+          </block>
+          <!-- 宫廷：微型方框+角标 -->
+          <block wx:elif="{{item.id==='imperial'}}">
+            <view class="tp-mini tp-mini-imp"><view class="tpmf-box"><view class="tpmf-dot tpmf-d1"></view><view class="tpmf-dot tpmf-d2"></view><view class="tpmf-dot tpmf-d3"></view><view class="tpmf-dot tpmf-d4"></view></view></view>
+          </block>
+          <!-- 青瓷：微型波纹 -->
+          <block wx:elif="{{item.id==='celadon'}}">
+            <view class="tp-mini tp-mini-ce"><view class="tpmc-wave"></view></view>
+          </block>
+          <view class="tc-bar" style="background:{{item.id==='classic'?'#d4af37':item.id==='ink-wash'?'#c8c0b6':item.id==='imperial'?'#e8c840':'#a0d8b8'}}"></view>
+        </view>
+      </view>
+      <view class="tc-info">
+        <view class="tc-name">
+          {{item.name}}
+          <text wx:if="{{current === item.id}}" class="tc-check">✓</text>
+        </view>
+        <view class="tc-sub">{{item.subtitle}}</view>
+        <view class="tc-desc">{{item.desc}}</view>
+        <!-- 排版字样示例 -->
+        <view class="tc-typo" style="font-family:{{item.id==='classic'?'STKaiti,serif':item.id==='ink-wash'?'PingFang SC Light,sans-serif':item.id==='imperial'?'STSong,serif':'PingFang SC,sans-serif'}};font-weight:{{item.id==='ink-wash'?300:item.id==='imperial'?900:700}}">
+          易 经 八 字
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="btn-back-wrap">
+    <navigator class="btn-back" open-type="navigateBack">{{icons.back}} 返回</navigator>
+  </view>
+</view>

@@ -4,8 +4,8 @@
     <!-- 自定义导航栏 -->
     <view class="nav-bar" :style="{ paddingTop: statusBarHeight + 'px' }">
       <view class="nav-bar__content">
-        <view class="nav-back" @tap="goBack">
-          <text class="nav-back__arrow">&#xe600;</text>
+        <view class="nav-back" @tap="goBack" aria-label="返回排盘页">
+          <text class="nav-back__arrow" aria-hidden="true">&#xe600;</text>
         </view>
         <text class="nav-bar__title">命盘解读</text>
         <view class="nav-placeholder"></view>
@@ -312,7 +312,7 @@ onMounted(() => {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: linear-gradient(180deg, rgba(26, 10, 0, 0.98) 0%, rgba(26, 10, 0, 0.85) 100%);
+  background: linear-gradient(180deg, var(--bg-nav) 0%, var(--bg-nav-transparent) 100%);
   backdrop-filter: blur(10rpx);
 
   &__content {
@@ -325,7 +325,7 @@ onMounted(() => {
 
   &__title {
     font-size: 36rpx;
-    color: #d4af37;
+    color: var(--accent-light);
     font-family: 'STKaiti', 'KaiTi', '楷体', serif;
     font-weight: bold;
     letter-spacing: 6rpx;
@@ -338,10 +338,18 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: background 0.3s ease;
+
+  @media (hover: hover) {
+    &:hover {
+      background: rgba(201, 169, 110, 0.1);
+      border-radius: 12rpx;
+    }
+  }
 
   &__arrow {
     font-size: 32rpx;
-    color: #c9a96e;
+    color: var(--accent);
   }
 }
 
@@ -361,8 +369,8 @@ onMounted(() => {
 .loading-yinyang {
   width: 80rpx;
   height: 80rpx;
-  border: 3rpx solid rgba(201, 169, 110, 0.3);
-  border-top-color: #d4af37;
+  border: 3rpx solid var(--accent-30);
+  border-top-color: var(--accent-light);
   border-radius: 50%;
   animation: spin 1.5s linear infinite;
   margin-bottom: 24rpx;
@@ -374,7 +382,7 @@ onMounted(() => {
 
 .loading-text {
   font-size: 28rpx;
-  color: #8b7355;
+  color: var(--text-muted);
   font-family: 'STKaiti', 'KaiTi', '楷体', serif;
   animation: text-fade 1.5s ease-in-out infinite;
 }
@@ -390,8 +398,8 @@ onMounted(() => {
   justify-content: center;
   gap: 32rpx;
   padding: 16rpx 24rpx;
-  background: rgba(42, 26, 16, 0.6);
-  border-bottom: 1rpx solid rgba(61, 43, 26, 0.5);
+  background: var(--bg-card);
+  border-bottom: 1rpx solid var(--border-50);
 }
 
 .user-info-item {
@@ -401,7 +409,7 @@ onMounted(() => {
 
   .info-label {
     font-size: 22rpx;
-    color: #8b7355;
+    color: var(--text-muted);
     font-family: 'STKaiti', 'KaiTi', '楷体', serif;
     padding: 2rpx 10rpx;
     border: 1rpx solid rgba(139, 115, 85, 0.4);
@@ -410,7 +418,7 @@ onMounted(() => {
 
   .info-value {
     font-size: 24rpx;
-    color: #f5f0e8;
+    color: var(--text-primary);
   }
 }
 
@@ -432,41 +440,41 @@ onMounted(() => {
     justify-content: center;
     width: 44rpx;
     height: 44rpx;
-    background: rgba(201, 169, 110, 0.15);
-    border: 1rpx solid rgba(201, 169, 110, 0.3);
+    background: var(--accent-15);
+    border: 1rpx solid var(--accent-30);
     border-radius: 8rpx;
     font-size: 24rpx;
-    color: #c9a96e;
+    color: var(--accent);
     font-family: 'STKaiti', 'KaiTi', '楷体', serif;
 
     &--fire {
-      background: rgba(196, 30, 58, 0.15);
-      border-color: rgba(196, 30, 58, 0.3);
-      color: #c41e3a;
+      background: var(--vermillion-15);
+      border-color: var(--vermillion-30);
+      color: var(--vermillion);
     }
 
     &--gold {
-      background: rgba(212, 175, 55, 0.15);
-      border-color: rgba(212, 175, 55, 0.3);
-      color: #d4af37;
+      background: var(--accent-15);
+      border-color: var(--accent-30);
+      color: var(--accent-light);
     }
 
     &--water {
       background: rgba(44, 62, 107, 0.2);
       border-color: rgba(44, 62, 107, 0.3);
-      color: #5a7ec0;
+      color: var(--wx-water-light);
     }
 
     &--vermillion {
-      background: rgba(196, 30, 58, 0.12);
-      border-color: rgba(196, 30, 58, 0.35);
-      color: #e06070;
+      background: var(--vermillion-12);
+      border-color: var(--vermillion-30);
+      color: var(--vermillion-light);
     }
   }
 
   &__text {
     font-size: 30rpx;
-    color: #f5f0e8;
+    color: var(--text-primary);
     font-family: 'STKaiti', 'KaiTi', '楷体', serif;
     font-weight: bold;
   }
@@ -479,18 +487,18 @@ onMounted(() => {
     justify-content: space-around;
     margin-bottom: 16rpx;
     padding-bottom: 12rpx;
-    border-bottom: 1rpx solid rgba(61, 43, 26, 0.5);
+    border-bottom: 1rpx solid var(--border-50);
   }
 
   &__header-label {
     font-size: 24rpx;
-    color: #8b7355;
+    color: var(--text-muted);
     font-family: 'STKaiti', 'KaiTi', '楷体', serif;
     text-align: center;
     min-width: 130rpx;
 
     &--rizhu {
-      color: #d4af37;
+      color: var(--accent-light);
     }
   }
 
@@ -516,7 +524,7 @@ onMounted(() => {
 
   &__count {
     font-size: 22rpx;
-    color: #f5f0e8;
+    color: var(--text-primary);
   }
 }
 
@@ -539,17 +547,17 @@ onMounted(() => {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(212, 175, 55, 0.15);
-    border: 1rpx solid rgba(212, 175, 55, 0.4);
+    background: var(--accent-15);
+    border: 1rpx solid var(--accent-40);
     border-radius: 8rpx;
     font-size: 24rpx;
-    color: #d4af37;
+    color: var(--accent-light);
     font-family: 'STKaiti', 'KaiTi', '楷体', serif;
   }
 
   &__text {
     font-size: 32rpx;
-    color: #d4af37;
+    color: var(--accent-light);
     font-family: 'STKaiti', 'KaiTi', '楷体', serif;
     font-weight: bold;
   }
@@ -558,7 +566,7 @@ onMounted(() => {
 .pattern-desc {
   &__text {
     font-size: 26rpx;
-    color: #c0b090;
+    color: var(--text-body);
     line-height: 1.8;
     text-indent: 2em;
   }
@@ -584,11 +592,11 @@ onMounted(() => {
   min-width: 80rpx;
 
   &--god {
-    color: #d4af37;
+    color: var(--accent-light);
   }
 
   &--ji {
-    color: #c41e3a;
+    color: var(--vermillion);
   }
 }
 
@@ -602,19 +610,19 @@ onMounted(() => {
   flex-direction: column;
   gap: 8rpx;
   padding-top: 12rpx;
-  border-top: 1rpx solid rgba(61, 43, 26, 0.5);
+  border-top: 1rpx solid var(--border-50);
 }
 
 .tiaohou-label {
   font-size: 24rpx;
-  color: #c9a96e;
+  color: var(--accent);
   font-family: 'STKaiti', 'KaiTi', '楷体', serif;
   font-weight: bold;
 }
 
 .tiaohou-text {
   font-size: 24rpx;
-  color: #c0b090;
+  color: var(--text-body);
   line-height: 1.8;
 }
 
@@ -625,17 +633,17 @@ onMounted(() => {
   justify-content: center;
   gap: 12rpx;
   padding-bottom: 16rpx;
-  border-bottom: 1rpx solid rgba(61, 43, 26, 0.5);
+  border-bottom: 1rpx solid var(--border-50);
 
   &__label {
     font-size: 24rpx;
-    color: #8b7355;
+    color: var(--text-muted);
     font-family: 'STKaiti', 'KaiTi', '楷体', serif;
   }
 
   &__age {
     font-size: 36rpx;
-    color: #d4af37;
+    color: var(--accent-light);
     font-family: 'STKaiti', 'KaiTi', '楷体', serif;
     font-weight: bold;
   }
@@ -658,7 +666,7 @@ onMounted(() => {
 
 .liunian-year {
   font-size: 32rpx;
-  color: #f5f0e8;
+  color: var(--text-primary);
   font-family: 'STKaiti', 'KaiTi', '楷体', serif;
   font-weight: bold;
 }
@@ -676,33 +684,33 @@ onMounted(() => {
   font-weight: bold;
 
   &.rating-good {
-    background: rgba(212, 175, 55, 0.15);
-    border: 1rpx solid rgba(212, 175, 55, 0.4);
-    color: #d4af37;
+    background: var(--accent-15);
+    border: 1rpx solid var(--accent-40);
+    color: var(--accent-light);
   }
 
   &.rating-bad {
-    background: rgba(196, 30, 58, 0.15);
-    border: 1rpx solid rgba(196, 30, 58, 0.4);
-    color: #c41e3a;
+    background: var(--vermillion-15);
+    border: 1rpx solid var(--vermillion-40);
+    color: var(--vermillion);
   }
 
   &.rating-neutral {
     background: rgba(139, 115, 85, 0.15);
     border: 1rpx solid rgba(139, 115, 85, 0.4);
-    color: #8b7355;
+    color: var(--text-muted);
   }
 }
 
 .liunian-nayin {
   font-size: 22rpx;
-  color: #8b7355;
+  color: var(--text-muted);
   font-family: 'STKaiti', 'KaiTi', '楷体', serif;
 }
 
 .liunian-desc {
   font-size: 26rpx;
-  color: #c0b090;
+  color: var(--text-body);
   line-height: 1.8;
   text-indent: 2em;
 }
@@ -721,37 +729,45 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(201, 169, 110, 0.08);
-  border: 2rpx solid rgba(201, 169, 110, 0.2);
+  background: var(--accent-08);
+  border: 2rpx solid var(--accent-20);
   border-radius: 50%;
   font-size: 48rpx;
-  color: rgba(201, 169, 110, 0.4);
+  color: var(--accent-40);
   font-family: 'STKaiti', 'KaiTi', '楷体', serif;
   margin-bottom: 24rpx;
 }
 
 .empty-title {
   font-size: 32rpx;
-  color: #8b7355;
+  color: var(--text-muted);
   font-family: 'STKaiti', 'KaiTi', '楷体', serif;
   margin-bottom: 12rpx;
 }
 
 .empty-desc {
   font-size: 26rpx;
-  color: #5a4a3a;
+  color: var(--text-placeholder);
   margin-bottom: 32rpx;
 }
 
 .empty-btn {
   padding: 14rpx 48rpx;
-  background: linear-gradient(135deg, rgba(201, 169, 110, 0.2), rgba(212, 175, 55, 0.15));
-  border: 1rpx solid rgba(212, 175, 55, 0.4);
+  background: linear-gradient(135deg, var(--accent-20), var(--accent-15));
+  border: 1rpx solid var(--accent-40);
   border-radius: 12rpx;
+  transition: background 0.3s ease, transform 0.15s ease;
+
+  @media (hover: hover) {
+    &:hover {
+      background: linear-gradient(135deg, var(--accent-30), rgba(212, 175, 55, 0.25));
+      transform: translateY(-2rpx);
+    }
+  }
 
   text {
     font-size: 28rpx;
-    color: #d4af37;
+    color: var(--accent-light);
     font-family: 'STKaiti', 'KaiTi', '楷体', serif;
   }
 }

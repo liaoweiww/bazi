@@ -2,16 +2,16 @@
   <!-- 中式边框装饰组件 -->
   <view class="classic-border" :class="[`classic-border--${variant}`]">
     <!-- 四角装饰 -->
-    <view class="classic-border__corner classic-border__corner--tl">
+    <view class="classic-border__corner classic-border__corner--tl" aria-hidden="true">
       <view class="corner-pattern"></view>
     </view>
-    <view class="classic-border__corner classic-border__corner--tr">
+    <view class="classic-border__corner classic-border__corner--tr" aria-hidden="true">
       <view class="corner-pattern"></view>
     </view>
-    <view class="classic-border__corner classic-border__corner--bl">
+    <view class="classic-border__corner classic-border__corner--bl" aria-hidden="true">
       <view class="corner-pattern"></view>
     </view>
-    <view class="classic-border__corner classic-border__corner--br">
+    <view class="classic-border__corner classic-border__corner--br" aria-hidden="true">
       <view class="corner-pattern"></view>
     </view>
     <!-- 内容区域 -->
@@ -35,23 +35,23 @@ defineProps({
 .classic-border {
   position: relative;
   padding: 4px;
-  border: 2rpx solid #3d2b1a;
+  border: 2rpx solid var(--border-color);
   border-radius: 12px;
-  background: linear-gradient(135deg, rgba(42, 26, 16, 0.9), rgba(58, 42, 26, 0.85));
+  background: linear-gradient(135deg, var(--bg-card), var(--bg-card));
 
   &--gold {
-    border-color: rgba(201, 169, 110, 0.5);
+    border-color: var(--accent-50);
 
     .corner-pattern {
-      border-color: #c9a96e;
+      border-color: var(--accent);
     }
   }
 
   &--vermillion {
-    border-color: rgba(196, 30, 58, 0.4);
+    border-color: var(--vermillion-40);
 
     .corner-pattern {
-      border-color: #c41e3a;
+      border-color: var(--vermillion);
     }
   }
 
@@ -69,8 +69,8 @@ defineProps({
     .corner-pattern {
       width: 24rpx;
       height: 24rpx;
-      border-top: 4rpx solid #5a3e2a;
-      border-left: 4rpx solid #5a3e2a;
+      border-top: 4rpx solid var(--border-light);
+      border-left: 4rpx solid var(--border-light);
       border-radius: 4rpx 0 0 0;
     }
   }

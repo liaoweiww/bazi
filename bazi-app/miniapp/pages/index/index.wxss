@@ -1,47 +1,80 @@
-.wrap{width:100%;padding:10px 14px 20px;min-height:100vh;box-sizing:border-box;overflow-x:hidden}
+.wrap{width:100%;padding:var(--spacing-page-padding);min-height:100vh;box-sizing:border-box;overflow-x:hidden;background:var(--bg-root);color:var(--text-primary);font-size:var(--font-size-body);font-family:var(--font-family-base)}
+
+/* ====== 设置按钮 ====== */
+.settings-btn{position:absolute;top:34px;right:0;width:36px;height:36px;display:flex;align-items:center;justify-content:center;z-index:10}
+.settings-icon{font-size:22px;color:var(--text-muted)}
+.settings-btn:active .settings-icon{color:var(--accent-light)}
 
 /* ====== 顶部标题 ====== */
 .hero{text-align:center;padding:30px 0 20px;position:relative}
+.hero-ink-wash{text-align:left;padding:20px 0 30px}
+.hero-title{font-size:var(--font-size-hero);color:var(--accent-light);font-weight:var(--font-weight-hero);letter-spacing:var(--letter-spacing-hero);position:relative;text-shadow:0 2px 10px var(--accent-20)}
+.hero-ink-wash .hero-title{font-size:30rpx;letter-spacing:8rpx;font-weight:300}
+.hero-sub{font-size:13px;color:var(--text-muted);letter-spacing:4px;position:relative;margin-top:8px}
+
+/* ====== 经典 Hero：三层同心圆环 ====== */
 .hero-bg{position:absolute;top:50%;left:50%;width:160px;height:160px;margin-left:-80px;margin-top:-80px}
+.hero-bg-ink{left:7%;margin-left:0;width:100px;height:140px;margin-top:-70px;opacity:0.4}
+.hero-bg-imperial{width:200px;height:80px;margin-left:-100px;margin-top:-40px}
+.hero-bg-celadon{width:180px;height:180px;margin-left:-90px;margin-top:-90px}
 .hero-ring{position:absolute;top:50%;left:50%;border-radius:50%;border-width:1px;border-style:solid}
-.r1{width:160px;height:160px;margin-left:-80px;margin-top:-80px;border-color:rgba(201,169,110,.08)}
-.r2{width:120px;height:120px;margin-left:-60px;margin-top:-60px;border-color:rgba(201,169,110,.12)}
-.r3{width:80px;height:80px;margin-left:-40px;margin-top:-40px;border-color:rgba(201,169,110,.18)}
-.hero-title{font-size:42px;color:#d4af37;font-weight:700;letter-spacing:12px;position:relative;text-shadow:0 2px 10px rgba(212,175,55,.2)}
-.hero-sub{font-size:13px;color:#8b7355;letter-spacing:4px;position:relative;margin-top:8px}
+.r1{width:160px;height:160px;margin-left:-80px;margin-top:-80px;border-color:var(--accent-08)}
+.r2{width:120px;height:120px;margin-left:-60px;margin-top:-60px;border-color:var(--accent-12)}
+.r3{width:80px;height:80px;margin-left:-40px;margin-top:-40px;border-color:var(--accent-20)}
+
+/* ====== 墨韵 Hero：墨点 + 笔触 ====== */
+.ink-splash{width:60px;height:60px;border-radius:50%;background:var(--accent-06);border:1px solid var(--accent-15);position:absolute;top:8px;left:16px;opacity:0.5}
+.ink-stroke{width:1px;height:90%;background:var(--accent-10);position:absolute;top:5%;left:6px;opacity:0.6}
+
+/* ====== 宫廷 Hero：矩形框架 + 角括号 + 横幅 ====== */
+.imp-frame{width:100%;height:100%;border:2px solid var(--accent-25);position:relative}
+.imp-corner{position:absolute;width:16px;height:16px;border-color:var(--accent-light);border-style:solid}
+.imp-c-tl{top:-2px;left:-2px;border-width:3px 0 0 3px}
+.imp-c-tr{top:-2px;right:-2px;border-width:3px 3px 0 0}
+.imp-c-bl{bottom:-2px;left:-2px;border-width:0 0 3px 3px}
+.imp-c-br{bottom:-2px;right:-2px;border-width:0 3px 3px 0}
+.imp-banner{position:absolute;top:-6px;left:50%;width:60px;height:3px;margin-left:-30px;background:var(--vermillion);border-radius:1px}
+
+/* ====== 青瓷 Hero：多层光圈 + 波浪底 ====== */
+.ce-crackle{width:100%;height:100%;border-radius:50%;border:2px solid var(--accent-06);background:var(--accent-04);opacity:var(--decoration-hero-opacity)}
+.ce-wave{position:absolute;bottom:0;left:15%;width:70%;height:3px;background:var(--accent-20);border-radius:2px}
 
 /* ====== 太极图 ====== */
 .bagua{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:18px}
-.bline{width:40px;height:1px;background-color:rgba(201,169,110,.2)}
-.yy-wrap{width:36px;height:36px;border-radius:50%;background-color:rgba(0,0,0,.2);border:1px solid rgba(201,169,110,.15);position:relative;overflow:hidden}
-.yy-left{position:absolute;top:0;left:0;width:50%;height:100%;border-radius:100% 0 0 100%/50% 0 0 50%;background-color:rgba(201,169,110,.2)}
-.yy-right{position:absolute;top:0;right:0;width:50%;height:100%;border-radius:0 100% 100% 0/0 50% 50% 0;background-color:rgba(139,115,85,.08)}
+.bline{width:40px;height:var(--decoration-divider-width);background:var(--accent-20)}
+.yy-wrap{width:36px;height:36px;border-radius:50%;background:var(--yy-wrap-bg);border:1px solid var(--accent-15);position:relative;overflow:hidden}
+.yy-left{position:absolute;top:0;left:0;width:50%;height:100%;border-radius:100% 0 0 100%/50% 0 0 50%;background:var(--accent-20)}
+.yy-right{position:absolute;top:0;right:0;width:50%;height:100%;border-radius:0 100% 100% 0/0 50% 50% 0;background:var(--yy-right-bg)}
 
 /* ====== 表单卡片 ====== */
-.card{background:rgba(19,12,6,.6);border:1px solid #2a1f14;border-top:1px solid rgba(201,169,110,.15);border-radius:12px;padding:14px;margin-bottom:14px}
+.card{background:var(--bg-card);border:var(--border-width-card) var(--border-style-card) var(--border-color);border-top:var(--border-width-card) var(--border-style-card) var(--accent-15);border-radius:var(--radius-card);padding:14px;margin-bottom:14px}
 
 /* ====== 表单字段 ====== */
-.fg{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid rgba(51,36,24,.3)}
+.fg{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border-40)}
 .fg:last-child{border-bottom:none;margin-bottom:0}
-.fl{display:flex;align-items:center;gap:6px;margin-bottom:8px;font-size:14px;color:#c9a96e;letter-spacing:3px}
-.fl-icon{font-size:16px}
-.fi{width:100%;height:42px;background:rgba(0,0,0,.15);border:1px solid rgba(51,36,24,.4);border-radius:8px;padding:0 12px;font-size:14px;color:#f5f0e8;box-sizing:border-box}
+.fl{display:flex;align-items:center;gap:6px;margin-bottom:8px;font-size:var(--font-size-body);color:var(--accent);letter-spacing:3px}
+.fl-icon{font-size:16px;color:var(--accent)}
+.fi{width:100%;height:42px;background:var(--bg-input);border:1px solid var(--border-40);border-radius:var(--radius-input);padding:0 12px;font-size:var(--font-size-body);color:var(--text-primary);box-sizing:border-box}
 
 /* ====== 日期行 ====== */
 .dr{display:flex;gap:8px}
 .dr .fi{flex:1;text-align:center}
 
 /* ====== 切换按钮 ====== */
-.tog{display:flex;gap:0;border-radius:8px;overflow:hidden;border:1px solid rgba(51,36,24,.4)}
-.tog view{flex:1;text-align:center;padding:10px 0;font-size:13px;color:#9a8e7e;background:rgba(0,0,0,.1)}
-.tog view.on{background:rgba(201,169,110,.1);color:#d4af37;font-weight:700}
+.tog{display:flex;gap:0;border-radius:var(--radius-toggle);overflow:hidden;border:1px solid var(--border-40)}
+.tog view{flex:1;text-align:center;padding:10px 0;font-size:var(--font-size-caption);color:var(--text-body);background:rgba(0,0,0,.1)}
+.tog view.on{background:var(--accent-10);color:var(--accent-light);font-weight:var(--font-weight-strong)}
 
 /* ====== 排盘按钮 ====== */
-.btn-go{background-color:#b22222;border-radius:12px;padding:16px;text-align:center;margin-top:16px;box-shadow:0 6px 20px rgba(139,0,0,.3)}
+.btn-go{background:var(--btn-go-bg);border-radius:var(--btn-go-border-radius);padding:var(--spacing-btn-padding);text-align:center;margin-top:16px;box-shadow:var(--shadow-btn)}
 .btn-go-inner{display:flex;flex-direction:column;align-items:center}
-.btn-go-main{font-size:20px;color:#e0c68c;font-weight:700;letter-spacing:8px}
-.btn-go-sub{font-size:10px;color:rgba(224,198,140,.5);letter-spacing:4px;margin-top:2px}
+.btn-go-main{font-size:var(--btn-go-font-size);color:var(--accent-light);font-weight:var(--font-weight-hero);letter-spacing:var(--btn-go-letter-spacing)}
+.btn-go-sub{font-size:10px;color:var(--accent-50);letter-spacing:4px;margin-top:2px}
 
 /* ====== 脚注 ====== */
-.foot{text-align:center;font-size:10px;color:#5a4a3a;padding:12px 0 4px;letter-spacing:2px}
-.foot-ver{text-align:center;font-size:10px;color:#4a3a2a;padding:0 0 20px;letter-spacing:1px}
+.foot{text-align:center;font-size:var(--font-size-caption);color:var(--text-placeholder);padding:12px 0 4px;letter-spacing:2px}
+.foot-ver{text-align:center;font-size:var(--font-size-caption);color:var(--text-subtle);padding:0 0 20px;letter-spacing:1px}
+
+/* ====== 主题专属卡片 ====== */
+.theme-imperial .card{border:2px solid var(--border-color);box-shadow:0 0 0 1px var(--accent-10)}
+.theme-celadon .card::before{background:linear-gradient(90deg,transparent 0%,var(--accent-08) 20%,var(--accent-15) 50%,var(--accent-08) 80%,transparent 100%);border-radius:0 0 50% 50%}

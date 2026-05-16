@@ -19,6 +19,8 @@
               'dayun-timeline__item--active': activeIndex === index,
               'dayun-timeline__item--current': item.isCurrent
             }"
+            role="option"
+            :aria-selected="activeIndex === index ? 'true' : 'false'"
             @tap="selectDayun(index)"
           >
             <!-- 节点 -->
@@ -114,7 +116,7 @@ watch(() => props.dayunList, (list) => {
       right: 0;
       top: 48rpx;
       height: 2rpx;
-      background: linear-gradient(90deg, transparent 0%, rgba(201, 169, 110, 0.3) 10%, rgba(201, 169, 110, 0.5) 50%, rgba(201, 169, 110, 0.3) 90%, transparent 100%);
+      background: linear-gradient(90deg, transparent 0%, var(--accent-30) 10%, var(--accent-50) 50%, var(--accent-30) 90%, transparent 100%);
     }
   }
 
@@ -134,24 +136,26 @@ watch(() => props.dayunList, (list) => {
     flex-direction: column;
     align-items: center;
     min-width: 140rpx;
-    padding: 16rpx 10rpx;
+    padding: 20rpx 10rpx;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: color 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
     position: relative;
+    user-select: none;
+    -webkit-user-select: none;
 
     &--active {
       .dayun-timeline__node-inner {
-        background: #d4af37;
+        background: var(--accent-light);
         box-shadow: 0 0 12rpx rgba(212, 175, 55, 0.6);
         width: 16rpx;
         height: 16rpx;
       }
       .dayun-timeline__age {
-        color: #d4af37;
+        color: var(--accent-light);
       }
       .dayun-timeline__gan,
       .dayun-timeline__zhi {
-        color: #f5f0e8;
+        color: var(--text-primary);
       }
     }
 
@@ -165,7 +169,7 @@ watch(() => props.dayunList, (list) => {
           right: -4rpx;
           bottom: -4rpx;
           border-radius: 50%;
-          border: 2rpx solid rgba(212, 175, 55, 0.4);
+          border: 2rpx solid var(--accent-40);
           animation: pulse-ring 2s ease-out infinite;
         }
       }
@@ -186,14 +190,14 @@ watch(() => props.dayunList, (list) => {
       width: 10rpx;
       height: 10rpx;
       border-radius: 50%;
-      background: rgba(201, 169, 110, 0.3);
-      transition: all 0.3s ease;
+      background: var(--accent-30);
+      transition: color 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
     }
   }
 
   &__age {
     font-size: 22rpx;
-    color: #8b7355;
+    color: var(--text-muted);
     margin-bottom: 4rpx;
     font-family: 'STKaiti', 'KaiTi', '楷体', serif;
     transition: color 0.3s ease;
@@ -208,9 +212,9 @@ watch(() => props.dayunList, (list) => {
   &__gan,
   &__zhi {
     font-size: 24rpx;
-    color: #8b7355;
+    color: var(--text-muted);
     font-family: 'STKaiti', 'KaiTi', '楷体', serif;
-    background: rgba(42, 26, 16, 0.6);
+    background: var(--bg-card);
     padding: 2rpx 10rpx;
     border-radius: 6rpx;
     transition: color 0.3s ease;
@@ -218,7 +222,7 @@ watch(() => props.dayunList, (list) => {
 
   &__years {
     font-size: 18rpx;
-    color: #5a4a3a;
+    color: var(--text-placeholder);
   }
 
   // 详情区
@@ -236,7 +240,7 @@ watch(() => props.dayunList, (list) => {
 
   .detail-age {
     font-size: 28rpx;
-    color: #d4af37;
+    color: var(--accent-light);
     font-family: 'STKaiti', 'KaiTi', '楷体', serif;
   }
 
@@ -254,12 +258,12 @@ watch(() => props.dayunList, (list) => {
 
   .detail-years {
     font-size: 24rpx;
-    color: #f5f0e8;
+    color: var(--text-primary);
   }
 
   .detail-nayin {
     font-size: 22rpx;
-    color: #8b7355;
+    color: var(--text-muted);
     font-family: 'STKaiti', 'KaiTi', '楷体', serif;
   }
 }

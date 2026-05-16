@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="classic">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>易经八字 - 主题预览</title>
+<style>
+/* ===== 主题 CSS 变量 ===== */
+:root, [data-theme="classic"] {
+  --bg-root:#1a0a00;--bg-secondary:#2d1810;--bg-card:rgba(42,26,16,0.85);
+  --bg-card-solid:#2a1a10;--bg-input:rgba(26,10,0,0.5);
+  --bg-nav:rgba(26,10,0,0.98);--bg-nav-transparent:rgba(26,10,0,0.85);
+  --text-primary:#f5f0e8;--text-muted:#8b7355;--text-placeholder:#5a4a3a;
+  --accent:#c9a96e;--accent-light:#d4af37;--accent-08:rgba(201,169,110,0.08);
+  --accent-15:rgba(201,169,110,0.15);--accent-30:rgba(201,169,110,0.3);
+  --accent-40:rgba(201,169,110,0.4);--accent-50:rgba(201,169,110,0.5);
+  --vermillion:#c41e3a;--vermillion-dark:#8b0000;--vermillion-light:#e06070;
+  --vermillion-12:rgba(196,30,58,0.12);--vermillion-15:rgba(196,30,58,0.15);
+  --vermillion-30:rgba(196,30,58,0.3);--border-color:#3d2b1a;--border-light:#5a3e2a;
+  --border-50:rgba(61,43,26,0.5);--shadow-card:0 4px 20px rgba(0,0,0,0.4);
+  --scrollbar-thumb:rgba(201,169,110,0.3);--tap-highlight:rgba(201,169,110,0.15);
+}
+[data-theme="ink-wash"] {
+  --bg-root:#0a0a0c;--bg-secondary:#121215;--bg-card:rgba(22,22,26,0.88);
+  --bg-card-solid:#16161a;--bg-input:rgba(16,16,20,0.6);
+  --bg-nav:rgba(10,10,12,0.98);--bg-nav-transparent:rgba(10,10,12,0.85);
+  --text-primary:#e0dcd6;--text-muted:#70685e;--text-placeholder:#484038;
+  --accent:#b0a89e;--accent-light:#c8c0b6;--accent-08:rgba(176,168,158,0.08);
+  --accent-15:rgba(176,168,158,0.15);--accent-30:rgba(176,168,158,0.3);
+  --accent-40:rgba(176,168,158,0.4);--accent-50:rgba(176,168,158,0.5);
+  --vermillion:#a07070;--vermillion-dark:#604040;--vermillion-light:#c09090;
+  --vermillion-12:rgba(160,112,112,0.12);--vermillion-15:rgba(160,112,112,0.15);
+  --vermillion-30:rgba(160,112,112,0.3);--border-color:#26262a;--border-light:#36363a;
+  --border-50:rgba(38,38,42,0.5);--shadow-card:0 4px 20px rgba(0,0,0,0.5);
+  --scrollbar-thumb:rgba(176,168,158,0.2);--tap-highlight:rgba(176,168,158,0.1);
+}
+[data-theme="imperial"] {
+  --bg-root:#0d0005;--bg-secondary:#1a0812;--bg-card:rgba(28,10,18,0.88);
+  --bg-card-solid:#1c0a12;--bg-input:rgba(13,0,5,0.55);
+  --bg-nav:rgba(13,0,5,0.98);--bg-nav-transparent:rgba(13,0,5,0.85);
+  --text-primary:#fff5e8;--text-muted:#9a7a6a;--text-placeholder:#5a3035;
+  --accent:#e8c840;--accent-light:#f0d860;--accent-08:rgba(232,200,64,0.08);
+  --accent-15:rgba(232,200,64,0.15);--accent-30:rgba(232,200,64,0.3);
+  --accent-40:rgba(232,200,64,0.4);--accent-50:rgba(232,200,64,0.5);
+  --vermillion:#d42030;--vermillion-dark:#8b1018;--vermillion-light:#f05050;
+  --vermillion-12:rgba(212,32,48,0.12);--vermillion-15:rgba(212,32,48,0.15);
+  --vermillion-30:rgba(212,32,48,0.3);--border-color:#3d1520;--border-light:#5a2030;
+  --border-50:rgba(61,21,32,0.5);--shadow-card:0 4px 20px rgba(0,0,0,0.45);
+  --scrollbar-thumb:rgba(232,200,64,0.25);--tap-highlight:rgba(232,200,64,0.15);
+}
+[data-theme="celadon"] {
+  --bg-root:#0a1512;--bg-secondary:#142520;--bg-card:rgba(16,32,28,0.88);
+  --bg-card-solid:#10201c;--bg-input:rgba(10,21,18,0.55);
+  --bg-nav:rgba(10,21,18,0.98);--bg-nav-transparent:rgba(10,21,18,0.85);
+  --text-primary:#e8f0ec;--text-muted:#5a7a6a;--text-placeholder:#3a5045;
+  --accent:#8cc4a8;--accent-light:#a0d8b8;--accent-08:rgba(140,196,168,0.08);
+  --accent-15:rgba(140,196,168,0.15);--accent-30:rgba(140,196,168,0.3);
+  --accent-40:rgba(140,196,168,0.4);--accent-50:rgba(140,196,168,0.5);
+  --vermillion:#c08060;--vermillion-dark:#8a5040;--vermillion-light:#e0a080;
+  --vermillion-12:rgba(192,128,96,0.12);--vermillion-15:rgba(192,128,96,0.15);
+  --vermillion-30:rgba(192,128,96,0.3);--border-color:#1a3028;--border-light:#2a4038;
+  --border-50:rgba(26,48,40,0.5);--shadow-card:0 4px 20px rgba(0,0,0,0.4);
+  --scrollbar-thumb:rgba(140,196,168,0.2);--tap-highlight:rgba(140,196,168,0.12);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: var(--bg-root);
+  color: var(--text-primary);
+  font-family: -apple-system,BlinkMacSystemFont,'PingFang SC','STKaiti',sans-serif;
+  min-height: 100vh;
+  transition: background 0.5s ease, color 0.5s ease;
+}
+
+/* 导航栏 */
+.nav-bar {
+  position: sticky; top: 0; z-index: 100;
+  background: linear-gradient(180deg, var(--bg-nav) 0%, var(--bg-nav-transparent) 100%);
+  backdrop-filter: blur(10px);
+  padding: 12px 24px;
+  text-align: center;
+  border-bottom: 1px solid var(--border-color);
+}
+.nav-title {
+  font-size: 22px;
+  color: var(--accent-light);
+  font-family: 'STKaiti','KaiTi','楷体',serif;
+  letter-spacing: 6px;
+}
+
+/* Hero 区 */
+.hero {
+  text-align: center;
+  padding: 30px 24px 10px;
+}
+.hero-title {
+  font-size: 42px;
+  color: var(--accent-light);
+  font-family: 'STKaiti','KaiTi','楷体',serif;
+  letter-spacing: 12px;
+  text-shadow: 0 2px 10px var(--accent-30);
+  margin-bottom: 8px;
+}
+.hero-subtitle {
+  font-size: 16px;
+  color: var(--text-muted);
+  letter-spacing: 4px;
+}
+
+/* 表单 */
+.form-card {
+  margin: 16px 16px;
+  padding: 16px;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-color);
+  border-radius: 12px;
+}
+.form-item { margin-bottom: 16px; }
+.form-label {
+  font-size: 13px; color: var(--accent); font-family: 'STKaiti','KaiTi','楷体',serif;
+  margin-bottom: 6px; display: flex; align-items: center; gap: 6px;
+}
+.form-label-icon {
+  width: 24px; height: 24px; border-radius: 6px;
+  background: var(--accent-15); border: 1px solid var(--accent-30);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 14px; color: var(--accent);
+}
+.form-input {
+  width: 100%; height: 40px; border-radius: 8px; border: 1px solid var(--border-50);
+  background: var(--bg-input); color: var(--text-primary); font-size: 15px;
+  padding: 0 12px;
+}
+.form-input::placeholder { color: var(--text-placeholder); }
+
+/* 按钮 */
+.btn-submit {
+  display: block; width: calc(100% - 48px); margin: 20px auto; padding: 18px;
+  background: linear-gradient(135deg, var(--vermillion) 0%, var(--vermillion-dark) 100%);
+  border: none; border-radius: 14px; font-size: 20px; cursor: pointer;
+  color: var(--accent-light); font-family: 'STKaiti','KaiTi','楷体',serif;
+  letter-spacing: 8px; font-weight: bold; text-align: center;
+  box-shadow: 0 6px 24px var(--vermillion-15);
+  transition: transform .15s, box-shadow .15s;
+}
+.btn-submit:active { transform: scale(.97); }
+
+/* 主题选择区 */
+.theme-section { padding: 0 16px 30px; }
+.theme-header {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+}
+.theme-header-line { flex: 1; height: 1px; background: linear-gradient(90deg, transparent, var(--accent-30), transparent); }
+.theme-header-text { font-size: 13px; color: var(--text-muted); font-family: 'STKaiti','KaiTi','楷体',serif; letter-spacing: 4px; white-space: nowrap; }
+.theme-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+.theme-option {
+  flex: 0 0 calc(50% - 5px); display: flex; align-items: center; gap: 10px;
+  padding: 12px 14px; border-radius: 12px; cursor: pointer;
+  background: var(--bg-card); border: 1.5px solid var(--border-color);
+  transition: border-color .25s, background .25s;
+}
+.theme-option:hover { border-color: var(--accent-40); background: var(--bg-card-solid); }
+.theme-option.active { border-color: var(--accent-light); background: var(--accent-08); }
+.theme-preview {
+  display: flex; flex-direction: column; gap: 2px; width: 32px; height: 32px;
+  border-radius: 6px; overflow: hidden; flex-shrink: 0; border: 1px solid var(--border-50);
+}
+.theme-preview span { flex: 1; }
+.theme-name { font-size: 15px; font-weight: bold; color: var(--text-primary); font-family: 'STKaiti','KaiTi','楷体',serif; flex: 1; }
+.theme-check {
+  width: 24px; height: 24px; border-radius: 50%; background: var(--accent-light);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  color: var(--bg-root); font-weight: bold; font-size: 14px;
+}
+.theme-desc {
+  font-size: 12px; color: var(--text-muted); margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* 浮动主题按钮 */
+.float-btn {
+  position: fixed; bottom: 30px; right: 16px; z-index: 999;
+  display: flex; align-items: center; gap: 6px; padding: 12px 18px;
+  border-radius: 28px; cursor: pointer;
+  background: var(--bg-card); border: 1.5px solid var(--accent-30);
+  box-shadow: var(--shadow-card); transition: transform .15s;
+  animation: pulse 2.5s ease-in-out infinite;
+}
+.float-btn:active { transform: scale(.95); }
+.float-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent-light), var(--vermillion-light));
+}
+.float-text { font-size: 13px; color: var(--accent); font-family: 'STKaiti','KaiTi','楷体',serif; }
+@keyframes pulse {
+  0%,100% { box-shadow: var(--shadow-card); }
+  50% { box-shadow: 0 0 0 6px var(--accent-15), var(--shadow-card); }
+}
+
+/* 底部弹出面板 */
+.backdrop {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(0,0,0,0); transition: background .35s;
+  pointer-events: none;
+}
+.backdrop.show { background: rgba(0,0,0,.5); pointer-events: auto; }
+.sheet {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 1001;
+  background: var(--bg-card-solid); border-radius: 24px 24px 0 0;
+  padding: 0 20px; transform: translateY(100%);
+  transition: transform .35s cubic-bezier(.32,.72,0,1);
+  box-shadow: 0 -6px 30px rgba(0,0,0,.5);
+}
+.sheet.show { transform: translateY(0); }
+.sheet-handle {
+  width: 44px; height: 5px; background: var(--border-light);
+  border-radius: 3px; margin: 12px auto 0;
+}
+.sheet-title {
+  text-align: center; padding: 20px 0 14px;
+  font-size: 20px; font-family: 'STKaiti','KaiTi','楷体',serif;
+  color: var(--text-primary); font-weight: bold;
+}
+.sheet-item {
+  display: flex; align-items: center; gap: 14px; padding: 14px; margin-bottom: 8px;
+  border-radius: 12px; border: 1.5px solid var(--border-color);
+  background: var(--bg-card); cursor: pointer; transition: border-color .25s, background .25s;
+}
+.sheet-item:hover { border-color: var(--accent-30); }
+.sheet-item.active { border-color: var(--accent-40); background: var(--accent-08); }
+.sheet-safe { height: 28px; }
+
+/* Toast */
+.toast {
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  background: var(--bg-card-solid); color: var(--text-primary); z-index: 9999;
+  padding: 10px 24px; border-radius: 8px; font-size: 15px;
+  font-family: 'STKaiti','KaiTi','楷体',serif; opacity: 0; transition: opacity .3s;
+  pointer-events: none; border: 1px solid var(--border-color);
+}
+.toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="nav-bar">
+  <div class="nav-title">易经八字</div>
+</div>
+
+<div class="hero">
+  <div class="hero-title">易经八字</div>
+  <div class="hero-subtitle">探寻命理玄机，洞悉人生轨迹</div>
+</div>
+
+<div class="form-card">
+  <div class="form-item">
+    <div class="form-label"><div class="form-label-icon">姓</div>姓名</div>
+    <input class="form-input" placeholder="请输入姓名…">
+  </div>
+  <div class="form-item">
+    <div class="form-label"><div class="form-label-icon">诞</div>出生日期</div>
+    <input class="form-input" placeholder="请选择公历出生日期…">
+  </div>
+  <div class="form-item">
+    <div class="form-label"><div class="form-label-icon">时</div>出生时间</div>
+    <input class="form-input" placeholder="请选择出生时间…">
+  </div>
+</div>
+
+<button class="btn-submit" onclick="showToast('排盘功能演示中…')">开 始 排 盘</button>
+
+<div class="theme-section">
+  <div class="theme-header">
+    <div class="theme-header-line"></div>
+    <span class="theme-header-text">界 面 风 格</span>
+    <div class="theme-header-line"></div>
+  </div>
+  <div class="theme-grid" id="themeGrid"></div>
+</div>
+
+<!-- 浮动按钮 -->
+<div class="float-btn" onclick="toggleSheet()">
+  <div class="float-dot"></div>
+  <span class="float-text">主题</span>
+</div>
+
+<!-- 底部面板 -->
+<div class="backdrop" id="backdrop" onclick="toggleSheet()"></div>
+<div class="sheet" id="sheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-title">界面风格</div>
+  <div id="sheetList"></div>
+  <div class="sheet-safe"></div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+const STORAGE_KEY = 'bazi_theme_demo'
+const themes = [
+  { id:'classic',  name:'经典暗金', desc:'温暖深棕底色，鎏金点缀，传统中式美学', previewBg:'#1a0a00', previewAccent:'#d4af37' },
+  { id:'ink-wash', name:'墨韵',     desc:'纯黑水墨基调，银白素雅，极简禅意画风', previewBg:'#0a0a0c', previewAccent:'#c8c0b6' },
+  { id:'imperial', name:'宫廷',     desc:'深红宫墙底色，明亮鎏金，皇家奢华气质', previewBg:'#0d0005', previewAccent:'#e8c840' },
+  { id:'celadon',  name:'青瓷',     desc:'青绿釉色基底，瓷质温润，江南雅致韵味', previewBg:'#0a1512', previewAccent:'#a0d8b8' },
+]
+
+function getTheme() { return localStorage.getItem(STORAGE_KEY) || 'classic' }
+function setTheme(id) {
+  document.documentElement.setAttribute('data-theme', id)
+  localStorage.setItem(STORAGE_KEY, id)
+  renderAll()
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast')
+  t.textContent = msg; t.classList.add('show')
+  setTimeout(() => t.classList.remove('show'), 1500)
+}
+
+let sheetOpen = false
+function toggleSheet() { sheetOpen = !sheetOpen; updateSheet() }
+function closeSheet() { sheetOpen = false; updateSheet() }
+function updateSheet() {
+  document.getElementById('backdrop').classList.toggle('show', sheetOpen)
+  document.getElementById('sheet').classList.toggle('show', sheetOpen)
+}
+
+function renderAll() {
+  const cur = getTheme()
+  // Grid
+  document.getElementById('themeGrid').innerHTML = themes.map(t => `
+    <div class="theme-option${t.id===cur?' active':''}" onclick="setTheme('${t.id}');showToast('已切换至「${t.name}」')">
+      <div class="theme-preview">
+        <span style="background:${t.previewBg}"></span>
+        <span style="background:${t.previewAccent}"></span>
+      </div>
+      <div style="flex:1;min-width:0"><div class="theme-name">${t.name}</div><div class="theme-desc">${t.desc}</div></div>
+      ${t.id===cur ? '<div class="theme-check">✓</div>' : ''}
+    </div>
+  `).join('')
+  // Sheet
+  document.getElementById('sheetList').innerHTML = themes.map(t => `
+    <div class="sheet-item${t.id===cur?' active':''}" onclick="setTheme('${t.id}');closeSheet();showToast('已切换至「${t.name}」')">
+      <div class="theme-preview"><span style="background:${t.previewBg}"></span><span style="background:${t.previewAccent}"></span></div>
+      <div style="flex:1;min-width:0"><div class="theme-name">${t.name}</div><div class="theme-desc">${t.desc}</div></div>
+      ${t.id===cur ? '<div class="theme-check">✓</div>' : ''}
+    </div>
+  `).join('')
+}
+
+// Init
+setTheme(getTheme())
+</script>
+
+</body>
+</html>

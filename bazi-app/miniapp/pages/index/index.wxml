@@ -1,15 +1,55 @@
-<scroll-view class="wrap" scroll-y scroll-x="{{false}}" enhanced show-scrollbar="{{false}}">
-  <view class="hero">
-    <view class="hero-bg">
-      <view class="hero-ring r1"></view>
-      <view class="hero-ring r2"></view>
-      <view class="hero-ring r3"></view>
+<scroll-view class="wrap theme-root theme-{{currentTheme}}" style="{{themeStyle}}" scroll-y scroll-x="{{false}}" enhanced show-scrollbar="{{false}}">
+
+  <!-- ====== HERO：6套主题各不同 ====== -->
+  <view class="hero hero-{{currentTheme}}">
+
+    <!-- 经典：三层同心圆环 -->
+    <block wx:if="{{currentTheme === 'classic'}}">
+      <view class="hero-bg hero-bg-classic">
+        <view class="hero-ring r1"></view>
+        <view class="hero-ring r2"></view>
+        <view class="hero-ring r3"></view>
+      </view>
+    </block>
+
+    <!-- 墨韵：墨点渐变圆 + 竖向笔触线 -->
+    <block wx:elif="{{currentTheme === 'ink-wash'}}">
+      <view class="hero-bg hero-bg-ink">
+        <view class="ink-splash"></view>
+        <view class="ink-stroke"></view>
+      </view>
+    </block>
+
+    <!-- 宫廷：矩形框架 + 四个角括号 + 红色横幅 -->
+    <block wx:elif="{{currentTheme === 'imperial'}}">
+      <view class="hero-bg hero-bg-imperial">
+        <view class="imp-frame">
+          <view class="imp-corner imp-c-tl"></view>
+          <view class="imp-corner imp-c-tr"></view>
+          <view class="imp-corner imp-c-bl"></view>
+          <view class="imp-corner imp-c-br"></view>
+        </view>
+        <view class="imp-banner"></view>
+      </view>
+    </block>
+
+    <!-- 青瓷：开片纹圆底 + 水波纹弧线 -->
+    <block wx:elif="{{currentTheme === 'celadon'}}">
+      <view class="hero-bg hero-bg-celadon">
+        <view class="ce-crackle"></view>
+        <view class="ce-wave"></view>
+      </view>
+    </block>
+
+    <view class="settings-btn" bindtap="goSettings">
+      <text class="settings-icon">{{icons.settings}}</text>
     </view>
     <view class="hero-title">易 经 八 字</view>
     <view class="hero-sub">探寻命理玄机 · 洞悉人生轨迹</view>
   </view>
 
-  <view class="bagua">
+  <!-- ====== 太极图：墨韵不显示 ====== -->
+  <view class="bagua" wx:if="{{currentTheme !== 'ink-wash'}}">
     <view class="bline"></view>
     <view class="yy-wrap">
       <view class="yy-left"></view>
@@ -20,28 +60,28 @@
 
   <view class="card">
     <view class="fg">
-      <view class="fl"><text class="fl-icon">👤</text>姓 名</view>
+      <view class="fl"><text class="fl-icon">{{icons.name}}</text>姓 名</view>
       <input class="fi" placeholder="请输入姓名" value="{{name}}" bindinput="onName" maxlength="20"/>
     </view>
 
     <view class="fg">
-      <view class="fl"><text class="fl-icon">⚧</text>性 别</view>
+      <view class="fl"><text class="fl-icon">{{icons.gender}}</text>性 别</view>
       <view class="tog">
-        <view class="{{gender==='男'?'on':''}}" data-v="男" bindtap="onGender">☰ 乾 造（男）</view>
-        <view class="{{gender==='女'?'on':''}}" data-v="女" bindtap="onGender">☷ 坤 造（女）</view>
+        <view class="{{gender==='男'?'on':''}}" data-v="男" bindtap="onGender">{{icons.gender_male}} 乾 造（男）</view>
+        <view class="{{gender==='女'?'on':''}}" data-v="女" bindtap="onGender">{{icons.gender_female}} 坤 造（女）</view>
       </view>
     </view>
 
     <view class="fg">
-      <view class="fl"><text class="fl-icon">📅</text>历 法</view>
+      <view class="fl"><text class="fl-icon">{{icons.calendar}}</text>历 法</view>
       <view class="tog">
-        <view class="{{calType==='solar'?'on':''}}" data-v="solar" bindtap="onCal">☀ 公 历</view>
-        <view class="{{calType==='lunar'?'on':''}}" data-v="lunar" bindtap="onCal">🌙 农 历</view>
+        <view class="{{calType==='solar'?'on':''}}" data-v="solar" bindtap="onCal">{{icons.calendar_solar}} 公 历</view>
+        <view class="{{calType==='lunar'?'on':''}}" data-v="lunar" bindtap="onCal">{{icons.calendar_lunar}} 农 历</view>
       </view>
     </view>
 
     <view class="fg" wx:if="{{calType==='solar'}}">
-      <view class="fl"><text class="fl-icon">🎂</text>出生日期（公历）</view>
+      <view class="fl"><text class="fl-icon">{{icons.birth}}</text>出生日期（公历）</view>
       <view class="dr">
         <input class="fi" type="number" placeholder="年" value="{{sy}}" bindinput="onSy"/>
         <input class="fi" type="number" placeholder="月" value="{{sm}}" bindinput="onSm"/>
@@ -50,7 +90,7 @@
     </view>
 
     <view class="fg" wx:else>
-      <view class="fl"><text class="fl-icon">🎂</text>出生日期（农历）</view>
+      <view class="fl"><text class="fl-icon">{{icons.birth}}</text>出生日期（农历）</view>
       <view class="dr">
         <input class="fi" type="number" placeholder="年" value="{{ly}}" bindinput="onLy"/>
         <input class="fi" type="number" placeholder="月" value="{{lm}}" bindinput="onLm"/>
@@ -63,7 +103,7 @@
     </view>
 
     <view class="fg">
-      <view class="fl"><text class="fl-icon">🕐</text>出生时间</view>
+      <view class="fl"><text class="fl-icon">{{icons.time}}</text>出生时间</view>
       <view class="dr">
         <input class="fi" type="number" placeholder="时" value="{{fh}}" bindinput="onFh"/>
         <input class="fi" type="number" placeholder="分" value="{{fm}}" bindinput="onFm"/>

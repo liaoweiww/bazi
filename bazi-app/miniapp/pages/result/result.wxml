@@ -1,8 +1,8 @@
-<scroll-view class="wrap" scroll-y scroll-x="{{false}}" enhanced show-scrollbar="{{false}}" wx:if="{{loaded}}">
+<scroll-view class="wrap theme-root theme-{{currentTheme}}" style="{{themeStyle}}" scroll-y scroll-x="{{false}}" enhanced show-scrollbar="{{false}}" wx:if="{{loaded}}">
   <!-- ====== 八字命盘 ====== -->
   <view class="card">
     <view class="ct">
-      <text class="ct-icon">☯</text>八 字 命 盘
+      <text class="ct-icon">{{icons.bagua}}</text>八 字 命 盘
     </view>
     <view class="pgrid">
       <block wx:for="{{['year','month','day','hour']}}" wx:for-item="pk" wx:key="pk">
@@ -21,8 +21,8 @@
   <!-- ====== 出生信息（折叠） ====== -->
   <view class="card">
     <view class="ct ct-tap" data-key="showBirth" bindtap="toggleSection">
-      <text class="ct-icon">📋</text>出 生 信 息
-      <text class="ct-arrow">{{showBirth?'▲':'▼'}}</text>
+      <text class="ct-icon">{{icons.birth_info}}</text>出 生 信 息
+      <text class="ct-arrow">{{showBirth?icons.section_expand:icons.section_collapse}}</text>
     </view>
     <view wx:if="{{showBirth}}">
       <view class="ir"><text class="dim">公历</text><text>{{birth.solar_date}} {{birth.solar_time}}</text></view>
@@ -34,7 +34,7 @@
 
   <!-- ====== 格局喜用 ====== -->
   <view class="card">
-    <view class="ct"><text class="ct-icon">🏛</text>格 局 与 喜 用 神</view>
+    <view class="ct"><text class="ct-icon">{{icons.geju}}</text>格 局 与 喜 用 神</view>
     <view class="gold" style="font-size:17px">{{geju.type}} · {{geju.name}}</view>
     <view class="dim" style="font-size:13px;margin:6px 0">{{geju.analysis}}</view>
     <view class="mb8"><view class="dim" style="font-size:11px">喜用神</view>
@@ -48,14 +48,14 @@
 
   <!-- ====== 五行力量 ====== -->
   <view class="card">
-    <view class="ct"><text class="ct-icon">⭐</text>五 行 力 量</view>
+    <view class="ct"><text class="ct-icon">{{icons.wuxing}}</text>五 行 力 量</view>
     <view wx:for="{{['金','木','水','火','土']}}" wx:key="*this" style="margin-bottom:8px">
       <view style="display:flex;align-items:center;gap:8px">
-        <text style="width:20px;font-size:14px;color:{{item==='金'?'#ddd5c5':item==='木'?'#5b8c5a':item==='水'?'#4a7098':item==='火'?'#c44536':'#c9a96e'}}">{{item}}</text>
-        <view style="flex:1;height:8px;background:rgba(0,0,0,.2);border-radius:4px;overflow:hidden">
-          <view style="height:100%;border-radius:4px;background:{{item==='金'?'#ddd5c5':item==='木'?'#5b8c5a':item==='水'?'#4a7098':item==='火'?'#c44536':'#c9a96e'}};width:{{wxCount[item].score/3*100}}%"></view>
+        <text class="wx-label {{item==='金'?'wx-jin':item==='木'?'wx-mu':item==='水'?'wx-shui':item==='火'?'wx-huo':'wx-tu'}}">{{item}}</text>
+        <view class="wx-bar-track">
+          <view class="wx-bar-fill {{item==='金'?'wx-jin':item==='木'?'wx-mu':item==='水'?'wx-shui':item==='火'?'wx-huo':'wx-tu'}}" style="width:{{wxCount[item].score/3*100}}%"></view>
         </view>
-        <text style="font-size:11px;color:#9a8e7e;width:30px">{{wxCount[item].score}}分</text>
+        <text class="wx-score">{{wxCount[item].score}}分</text>
       </view>
     </view>
     <view class="tc mt8"><view class="st-badge {{strength.level.indexOf('强')>=0?'st-s':strength.level.indexOf('弱')>=0?'st-w':'st-n'}}">{{strength.level}}</view></view>
@@ -65,8 +65,8 @@
   <!-- ====== 年运分析 ====== -->
   <view class="card" wx:if="{{yearFortune}}">
     <view class="ct ct-tap" data-key="showYearFortune" bindtap="toggleSection">
-      <text class="ct-icon">🔮</text>年 运 分 析
-      <text class="ct-arrow">{{showYearFortune?'▲':'▼'}}</text>
+      <text class="ct-icon">{{icons.year_fortune}}</text>年 运 分 析
+      <text class="ct-arrow">{{showYearFortune?icons.section_expand:icons.section_collapse}}</text>
     </view>
     <view wx:if="{{showYearFortune}}">
       <view class="year-nav">
@@ -89,8 +89,8 @@
   <!-- ====== 时运分析 ====== -->
   <view class="card" wx:if="{{currentFortune}}">
     <view class="ct ct-tap" data-key="showCurrentFortune" bindtap="toggleSection">
-      <text class="ct-icon">⏳</text>时 运 分 析
-      <text class="ct-arrow">{{showCurrentFortune?'▲':'▼'}}</text>
+      <text class="ct-icon">{{icons.current_fortune}}</text>时 运 分 析
+      <text class="ct-arrow">{{showCurrentFortune?icons.section_expand:icons.section_collapse}}</text>
     </view>
     <view wx:if="{{showCurrentFortune}}">
       <view class="fn-gz">当前 {{currentFortune.current_age}} 岁 · {{currentFortune.dayun.ganzhi}}大运</view>
@@ -105,8 +105,8 @@
   <!-- ====== 大运详情（折叠） ====== -->
   <view class="card">
     <view class="ct ct-tap" data-key="showDayunDetail" bindtap="toggleSection">
-      <text class="ct-icon">📈</text>大 运 流 程
-      <text class="ct-arrow">{{showDayunDetail?'▲':'▼'}}</text>
+      <text class="ct-icon">{{icons.dayun}}</text>大 运 流 程
+      <text class="ct-arrow">{{showDayunDetail?icons.section_expand:icons.section_collapse}}</text>
     </view>
     <view wx:if="{{showDayunDetail}}">
       <view class="dim" style="font-size:12px;margin-bottom:8px">起运 <text class="gold">{{dayun.start_age}}</text> 岁 · {{dayun.direction}}</view>
@@ -134,8 +134,8 @@
   <!-- ====== 破解法 ====== -->
   <view class="card" wx:if="{{remedy}}">
     <view class="ct ct-tap" data-key="showRemedy" bindtap="toggleSection">
-      <text class="ct-icon">💡</text>破 解 与 补 益
-      <text class="ct-arrow">{{showRemedy?'▲':'▼'}}</text>
+      <text class="ct-icon">{{icons.remedy}}</text>破 解 与 补 益
+      <text class="ct-arrow">{{showRemedy?icons.section_expand:icons.section_collapse}}</text>
     </view>
     <view wx:if="{{showRemedy}}">
       <view wx:if="{{remedy.missing_elements.length}}">
@@ -170,7 +170,7 @@
 
   <!-- ====== 胎元命宫身宫 ====== -->
   <view class="card">
-    <view class="ct"><text class="ct-icon">🏠</text>胎 元 · 命 宫 · 身 宫</view>
+    <view class="ct"><text class="ct-icon">{{icons.taiyuan}}</text>胎 元 · 命 宫 · 身 宫</view>
     <view style="display:flex;gap:20px;justify-content:center;text-align:center">
       <view><view class="dim" style="font-size:10px">胎元</view><view class="gold" style="font-size:18px">{{taiyuan}}</view></view>
       <view><view class="dim" style="font-size:10px">命宫</view><view class="gold" style="font-size:18px">{{minggong}}</view></view>
@@ -182,8 +182,8 @@
   <!-- ====== 神煞（折叠） ====== -->
   <view class="card" wx:if="{{shensha}}">
     <view class="ct ct-tap" data-key="showShensha" bindtap="toggleSection">
-      <text class="ct-icon">🔱</text>神 煞
-      <text class="ct-arrow">{{showShensha?'▲':'▼'}}</text>
+      <text class="ct-icon">{{icons.shensha}}</text>神 煞
+      <text class="ct-arrow">{{showShensha?icons.section_expand:icons.section_collapse}}</text>
     </view>
     <view class="tags" wx:if="{{showShensha}}">
       <block wx:for="{{shensha}}" wx:for-item="items" wx:for-index="name" wx:key="name">
@@ -196,7 +196,7 @@
 
   <!-- ====== 十二长生 ====== -->
   <view class="card">
-    <view class="ct"><text class="ct-icon">🌱</text>十 二 长 生</view>
+    <view class="ct"><text class="ct-icon">{{icons.changsheng}}</text>十 二 长 生</view>
     <view style="display:flex;gap:8px;text-align:center;font-size:11px">
       <block wx:for="{{['year','month','day','hour']}}" wx:for-item="pk" wx:key="pk">
         <view wx:if="{{changsheng[pk]}}" style="flex:1">
@@ -211,8 +211,8 @@
   <!-- ====== 白话解读 ====== -->
   <view class="card" wx:if="{{vernacular}}">
     <view class="ct ct-tap" data-key="showVernacular" bindtap="toggleSection">
-      <text class="ct-icon">📜</text>白 话 解 读
-      <text class="ct-arrow">{{showVernacular?'▲':'▼'}}</text>
+      <text class="ct-icon">{{icons.vernacular}}</text>白 话 解 读
+      <text class="ct-arrow">{{showVernacular?icons.section_expand:icons.section_collapse}}</text>
     </view>
     <view wx:if="{{showVernacular}}">
       <view wx:if="{{vernacular['日主概述']}}" class="vd">{{vernacular['日主概述']}}</view>
@@ -230,8 +230,8 @@
   <!-- ====== 如何把控（折叠） ====== -->
   <view class="card" wx:if="{{controlGuide}}">
     <view class="ct ct-tap" data-key="showControl" bindtap="toggleSection">
-      <text class="ct-icon">🎯</text>如 何 把 控 人 生
-      <text class="ct-arrow">{{showControl?'▲':'▼'}}</text>
+      <text class="ct-icon">{{icons.control}}</text>如 何 把 控 人 生
+      <text class="ct-arrow">{{showControl?icons.section_expand:icons.section_collapse}}</text>
     </view>
     <view wx:if="{{showControl}}">
       <view class="dim fn-text">{{controlGuide.overview}}</view>
@@ -255,8 +255,8 @@
   <!-- ====== 参考书籍（折叠） ====== -->
   <view class="card" wx:if="{{books}}">
     <view class="ct ct-tap" data-key="showBooks" bindtap="toggleSection">
-      <text class="ct-icon">📚</text>参 考 书 籍
-      <text class="ct-arrow">{{showBooks?'▲':'▼'}}</text>
+      <text class="ct-icon">{{icons.books}}</text>参 考 书 籍
+      <text class="ct-arrow">{{showBooks?icons.section_expand:icons.section_collapse}}</text>
     </view>
     <view wx:if="{{showBooks}}">
       <block wx:for="{{books}}" wx:key="id">
@@ -296,8 +296,8 @@
   <!-- ====== 四大运势总结 ====== -->
   <view class="card" wx:if="{{lifeSummary}}">
     <view class="ct ct-tap" data-key="showLifeSummary" bindtap="toggleSection">
-      <text class="ct-icon">🌟</text>四 大 运 势 总 结
-      <text class="ct-arrow">{{showLifeSummary?'▲':'▼'}}</text>
+      <text class="ct-icon">{{icons.life_summary}}</text>四 大 运 势 总 结
+      <text class="ct-arrow">{{showLifeSummary?icons.section_expand:icons.section_collapse}}</text>
     </view>
     <view wx:if="{{showLifeSummary}}">
       <view class="dim fn-text" style="margin-bottom:12px">{{lifeSummary.overview}}</view>
@@ -331,7 +331,7 @@
   </view>
 
   <view class="btn btn-back" bindtap="goBack">
-    <text class="btn-icon">🔄</text> 重 新 排 盘
+    <text class="btn-icon">{{icons.back}}</text> 重 新 排 盘
   </view>
   <view style="height:40px"></view>
 </scroll-view>

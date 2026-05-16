@@ -1,7 +1,10 @@
 const app = getApp()
+const theme = require('../../utils/theme')
+
 Page({
   data: {
     loaded: false,
+    themeStyle: '', currentTheme: '', icons: {},
     // 折叠状态
     showBirth: false,
     showShensha: false,
@@ -18,7 +21,16 @@ Page({
     // 大运选中
     selectedDayunIndex: -1
   },
+
+  applyTheme() {
+    const t = app.globalData.theme || theme.getCurrentTheme()
+    const style = theme.getThemeStyle(t)
+    const icons = theme.getIconSet(t)
+    this.setData({ themeStyle: style, currentTheme: t, icons: icons })
+  },
+
   onLoad() {
+    this.applyTheme()
     const d = app.globalData.paipanResult
     if (!d) {
       wx.showToast({ title: '请先排盘', icon: 'none' })
@@ -127,6 +139,13 @@ Page({
       },
       fail: err => fail('life-summary', err)
     })
+  },
+
+  onShow() {
+    this.applyTheme()
+    const t = app.globalData.theme || theme.getCurrentTheme()
+    const nc = theme.navBarColors[t]
+    if (nc) wx.setNavigationBarColor({ frontColor: nc.front, backgroundColor: nc.bg })
   },
 
   // 折叠切换

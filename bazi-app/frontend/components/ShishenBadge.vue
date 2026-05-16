@@ -50,86 +50,86 @@ defineProps({
 
   // 日主 - 鎏金
   &--rizhu {
-    background: linear-gradient(135deg, rgba(201, 169, 110, 0.3), rgba(212, 175, 55, 0.2));
-    border: 1rpx solid rgba(212, 175, 55, 0.5);
-    .shishen-badge__text { color: #d4af37; }
+    background: linear-gradient(135deg, var(--accent-30), var(--accent-20));
+    border: 1rpx solid var(--accent-50);
+    .shishen-badge__text { color: var(--accent-light); }
   }
 
   // 比肩
   &--bijian {
     background: rgba(74, 124, 89, 0.15);
     border: 1rpx solid rgba(74, 124, 89, 0.4);
-    .shishen-badge__text { color: #5a9a6a; }
+    .shishen-badge__text { color: var(--color-positive); }
   }
 
   // 劫财
   &--jiecai {
     background: rgba(74, 124, 89, 0.1);
     border: 1rpx solid rgba(74, 124, 89, 0.3);
-    .shishen-badge__text { color: #6aaa7a; }
+    .shishen-badge__text { color: var(--wx-wood-light); }
   }
 
   // 食神
   &--shishen {
-    background: rgba(196, 30, 58, 0.12);
-    border: 1rpx solid rgba(196, 30, 58, 0.35);
-    .shishen-badge__text { color: #e06070; }
+    background: var(--vermillion-12);
+    border: 1rpx solid var(--vermillion-30);
+    .shishen-badge__text { color: var(--vermillion-light); }
   }
 
   // 伤官
   &--shangguan {
     background: rgba(196, 30, 58, 0.18);
-    border: 1rpx solid rgba(196, 30, 58, 0.5);
-    .shishen-badge__text { color: #f05060; }
+    border: 1rpx solid var(--vermillion-40);
+    .shishen-badge__text { color: var(--vermillion-light); }
   }
 
   // 正财
   &--zhengcai {
-    background: rgba(201, 169, 110, 0.12);
+    background: var(--accent-12);
     border: 1rpx solid rgba(201, 169, 110, 0.35);
-    .shishen-badge__text { color: #c9a96e; }
+    .shishen-badge__text { color: var(--accent); }
   }
 
   // 偏财
   &--piancai {
     background: rgba(201, 169, 110, 0.18);
-    border: 1rpx solid rgba(201, 169, 110, 0.5);
-    .shishen-badge__text { color: #e0c080; }
+    border: 1rpx solid var(--accent-50);
+    .shishen-badge__text { color: var(--accent-light); }
   }
 
   // 正官
   &--zhengguan {
     background: rgba(245, 240, 232, 0.12);
     border: 1rpx solid rgba(245, 240, 232, 0.35);
-    .shishen-badge__text { color: #f5f0e8; }
+    .shishen-badge__text { color: var(--text-primary); }
   }
 
   // 偏官
   &--pianguan {
     background: rgba(245, 240, 232, 0.08);
     border: 1rpx solid rgba(245, 240, 232, 0.25);
-    .shishen-badge__text { color: #ddd5c8; }
+    .shishen-badge__text { color: var(--wx-metal-light); }
   }
 
   // 正印
   &--zhengyin {
     background: rgba(44, 62, 107, 0.15);
     border: 1rpx solid rgba(44, 62, 107, 0.4);
-    .shishen-badge__text { color: #5a7ec0; }
+    .shishen-badge__text { color: var(--wx-water-light); }
   }
 
   // 偏印
   &--pianyin {
     background: rgba(44, 62, 107, 0.2);
     border: 1rpx solid rgba(44, 62, 107, 0.5);
-    .shishen-badge__text { color: #7090d0; }
+    .shishen-badge__text { color: var(--wx-water-light); }
   }
 
   // 默认
   &--default {
     background: rgba(61, 43, 26, 0.3);
-    border: 1rpx solid rgba(61, 43, 26, 0.5);
-    .shishen-badge__text { color: #8b7355; }
+    border: 1rpx solid var(--border-50);
+    .shishen-badge__text { color: var(--text-muted); }
   }
 }
 </style>

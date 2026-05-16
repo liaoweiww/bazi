@@ -26,12 +26,13 @@
             :key="item.name"
             class="shishen-card"
             :class="{ 'shishen-card--expanded': expandedShishen === item.name }"
+            :aria-expanded="expandedShishen === item.name ? 'true' : 'false'"
             @tap="toggleShishen(item.name)"
           >
-            <view class="shishen-card__header">
+            <view class="shishen-card__header" role="button" :aria-label="'查看' + item.name + '详情'">
               <ShishenBadge :label="item.name" :type="item.badgeType" />
               <text class="shishen-card__alias">{{ item.alias }}</text>
-              <text class="shishen-card__arrow">
+              <text class="shishen-card__arrow" aria-hidden="true">
                 {{ expandedShishen === item.name ? '▲' : '▼' }}
               </text>
             </view>
@@ -312,7 +313,7 @@ const shenshaList = [
   position: sticky;
   top: 0;
   z-index: 100;
-  background: linear-gradient(180deg, rgba(26, 10, 0, 0.98) 0%, rgba(26, 10, 0, 0.85) 100%);
+  background: linear-gradient(180deg, var(--bg-nav) 0%, var(--bg-nav-transparent) 100%);
   backdrop-filter: blur(10rpx);
 
   &__content {
@@ -325,7 +326,7 @@ const shenshaList = [
 
   &__title {
     font-size: 36rpx;
-    color: #d4af37;
+    color: var(--accent-light);
     font-family: 'STKaiti', 'KaiTi', '楷体', serif;
     font-weight: bold;
     letter-spacing: 6rpx;
@@ -350,47 +351,47 @@ const shenshaList = [
     justify-content: center;
     width: 44rpx;
     height: 44rpx;
-    background: rgba(201, 169, 110, 0.15);
-    border: 1rpx solid rgba(201, 169, 110, 0.3);
+    background: var(--accent-15);
+    border: 1rpx solid var(--accent-30);
     border-radius: 8rpx;
     font-size: 24rpx;
-    color: #c9a96e;
+    color: var(--accent);
     font-family: 'STKaiti', 'KaiTi', '楷体', serif;
 
     &--wood {
       background: rgba(74, 124, 89, 0.2);
       border-color: rgba(74, 124, 89, 0.3);
-      color: #5a9a6a;
+      color: var(--color-positive);
     }
 
     &--fire {
-      background: rgba(196, 30, 58, 0.15);
-      border-color: rgba(196, 30, 58, 0.3);
-      color: #c41e3a;
+      background: var(--vermillion-15);
+      border-color: var(--vermillion-30);
+      color: var(--vermillion);
     }
 
     &--gold {
-      background: rgba(212, 175, 55, 0.15);
-      border-color: rgba(212, 175, 55, 0.3);
-      color: #d4af37;
+      background: var(--accent-15);
+      border-color: var(--accent-30);
+      color: var(--accent-light);
     }
 
     &--water {
       background: rgba(44, 62, 107, 0.2);
       border-color: rgba(44, 62, 107, 0.3);
-      color: #5a7ec0;
+      color: var(--wx-water-light);
     }
 
     &--vermillion {
-      background: rgba(196, 30, 58, 0.12);
-      border-color: rgba(196, 30, 58, 0.35);
-      color: #e06070;
+      background: var(--vermillion-12);
+      border-color: var(--vermillion-30);
+      color: var(--vermillion-light);
     }
   }
 
   &__text {
     font-size: 30rpx;
-    color: #f5f0e8;
+    color: var(--text-primary);
     font-family: 'STKaiti', 'KaiTi', '楷体', serif;
     font-weight: bold;
   }
@@ -404,16 +405,23 @@ const shenshaList = [
 }
 
 .shishen-card {
-  background: rgba(42, 26, 16, 0.6);
-  border: 1rpx solid #3d2b1a;
+  background: var(--bg-card);
+  border: 1rpx solid var(--border-color);
   border-radius: 12rpx;
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+
+  @media (hover: hover) {
+    &:hover {
+      border-color: var(--accent-20);
+      background: rgba(42, 26, 16, 0.75);
+    }
+  }
 
   &--expanded {
-    border-color: rgba(201, 169, 110, 0.3);
-    background: rgba(42, 26, 16, 0.8);
-    box-shadow: 0 0 20rpx rgba(201, 169, 110, 0.06);
+    border-color: var(--accent-30);
+    background: var(--bg-card-hover);
+    box-shadow: 0 0 20rpx var(--accent-06);
   }
 
   &__header {
@@ -421,18 +429,19 @@ const shenshaList = [
     align-items: center;
     padding: 16rpx 20rpx;
     gap: 12rpx;
+    cursor: pointer;
   }
 
   &__alias {
     flex: 1;
     font-size: 24rpx;
-    color: #8b7355;
+    color: var(--text-muted);
     font-family: 'STKaiti', 'KaiTi', '楷体', serif;
   }
 
   &__arrow {
     font-size: 20rpx;
-    color: #5a4a3a;
+    color: var(--text-placeholder);
   }
 
   &__body {
@@ -457,9 +466,9 @@ const shenshaList = [
   flex-direction: column;
   gap: 10rpx;
   padding: 12rpx;
-  background: rgba(26, 10, 0, 0.4);
+  background: var(--bg-root-40, rgba(26,10,0,0.4));
   border-radius: 8rpx;
-  border-top: 1rpx solid rgba(61, 43, 26, 0.5);
+  border-top: 1rpx solid var(--border-50);
 
   &__row {
     display: flex;
@@ -468,23 +477,23 @@ const shenshaList = [
 
   .detail-label {
     font-size: 22rpx;
-    color: #c9a96e;
+    color: var(--accent);
     font-family: 'STKaiti', 'KaiTi', '楷体', serif;
     white-space: nowrap;
   }
 
   .detail-value {
     font-size: 22rpx;
-    color: #c0b090;
+    color: var(--text-body);
     line-height: 1.6;
     flex: 1;
 
     &--good {
-      color: #5a9a6a;
+      color: var(--color-positive);
     }
 
     &--bad {
-      color: #e06070;
+      color: var(--vermillion-light);
     }
   }
 }
@@ -517,13 +526,20 @@ const shenshaList = [
     width: 200rpx;
     height: 200rpx;
     transform: translate(-50%, -50%);
-    border: 2rpx solid rgba(201, 169, 110, 0.2);
+    border: 2rpx solid var(--accent-20);
     border-radius: 50%;
   }
 }
 
 .wuxing-node {
   transition: transform 0.3s ease;
+  cursor: pointer;
+
+  @media (hover: hover) {
+    &:hover {
+      transform: scale(1.08);
+    }
+  }
 
   &:active {
     transform: scale(1.1);
@@ -549,17 +565,17 @@ const shenshaList = [
   white-space: nowrap;
 
   &--sheng {
-    color: #5a9a6a;
+    color: var(--color-positive);
   }
 
   &--ke {
-    color: #c41e3a;
+    color: var(--vermillion);
   }
 }
 
 .legend-text {
   font-size: 24rpx;
-  color: #c0b090;
+  color: var(--text-body);
   line-height: 1.6;
 }
 
@@ -568,14 +584,14 @@ const shenshaList = [
   &__header {
     display: flex;
     padding: 12rpx 0;
-    border-bottom: 1rpx solid rgba(201, 169, 110, 0.3);
+    border-bottom: 1rpx solid var(--accent-30);
     margin-bottom: 8rpx;
   }
 
   &__row {
     display: flex;
     padding: 14rpx 0;
-    border-bottom: 1rpx solid rgba(61, 43, 26, 0.4);
+    border-bottom: 1rpx solid var(--border-40);
 
     &:last-child {
       border-bottom: none;
@@ -585,12 +601,12 @@ const shenshaList = [
 
 .shensha-col {
   font-size: 24rpx;
-  color: #c0b090;
+  color: var(--text-body);
 
   &--name {
     width: 160rpx;
     font-family: 'STKaiti', 'KaiTi', '楷体', serif;
-    color: #f5f0e8;
+    color: var(--text-primary);
   }
 
   &--type {
@@ -612,17 +628,17 @@ const shenshaList = [
 
   &.shensha-type--good {
     background: rgba(74, 124, 89, 0.2);
-    color: #5a9a6a;
+    color: var(--color-positive);
   }
 
   &.shensha-type--neutral {
-    background: rgba(201, 169, 110, 0.15);
-    color: #c9a96e;
+    background: var(--accent-15);
+    color: var(--accent);
   }
 
   &.shensha-type--bad {
-    background: rgba(196, 30, 58, 0.15);
-    color: #e06070;
+    background: var(--vermillion-15);
+    color: var(--vermillion-light);
   }
 }
 
@@ -641,7 +657,7 @@ const shenshaList = [
 
   &__text {
     font-size: 40rpx;
-    color: #d4af37;
+    color: var(--accent-light);
     font-family: 'STKaiti', 'KaiTi', '楷体', serif;
     font-weight: bold;
     letter-spacing: 8rpx;
@@ -650,7 +666,7 @@ const shenshaList = [
 
   &__ver {
     font-size: 22rpx;
-    color: #8b7355;
+    color: var(--text-muted);
     font-family: 'STKaiti', 'KaiTi', '楷体', serif;
   }
 }
@@ -665,20 +681,20 @@ const shenshaList = [
   &__line {
     flex: 1;
     height: 1rpx;
-    background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.3), transparent);
+    background: linear-gradient(90deg, transparent, var(--accent-30), transparent);
   }
 
   &__diamond {
     width: 10rpx;
     height: 10rpx;
-    background: rgba(212, 175, 55, 0.5);
+    background: var(--accent-50);
     transform: rotate(45deg);
   }
 }
 
 .about-desc {
   font-size: 24rpx;
-  color: #c0b090;
+  color: var(--text-body);
   line-height: 1.8;
   text-indent: 2em;
   margin-bottom: 20rpx;
@@ -688,8 +704,8 @@ const shenshaList = [
   display: flex;
   gap: 8rpx;
   padding: 16rpx;
-  background: rgba(196, 30, 58, 0.06);
-  border: 1rpx solid rgba(196, 30, 58, 0.15);
+  background: var(--vermillion-06);
+  border: 1rpx solid var(--vermillion-15);
   border-radius: 10rpx;
   margin-bottom: 20rpx;
 
@@ -699,17 +715,17 @@ const shenshaList = [
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(196, 30, 58, 0.15);
+    background: var(--vermillion-15);
     border-radius: 50%;
     font-size: 20rpx;
-    color: #e06070;
+    color: var(--vermillion-light);
     font-weight: bold;
     flex-shrink: 0;
   }
 
   &__text {
     font-size: 22rpx;
-    color: #c0a090;
+    color: var(--text-body);
     line-height: 1.6;
     flex: 1;
   }
@@ -718,7 +734,7 @@ const shenshaList = [
 .about-credits {
   &__text {
     font-size: 22rpx;
-    color: #8b7355;
+    color: var(--text-muted);
     font-family: 'STKaiti', 'KaiTi', '楷体', serif;
     letter-spacing: 4rpx;
   }

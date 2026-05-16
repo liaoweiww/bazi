@@ -1,8 +1,32 @@
 const app = getApp()
+const theme = require('../../utils/theme')
+
 Page({
   data: {
     name:'', gender:'男', calType:'solar', leap:false,
-    sy:'1990',sm:'6',sd:'15', ly:'1990',lm:'5',ld:'21', fh:'8',fm:'0'
+    sy:'1990',sm:'6',sd:'15', ly:'1990',lm:'5',ld:'21', fh:'8',fm:'0',
+    themeStyle: '', currentTheme: '', icons: {}
+  },
+
+  onLoad() {
+    this.applyTheme()
+  },
+
+  onShow() {
+    this.applyTheme()
+  },
+
+  applyTheme() {
+    const t = app.globalData.theme || theme.getCurrentTheme()
+    const style = theme.getThemeStyle(t)
+    const icons = theme.getIconSet(t)
+    this.setData({ themeStyle: style, currentTheme: t, icons: icons })
+    const nc = theme.navBarColors[t]
+    if (nc) wx.setNavigationBarColor({ frontColor: nc.front, backgroundColor: nc.bg })
+  },
+
+  goSettings() {
+    wx.navigateTo({ url: '/pages/settings/settings' })
   },
   onName(e){ this.setData({name:e.detail.value}) },
   onGender(e){ this.setData({gender:e.currentTarget.dataset.v}) },

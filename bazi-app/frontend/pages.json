@@ -14,8 +14,7 @@
       "path": "pages/result/result",
       "style": {
         "navigationBarTitleText": "命盘解读",
-        "navigationBarBackgroundColor": "#1a0a00",
-        "navigationBarTextStyle": "white",
+        "navigationStyle": "custom",
         "enablePullDownRefresh": false
       }
     },
@@ -23,8 +22,7 @@
       "path": "pages/reference/reference",
       "style": {
         "navigationBarTitleText": "古籍参考",
-        "navigationBarBackgroundColor": "#1a0a00",
-        "navigationBarTextStyle": "white",
+        "navigationStyle": "custom",
         "enablePullDownRefresh": false
       }
     }

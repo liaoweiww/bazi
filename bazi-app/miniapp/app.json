@@ -1,5 +1,5 @@
 {
-  "pages": ["pages/index/index", "pages/result/result"],
+  "pages": ["pages/index/index", "pages/result/result", "pages/settings/settings"],
   "window": {
     "navigationBarBackgroundColor": "#1a1008",
     "navigationBarTitleText": "易经八字",

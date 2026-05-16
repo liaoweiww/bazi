@@ -50,9 +50,9 @@ const fontSizeMap = {
 
 const wuxingColorMap = {
   wood: '#4a7c59',
-  fire: '#c41e3a',
-  earth: '#c9a96e',
-  metal: '#f5f0e8',
+  fire: 'var(--vermillion)',
+  earth: 'var(--accent)',
+  metal: 'var(--text-primary)',
   water: '#2c3e6b'
 }
 </script>
@@ -78,31 +78,31 @@ const wuxingColorMap = {
   &--wood {
     background: rgba(74, 124, 89, 0.2);
     border-color: rgba(74, 124, 89, 0.5);
-    .ganzhi-tag__text { color: #5a9a6a; }
+    .ganzhi-tag__text { color: var(--color-positive); }
   }
 
   &--fire {
-    background: rgba(196, 30, 58, 0.2);
-    border-color: rgba(196, 30, 58, 0.5);
-    .ganzhi-tag__text { color: #e04050; }
+    background: var(--vermillion-20);
+    border-color: var(--vermillion-40);
+    .ganzhi-tag__text { color: var(--vermillion-light); }
   }
 
   &--earth {
-    background: rgba(201, 169, 110, 0.2);
-    border-color: rgba(201, 169, 110, 0.5);
-    .ganzhi-tag__text { color: #d4af37; }
+    background: var(--accent-20);
+    border-color: var(--accent-50);
+    .ganzhi-tag__text { color: var(--accent-light); }
   }
 
   &--metal {
     background: rgba(245, 240, 232, 0.15);
     border-color: rgba(245, 240, 232, 0.4);
-    .ganzhi-tag__text { color: #f5f0e8; }
+    .ganzhi-tag__text { color: var(--text-primary); }
   }
 
   &--water {
     background: rgba(44, 62, 107, 0.25);
     border-color: rgba(44, 62, 107, 0.5);
-    .ganzhi-tag__text { color: #5a7ec0; }
+    .ganzhi-tag__text { color: var(--wx-water-light); }
   }
 }
 </style>

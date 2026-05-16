@@ -101,15 +101,15 @@ const shishenType = computed(() => shishenTypeMap[props.shishen] || 'default')
   align-items: center;
   padding: 12px 8px;
   border-radius: 12rpx;
-  border: 1rpx solid #3d2b1a;
-  background: rgba(42, 26, 16, 0.5);
+  border: 1rpx solid var(--border-color);
+  background: var(--bg-card);
   min-width: 130rpx;
-  transition: all 0.3s ease;
+  transition: border-color 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
 
   &--rizhu {
-    border-color: rgba(212, 175, 55, 0.4);
-    background: rgba(212, 175, 55, 0.08);
-    box-shadow: 0 0 20rpx rgba(212, 175, 55, 0.1);
+    border-color: var(--accent-40);
+    background: var(--accent-08);
+    box-shadow: 0 0 20rpx var(--accent-10);
   }
 
   &__header {
@@ -122,7 +122,7 @@ const shishenType = computed(() => shishenTypeMap[props.shishen] || 'default')
 
   &__label {
     font-size: 22rpx;
-    color: #c9a96e;
+    color: var(--accent);
     font-family: 'STKaiti', 'KaiTi', '楷体', serif;
   }
 
@@ -143,7 +143,7 @@ const shishenType = computed(() => shishenTypeMap[props.shishen] || 'default')
 
   &__canggan-label {
     font-size: 18rpx;
-    color: #8b7355;
+    color: var(--text-muted);
     margin-bottom: 2rpx;
   }
 
@@ -154,7 +154,7 @@ const shishenType = computed(() => shishenTypeMap[props.shishen] || 'default')
 
   &__canggan-item {
     font-size: 18rpx;
-    color: #8b7355;
+    color: var(--text-muted);
     background: rgba(61, 43, 26, 0.3);
     padding: 1rpx 8rpx;
     border-radius: 4rpx;
@@ -162,7 +162,7 @@ const shishenType = computed(() => shishenTypeMap[props.shishen] || 'default')
 
   &__nayin {
     font-size: 18rpx;
-    color: #6a5a4a;
+    color: var(--text-subtle);
     margin-top: 6rpx;
     font-family: 'STKaiti', 'KaiTi', '楷体', serif;
   }

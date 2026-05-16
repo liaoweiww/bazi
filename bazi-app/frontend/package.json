@@ -1,0 +1,19 @@
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@dcloudio/uni-app": "^2.0.2-5000720260410001",
+    "@dcloudio/uni-components": "^3.0.0-alpha-3000020210521001",
+    "@dcloudio/uni-h5-vue": "^3.0.0-alpha-3000020210521001",
+    "@dcloudio/uni-mp-weixin": "^2.0.2-5000720260410001"
+  }
+}
