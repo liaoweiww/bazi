@@ -78,3 +78,66 @@
 /* ====== 主题专属卡片 ====== */
 .theme-imperial .card{border:2px solid var(--border-color);box-shadow:0 0 0 1px var(--accent-10)}
 .theme-celadon .card::before{background:linear-gradient(90deg,transparent 0%,var(--accent-08) 20%,var(--accent-15) 50%,var(--accent-08) 80%,transparent 100%);border-radius:0 0 50% 50%}
+
+/* ====== 今日信息栏 ====== */
+.today-bar{display:flex;align-items:center;padding:12px 14px;margin-bottom:12px;background:var(--bg-card);border-radius:var(--radius-card);border:1px solid var(--border-color)}
+.today-item{display:flex;align-items:center;gap:10px}
+.today-icon{font-size:24px}
+.today-text{display:flex;flex-direction:column;gap:2px}
+.today-date{font-size:var(--font-size-body);color:var(--text-primary)}
+.today-lunar{font-size:var(--font-size-caption);color:var(--text-muted)}
+
+/* ====== 区域标题 ====== */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding:0 4px}
+.sh-title{font-size:var(--font-size-body);color:var(--accent);font-weight:var(--font-weight-title)}
+.sh-count{font-size:var(--font-size-caption);color:var(--text-muted)}
+
+/* ====== 档案卡片 ====== */
+.profile-scroll{width:100%;margin-bottom:14px}
+.profile-list{display:flex;gap:10px;padding:4px 0;white-space:nowrap}
+.profile-card{position:relative;min-width:80px;padding:12px 10px;text-align:center;background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-card);flex-shrink:0}
+.profile-card.pf-active{border-color:var(--accent-light);background:var(--accent-08)}
+.profile-card:active{opacity:0.7}
+.pf-avatar{font-size:20px;margin-bottom:4px}
+.pf-name{font-size:var(--font-size-body);color:var(--text-primary);font-weight:var(--font-weight-strong);overflow:hidden;text-overflow:ellipsis}
+.pf-date{font-size:var(--font-size-caption);color:var(--text-muted)}
+.pf-del{position:absolute;top:2px;right:4px;font-size:16px;color:var(--text-muted);width:20px;height:20px;line-height:20px;text-align:center}
+.pf-del:active{color:var(--vermillion-light)}
+
+/* ====== 新建按钮 ====== */
+.add-btn-wrap{margin-bottom:14px}
+.add-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:14px;border-radius:var(--radius-btn);border:1px dashed var(--border-light);background:var(--bg-card);color:var(--accent);font-size:var(--font-size-body);font-weight:var(--font-weight-strong)}
+.add-btn:active{background:var(--accent-08)}
+.add-icon{font-size:20px;font-weight:700}
+
+/* ====== 今日运势卡片 ====== */
+.fortune-card{margin-top:14px}
+.fn-header{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.fn-icon{font-size:16px}
+.fn-title{font-size:var(--font-size-title);color:var(--accent-light);font-weight:var(--font-weight-title)}
+.fn-date{font-size:var(--font-size-caption);color:var(--text-muted);margin-left:auto}
+.fn-body{display:flex;flex-direction:column;gap:10px}
+.fn-score-wrap{display:flex;align-items:center;gap:12px;justify-content:center;padding:10px 0}
+.fn-score-ring{width:56px;height:56px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;border:3px solid var(--accent-20)}
+.fn-s-great{border-color:var(--accent-light);background:var(--accent-10)}
+.fn-s-good{border-color:var(--color-positive);background:rgba(90,154,106,.1)}
+.fn-s-ok{border-color:var(--accent-20);background:var(--accent-06)}
+.fn-s-warn{border-color:var(--vermillion);background:var(--vermillion-10)}
+.fn-score-num{font-size:28px;font-weight:var(--font-weight-hero);color:var(--text-primary);line-height:1}
+.fn-score-label{font-size:10px;color:var(--text-muted)}
+.fn-rating-text{font-size:var(--font-size-title);font-weight:var(--font-weight-strong)}
+.fn-r-great{color:var(--accent-light)}
+.fn-r-good{color:var(--color-positive)}
+.fn-r-ok{color:var(--text-muted)}
+.fn-r-warn{color:var(--vermillion-light)}
+.fn-info{padding:8px;background:var(--bg-input);border-radius:var(--radius-card)}
+.fn-row{display:flex;justify-content:space-between;padding:3px 0;font-size:var(--font-size-caption)}
+.fn-label{color:var(--text-muted)}
+.fn-val{color:var(--text-primary)}
+.fn-tips{margin-top:4px}
+.fn-tip{font-size:var(--font-size-caption);color:var(--text-body);padding:4px 0;line-height:1.6}
+.fn-yiji{display:flex;gap:10px;margin-top:4px}
+.fn-yi{flex:1;font-size:var(--font-size-caption);color:var(--color-positive);padding:8px;background:rgba(90,154,106,.06);border-radius:var(--radius-card);line-height:1.5}
+.fn-ji{flex:1;font-size:var(--font-size-caption);color:var(--vermillion-light);padding:8px;background:var(--vermillion-06);border-radius:var(--radius-card);line-height:1.5}
+.fn-yi-label{display:inline-block;padding:1px 8px;background:var(--color-positive);color:#fff;border-radius:4px;margin-right:6px;font-size:10px}
+.fn-ji-label{display:inline-block;padding:1px 8px;background:var(--vermillion);color:#fff;border-radius:4px;margin-right:6px;font-size:10px}

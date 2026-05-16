@@ -1,21 +1,67 @@
 <scroll-view class="wrap theme-root theme-{{currentTheme}}" style="{{themeStyle}}" scroll-y scroll-x="{{false}}" enhanced show-scrollbar="{{false}}" wx:if="{{loaded}}">
-  <!-- ====== 八字命盘 ====== -->
+  <!-- ====== 八字命盘 — 钻石布局 ====== -->
   <view class="card">
     <view class="ct">
       <text class="ct-icon">{{icons.bagua}}</text>八 字 命 盘
     </view>
-    <view class="pgrid">
-      <block wx:for="{{['year','month','day','hour']}}" wx:for-item="pk" wx:key="pk">
-        <view class="pc {{pk==='day'?'dm':''}}">
-          <view class="gz">{{pillars[pk].ganzhi}}</view>
-          <view wx:if="{{pk==='day'}}" class="dm-badge">日主</view>
-          <view wx:else class="ss">{{pillars[pk].shishen}}</view>
-          <view class="ny">{{pillars[pk].nayin}}</view>
-          <view class="cg">藏: {{pillars[pk].canggan}}</view>
+    <view class="chart-diamond">
+      <!-- 年柱（上） -->
+      <view class="cd-p cd-year">
+        <view class="cd-gz">{{pillars.year.ganzhi}}</view>
+        <view class="cd-ss">{{pillars.year.shishen}}</view>
+        <view class="cd-ny">{{pillars.year.nayin}}</view>
+        <view class="cd-label">年柱</view>
+      </view>
+      <view class="cd-row">
+        <!-- 月柱（左） -->
+        <view class="cd-p cd-month">
+          <view class="cd-gz">{{pillars.month.ganzhi}}</view>
+          <view class="cd-ss">{{pillars.month.shishen}}</view>
+          <view class="cd-ny">{{pillars.month.nayin}}</view>
+          <view class="cd-label">月柱</view>
         </view>
+        <!-- 日柱（中·日主高亮） -->
+        <view class="cd-p cd-day">
+          <view class="cd-dm-badge">日主</view>
+          <view class="cd-gz cd-gz-dm">{{pillars.day.ganzhi}}</view>
+          <view class="cd-dm-info">{{dm}} · {{dmWx}}</view>
+          <view class="cd-ny">{{pillars.day.nayin}}</view>
+          <view class="cd-label">日柱</view>
+        </view>
+        <!-- 时柱（右） -->
+        <view class="cd-p cd-hour">
+          <view class="cd-gz">{{pillars.hour.ganzhi}}</view>
+          <view class="cd-ss">{{pillars.hour.shishen}}</view>
+          <view class="cd-ny">{{pillars.hour.nayin}}</view>
+          <view class="cd-label">时柱</view>
+        </view>
+      </view>
+    </view>
+    <!-- 藏干信息 -->
+    <view class="cd-canggan">
+      <block wx:for="{{['year','month','day','hour']}}" wx:for-item="pk" wx:key="pk">
+        <text class="cd-cg-item">{{pillars[pk].canggan}}</text>
       </block>
     </view>
-    <view class="dm-info">日 主：<text class="gold">{{dm}}</text>（{{dmWx}}）</view>
+  </view>
+
+  <!-- ====== 五行生克关系图 ====== -->
+  <view class="card">
+    <view class="ct"><text class="ct-icon">{{icons.geju}}</text>五行生克关系</view>
+    <view class="rel-diagram">
+      <view class="rd-center">
+        <text class="rd-dm">{{dm}}</text>
+        <text class="rd-dm-wx">{{dmWx}}</text>
+      </view>
+      <view class="rd-ring">
+        <block wx:for="{{['year','month','hour']}}" wx:for-item="pk" wx:key="pk">
+          <view class="rd-item rd-item-{{pk}}">
+            <text class="rd-name">{{pk==='year'?'年':pk==='month'?'月':'时'}}</text>
+            <text class="rd-wx">{{pillars[pk].ganzhi[0]}}</text>
+          </view>
+        </block>
+      </view>
+    </view>
   </view>
 
   <!-- ====== 出生信息（折叠） ====== -->
@@ -46,17 +92,19 @@
     <view wx:if="{{yongji.tiao_hou}}" class="gold mt8" style="font-size:12px">{{yongji.tiao_hou}}</view>
   </view>
 
-  <!-- ====== 五行力量 ====== -->
+  <!-- ====== 五行力量 — 柱状图 ====== -->
   <view class="card">
     <view class="ct"><text class="ct-icon">{{icons.wuxing}}</text>五 行 力 量</view>
-    <view wx:for="{{['金','木','水','火','土']}}" wx:key="*this" style="margin-bottom:8px">
-      <view style="display:flex;align-items:center;gap:8px">
-        <text class="wx-label {{item==='金'?'wx-jin':item==='木'?'wx-mu':item==='水'?'wx-shui':item==='火'?'wx-huo':'wx-tu'}}">{{item}}</text>
-        <view class="wx-bar-track">
-          <view class="wx-bar-fill {{item==='金'?'wx-jin':item==='木'?'wx-mu':item==='水'?'wx-shui':item==='火'?'wx-huo':'wx-tu'}}" style="width:{{wxCount[item].score/3*100}}%"></view>
+    <view class="wx-chart">
+      <block wx:for="{{['金','木','水','火','土']}}" wx:key="*this">
+        <view class="wx-bar-wrap">
+          <view class="wx-bar-pct">{{wxCount[item].score}}<text class="wx-bar-unit">分</text></view>
+          <view class="wx-bar-track">
+            <view class="wx-bar-fill {{item==='金'?'wx-jin':item==='木'?'wx-mu':item==='水'?'wx-shui':item==='火'?'wx-huo':'wx-tu'}}" style="height:{{wxCount[item].score/3*100}}%"></view>
+          </view>
+          <text class="wx-bar-label {{item==='金'?'wx-jin':item==='木'?'wx-mu':item==='水'?'wx-shui':item==='火'?'wx-huo':'wx-tu'}}">{{item}}</text>
         </view>
-        <text class="wx-score">{{wxCount[item].score}}分</text>
-      </view>
+      </block>
     </view>
     <view class="tc mt8"><view class="st-badge {{strength.level.indexOf('强')>=0?'st-s':strength.level.indexOf('弱')>=0?'st-w':'st-n'}}">{{strength.level}}</view></view>
     <view class="dim tc" style="font-size:11px">{{strength.details}}</view>
@@ -102,23 +150,29 @@
     </view>
   </view>
 
-  <!-- ====== 大运详情（折叠） ====== -->
+  <!-- ====== 大运时间轴 ====== -->
   <view class="card">
     <view class="ct ct-tap" data-key="showDayunDetail" bindtap="toggleSection">
-      <text class="ct-icon">{{icons.dayun}}</text>大 运 流 程
+      <text class="ct-icon">{{icons.dayun}}</text>大 运 时 间 轴
       <text class="ct-arrow">{{showDayunDetail?icons.section_expand:icons.section_collapse}}</text>
     </view>
     <view wx:if="{{showDayunDetail}}">
       <view class="dim" style="font-size:12px;margin-bottom:8px">起运 <text class="gold">{{dayun.start_age}}</text> 岁 · {{dayun.direction}}</view>
-      <scroll-view class="dy-scroll" scroll-x enhanced show-scrollbar="{{false}}">
-        <block wx:for="{{dayun.dayun_list}}" wx:key="start_age">
-          <view class="dy-node {{item.start_age<=currentAge&&currentAge<item.start_age+10?'cur':''}} {{selectedDayunIndex===index?'sel':''}}" data-index="{{index}}" bindtap="selectDayun">
-            <view class="dy-ages">{{item.age_range}}</view>
-            <view class="dy-gz">{{item.ganzhi}}</view>
-            <view class="dy-ny">{{item.nayin}}</view>
+      <!-- 时间轴 -->
+      <view class="tl-track">
+        <view class="tl-line"></view>
+        <scroll-view class="tl-scroll" scroll-x enhanced show-scrollbar="{{false}}">
+          <view class="tl-nodes">
+            <block wx:for="{{dayun.dayun_list}}" wx:key="start_age">
+              <view class="tl-node {{item.start_age<=currentAge&&currentAge<item.start_age+10?'tl-cur':''}} {{selectedDayunIndex===index?'tl-sel':''}}" data-index="{{index}}" bindtap="selectDayun">
+                <view class="tl-dot"></view>
+                <view class="tl-gz">{{item.ganzhi}}</view>
+                <view class="tl-ages">{{item.age_range}}岁</view>
+              </view>
+            </block>
           </view>
-        </block>
-      </scroll-view>
+        </scroll-view>
+      </view>
       <view wx:if="{{selectedDayunIndex>=0 && dayun.dayun_list[selectedDayunIndex].analysis}}" class="dy-analysis mt8">
         <view class="gold" style="font-size:15px;margin-bottom:6px">{{dayun.dayun_list[selectedDayunIndex].ganzhi}}大运 · {{dayun.dayun_list[selectedDayunIndex].age_range}}岁</view>
         <view class="fn-text">{{dayun.dayun_list[selectedDayunIndex].analysis}}</view>
@@ -333,5 +387,12 @@
   <view class="btn btn-back" bindtap="goBack">
     <text class="btn-icon">{{icons.back}}</text> 重 新 排 盘
   </view>
+  <!-- 分享海报 -->
+  <view class="btn btn-share" bindtap="generateSharePoster">
+    <text class="btn-icon">📤</text> 生成分享海报
+  </view>
+  <view style="height:20px"></view>
+  <!-- 隐藏canvas用于生成海报 -->
+  <canvas canvas-id="shareCanvas" class="share-canvas" wx:if="{{showCanvas}}"></canvas>
   <view style="height:40px"></view>
 </scroll-view>

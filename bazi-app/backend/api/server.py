@@ -343,6 +343,118 @@ def api_life_summary():
         return jsonify({"error": str(e)}), 500
 
 
+@app.route('/api/calendar/today', methods=['GET'])
+def api_calendar_today():
+    """今日农历信息"""
+    try:
+        today = datetime.now()
+        from lunarcal.lunar_solar import solar_to_lunar, get_lunar_year_info, get_ganzhi_day, get_ganzhi_year
+        lunar = solar_to_lunar(today.year, today.month, today.day)
+        ganzhi_day = get_ganzhi_day(today)
+        ganzhi_year = get_ganzhi_year(today.year)
+        year_info = get_lunar_year_info(today.year)
+
+        # 今日节气（简单判断，近似的）
+        solar_term = lunar.get('solar_term', '') if isinstance(lunar, dict) else ''
+
+        return jsonify({"success": True, "data": {
+            "solar_date": today.strftime("%Y-%m-%d"),
+            "lunar_year": lunar.get('lunar_year', today.year) if isinstance(lunar, dict) else today.year,
+            "lunar_month": lunar.get('lunar_month', today.month) if isinstance(lunar, dict) else today.month,
+            "lunar_day": lunar.get('lunar_day', today.day) if isinstance(lunar, dict) else today.day,
+            "lunar_month_name": lunar.get('lunar_month_name', '') if isinstance(lunar, dict) else '',
+            "lunar_day_name": lunar.get('lunar_day_name', '') if isinstance(lunar, dict) else '',
+            "is_leap_month": lunar.get('is_leap', False) if isinstance(lunar, dict) else False,
+            "ganzhi_day": ganzhi_day or '',
+            "ganzhi_year": ganzhi_year or '',
+            "zodiac": year_info.get('zodiac', '') if isinstance(year_info, dict) else '',
+            "solar_term": solar_term,
+            "weekday": ['日', '一', '二', '三', '四', '五', '六'][today.weekday()]
+        }})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/daily-fortune', methods=['POST'])
+def api_daily_fortune():
+    """每日运势简要"""
+    try:
+        data = request.get_json()
+        paipan_result = data.get('paipan_result', {})
+        if not paipan_result:
+            return jsonify({"error": "缺少排盘结果"}), 400
+
+        today = datetime.now()
+        from lunarcal.lunar_solar import get_ganzhi_day
+        day_ganzhi = get_ganzhi_day(today)
+        day_gan = day_ganzhi[0] if day_ganzhi else '甲'
+        day_zhi = day_ganzhi[1] if day_ganzhi else '子'
+
+        # 获取日主
+        dm_gan = paipan_result.get('day_master', '')
+
+        # 天干五行映射
+        gan_wx = {'甲': '木', '乙': '木', '丙': '火', '丁': '火', '戊': '土',
+                   '己': '土', '庚': '金', '辛': '金', '壬': '水', '癸': '水'}
+        # 天干十神关系（日主 vs 其他天干）
+        gan_order = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸']
+        shishen_map = ['比肩', '劫财', '食神', '伤官', '偏财', '正财', '七杀', '正官', '偏印', '正印']
+
+        dm_idx = gan_order.index(dm_gan) if dm_gan in gan_order else 0
+        day_idx = gan_order.index(day_gan) if day_gan in gan_order else 0
+        diff = (day_idx - dm_idx) % 10
+        relation = shishen_map[diff] if diff < len(shishen_map) else '比肩'
+
+        # 五行生克评分
+        day_wx = gan_wx.get(day_gan, '土')
+        dm_wx = gan_wx.get(dm_gan, '土')
+        wx_cycle = {'木': '火', '火': '土', '土': '金', '金': '水', '水': '木'}
+        wx_ke = {'木': '土', '土': '水', '水': '火', '火': '金', '金': '木'}
+
+        score = 60
+        tips = []
+        if wx_cycle.get(dm_wx) == day_wx:
+            score = 80; tips.append(f"今日{day_wx}气生你日主{dm_wx}，精力充沛，适合主动出击")
+        elif wx_cycle.get(day_wx) == dm_wx:
+            score = 75; tips.append(f"你日主{dm_wx}生今日{day_wx}气，宜分享付出，不宜强求")
+        elif dm_wx == day_wx:
+            score = 70; tips.append(f"今日与日主同为{dm_wx}气，平稳顺遂，宜守不宜攻")
+        elif wx_ke.get(day_wx) == dm_wx:
+            score = 45; tips.append(f"今日{day_wx}气克你日主{dm_wx}，阻力较大，宜低调谨慎")
+        elif wx_ke.get(dm_wx) == day_wx:
+            score = 65; tips.append(f"你日主{dm_wx}克今日{day_wx}气，需付出努力，劳有所得")
+
+        rating = '大吉' if score >= 80 else '小吉' if score >= 70 else '平平' if score >= 55 else '欠佳'
+
+        # 宜忌简要
+        yi = []
+        ji = []
+        if score >= 70:
+            yi = ['签约', '出行', '会友']
+            ji = ['争执', '诉讼']
+        elif score >= 55:
+            yi = ['学习', '规划', '静养']
+            ji = ['重大投资', '远行']
+        else:
+            yi = ['反省', '整理', '低调行事']
+            ji = ['冒险', '大额支出', '重要决策']
+
+        return jsonify({"success": True, "data": {
+            "date": today.strftime("%Y-%m-%d"),
+            "day_ganzhi": day_ganzhi,
+            "day_wuxing": day_wx,
+            "relation_to_dm": relation,
+            "score": score,
+            "rating": rating,
+            "tips": tips,
+            "yi": yi,
+            "ji": ji,
+            "weekday": ['日', '一', '二', '三', '四', '五', '六'][today.weekday()]
+        }})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 if __name__ == '__main__':
     print("=" * 50)
     print("  易经八字推算系统 API Server")

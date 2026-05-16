@@ -1,19 +1,34 @@
 const app = getApp()
 const theme = require('../../utils/theme')
+const PROFILE_KEY = 'bazi_profiles'
+const REQ_HEADER = { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': '1' }
 
 Page({
   data: {
     name:'', gender:'男', calType:'solar', leap:false,
     sy:'1990',sm:'6',sd:'15', ly:'1990',lm:'5',ld:'21', fh:'8',fm:'0',
-    themeStyle: '', currentTheme: '', icons: {}
+    themeStyle: '', currentTheme: '', icons: {},
+    // 新功能
+    showForm: false,
+    profiles: [],
+    todayInfo: null,
+    dailyFortune: null,
+    activeProfileId: null
   },
 
   onLoad() {
     this.applyTheme()
+    this.loadProfiles()
+    this.loadTodayInfo()
   },
 
   onShow() {
     this.applyTheme()
+    this.loadProfiles()
+    // 如果从结果页返回，可能缓存了上次排盘结果，更新日运
+    if (app.globalData.paipanResult) {
+      this.loadDailyFortune()
+    }
   },
 
   applyTheme() {
@@ -25,6 +40,116 @@ Page({
     if (nc) wx.setNavigationBarColor({ frontColor: nc.front, backgroundColor: nc.bg })
   },
 
+  // ===== 档案管理 =====
+  loadProfiles() {
+    try {
+      const stored = wx.getStorageSync(PROFILE_KEY) || []
+      this.setData({ profiles: stored })
+      if (stored.length > 0) {
+        // 恢复最近用的档案
+        const activeId = wx.getStorageSync('bazi_active_profile')
+        this.setData({ activeProfileId: activeId || '' })
+      }
+    } catch(e) {}
+  },
+
+  saveProfile(paipanData) {
+    const d = this.data
+    const profile = {
+      id: Date.now().toString(36),
+      name: d.name || '未命名',
+      gender: d.gender,
+      calendar_type: d.calType,
+      solar_year: parseInt(d.sy), solar_month: parseInt(d.sm), solar_day: parseInt(d.sd),
+      lunar_year: parseInt(d.ly), lunar_month: parseInt(d.lm), lunar_day: parseInt(d.ld),
+      leap_month: d.leap,
+      hour: parseInt(d.fh), minute: parseInt(d.fm),
+      paipanResult: paipanData,
+      createdAt: new Date().toISOString()
+    }
+    if (d.calType === 'lunar') {
+      profile.solar_year = 0; profile.solar_month = 0; profile.solar_day = 0
+    }
+    const profiles = this.data.profiles.slice()
+    // 去重（同姓名同性别同时辰）
+    const dup = profiles.findIndex(p =>
+      p.name === profile.name && p.gender === profile.gender &&
+      p.solar_year === profile.solar_year && p.solar_month === profile.solar_month &&
+      p.solar_day === profile.solar_day && p.hour === profile.hour
+    )
+    if (dup >= 0) profiles.splice(dup, 1) // 替换旧的
+    profiles.unshift(profile) // 最新排最前
+    if (profiles.length > 10) profiles.pop() // 最多10个
+    wx.setStorageSync(PROFILE_KEY, profiles)
+    wx.setStorageSync('bazi_active_profile', profile.id)
+    this.setData({ profiles, activeProfileId: profile.id, showForm: false })
+  },
+
+  loadFromProfile(e) {
+    const id = e.currentTarget.dataset.id
+    const p = this.data.profiles.find(p => p.id === id)
+    if (!p) return
+    // 恢复表单数据
+    this.setData({
+      name: p.name, gender: p.gender, calType: p.calendar_type || 'solar',
+      sy: String(p.solar_year || ''), sm: String(p.solar_month || ''),
+      sd: String(p.solar_day || ''), ly: String(p.lunar_year || ''),
+      lm: String(p.lunar_month || ''), ld: String(p.lunar_day || ''),
+      fh: String(p.hour || ''), fm: String(p.minute || ''),
+      leap: !!p.leap_month, activeProfileId: id
+    })
+    // 直接看结果
+    if (p.paipanResult) {
+      app.globalData.paipanResult = p.paipanResult
+      wx.setStorageSync('bazi_active_profile', id)
+      wx.navigateTo({ url: '/pages/result/result' })
+    }
+  },
+
+  deleteProfile(e) {
+    const id = e.currentTarget.dataset.id
+    wx.showModal({
+      title: '删除档案', content: '确定删除这条记录？', success: res => {
+        if (res.confirm) {
+          const profiles = this.data.profiles.filter(p => p.id !== id)
+          wx.setStorageSync(PROFILE_KEY, profiles)
+          this.setData({ profiles, activeProfileId: this.data.activeProfileId === id ? '' : this.data.activeProfileId })
+        }
+      }
+    })
+  },
+
+  // ===== 今日信息 =====
+  loadTodayInfo() {
+    const api = app.globalData.apiBase
+    wx.request({
+      url: api + '/calendar/today', method: 'GET', header: REQ_HEADER, timeout: 8000,
+      success: resp => {
+        if (resp.data && resp.data.success) this.setData({ todayInfo: resp.data.data })
+      },
+      fail: () => {}
+    })
+  },
+
+  loadDailyFortune() {
+    const api = app.globalData.apiBase
+    const d = app.globalData.paipanResult
+    if (!d) return
+    wx.request({
+      url: api + '/daily-fortune', method: 'POST',
+      header: REQ_HEADER,
+      data: { paipan_result: d }, timeout: 8000,
+      success: resp => {
+        if (resp.data && resp.data.success) this.setData({ dailyFortune: resp.data.data })
+      },
+      fail: () => {}
+    })
+  },
+
+  // ===== 表单 =====
+  toggleForm() {
+    this.setData({ showForm: !this.data.showForm })
+  },
   goSettings() {
     wx.navigateTo({ url: '/pages/settings/settings' })
   },
@@ -44,7 +169,6 @@ Page({
   async doPaipan(){
     const d = this.data
     const api = app.globalData.apiBase
-
     const body = {name:d.name||'未命名',gender:d.gender,hour:parseInt(d.fh)||0,minute:parseInt(d.fm)||0,longitude:120,latitude:30,calendar_type:d.calType}
 
     if(d.calType==='lunar'){
@@ -58,14 +182,15 @@ Page({
     }
 
     wx.showLoading({title:'推算命盘中...',mask:true})
-
     try {
       const resp = await new Promise((resolve, reject) => {
-        wx.request({url:api+'/paipan',method:'POST',header:{'Content-Type':'application/json'},data:body,timeout:30000,success:resolve,fail:reject})
+        wx.request({url:api+'/paipan',method:'POST',header:REQ_HEADER,data:body,timeout:30000,success:resolve,fail:reject})
       })
       wx.hideLoading()
       if(resp.data.success){
         app.globalData.paipanResult = resp.data.data
+        this.saveProfile(resp.data.data)
+        this.loadDailyFortune()
         wx.navigateTo({url:'/pages/result/result'})
       } else {
         wx.showToast({title:resp.data.error||'排盘失败',icon:'none'})
