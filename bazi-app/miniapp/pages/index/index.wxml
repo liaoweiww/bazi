@@ -31,6 +31,16 @@
     <view class="hero-sub">探寻命理玄机 · 洞悉人生轨迹</view>
   </view>
 
+  <!-- ====== 模式切换（八字/星座）====== -->
+  <view class="mode-switch">
+    <view class="mode-btn {{calcMode==='bazi'?'mode-on':''}}" data-v="bazi" bindtap="onCalcMode">
+      <text class="mode-icon">☯</text><text>八字排盘</text>
+    </view>
+    <view class="mode-btn {{calcMode==='zodiac'?'mode-on':''}}" data-v="zodiac" bindtap="onCalcMode">
+      <text class="mode-icon">☆</text><text>星座命盘</text>
+    </view>
+  </view>
+
   <!-- ====== 今日信息栏 ====== -->
   <view class="today-bar" wx:if="{{todayInfo}}">
     <view class="today-item">
@@ -52,15 +62,15 @@
   <!-- ====== 历史档案 ====== -->
   <view class="section-header" wx:if="{{profiles.length > 0}}">
     <text class="sh-title">{{icons.birth_info}} 历史档案</text>
-    <text class="sh-count">{{profiles.length}}人</text>
+    <text class="sh-count">{{profiles.length}}条</text>
   </view>
   <scroll-view class="profile-scroll" scroll-x enhanced show-scrollbar="{{false}}" wx:if="{{profiles.length > 0}}">
     <view class="profile-list">
       <block wx:for="{{profiles}}" wx:key="id">
         <view class="profile-card {{activeProfileId === item.id ? 'pf-active' : ''}}" data-id="{{item.id}}" bindtap="loadFromProfile">
-          <view class="pf-avatar">{{item.gender === '男' ? '☰' : '☷'}}</view>
+          <view class="pf-avatar">{{item.calcMode==='zodiac' ? '☆' : (item.gender === '男' ? '☰' : '☷')}}</view>
           <view class="pf-name">{{item.name}}</view>
-          <view class="pf-date">{{item.solar_year || item.lunar_year}}年</view>
+          <view class="pf-date">{{item.solar_year || item.lunar_year}}年{{item.calcMode==='zodiac'?'·星座':'·八字'}}</view>
           <view class="pf-del" data-id="{{item.id}}" catchtap="deleteProfile">×</view>
         </view>
       </block>
@@ -71,12 +81,12 @@
   <view class="add-btn-wrap">
     <view class="add-btn" bindtap="toggleForm">
       <text class="add-icon">{{showForm ? '−' : '+'}}</text>
-      <text>{{showForm ? '收起表单' : '新 建 排 盘'}}</text>
+      <text>{{showForm ? '收起表单' : (calcMode==='zodiac' ? '新 建 星 盘' : '新 建 排 盘')}}</text>
     </view>
   </view>
 
-  <!-- ====== 排盘表单 ====== -->
-  <view class="card" wx:if="{{showForm}}">
+  <!-- ====== 八字排盘表单 ====== -->
+  <view class="card" wx:if="{{showForm && calcMode==='bazi'}}">
     <view class="fg">
       <view class="fl"><text class="fl-icon">{{icons.name}}</text>姓 名</view>
       <input class="fi" placeholder="请输入姓名" value="{{name}}" bindinput="onName" maxlength="20"/>
@@ -125,6 +135,48 @@
     <view class="btn-go" bindtap="doPaipan">
       <text class="btn-go-main">开 始 排 盘</text>
       <text class="btn-go-sub">一窥命理玄机</text>
+    </view>
+  </view>
+
+  <!-- ====== 星座星盘表单 ====== -->
+  <view class="card" wx:if="{{showForm && calcMode==='zodiac'}}">
+    <view class="fg">
+      <view class="fl"><text class="fl-icon">☆</text>姓 名</view>
+      <input class="fi" placeholder="请输入姓名" value="{{zName}}" bindinput="onZName" maxlength="20"/>
+    </view>
+    <view class="fg">
+      <view class="fl"><text class="fl-icon">⚥</text>性 别</view>
+      <view class="tog">
+        <view class="{{zGender==='男'?'on':''}}" data-v="男" bindtap="onZGender">♂ 男</view>
+        <view class="{{zGender==='女'?'on':''}}" data-v="女" bindtap="onZGender">♀ 女</view>
+      </view>
+    </view>
+    <view class="fg">
+      <view class="fl"><text class="fl-icon">🎂</text>出生日期（公历）</view>
+      <view class="dr">
+        <input class="fi" type="number" placeholder="年" value="{{zSy}}" bindinput="onZSy"/>
+        <input class="fi" type="number" placeholder="月" value="{{zSm}}" bindinput="onZSm"/>
+        <input class="fi" type="number" placeholder="日" value="{{zSd}}" bindinput="onZSd"/>
+      </view>
+    </view>
+    <view class="fg">
+      <view class="fl"><text class="fl-icon">🕐</text>出生时间（精确到分钟）</view>
+      <view class="dr">
+        <input class="fi" type="number" placeholder="时" value="{{zFh}}" bindinput="onZFh"/>
+        <input class="fi" type="number" placeholder="分" value="{{zFm}}" bindinput="onZFm"/>
+      </view>
+    </view>
+    <view class="fg">
+      <view class="fl"><text class="fl-icon">📍</text>出生城市</view>
+      <input class="fi" placeholder="如：北京、上海、广州" value="{{zCity}}" bindinput="onZCity"/>
+      <text class="fg-hint">用于计算上升星座和宫位，请尽量准确</text>
+    </view>
+    <view class="dr" wx:if="{{zLng}}">
+      <text class="fg-hint">经度 {{zLng}} / 纬度 {{zLat}}（自动填充）</text>
+    </view>
+    <view class="btn-go" bindtap="doZodiacChart">
+      <text class="btn-go-main">生 成 星 盘</text>
+      <text class="btn-go-sub">解析星座命盘</text>
     </view>
   </view>
 

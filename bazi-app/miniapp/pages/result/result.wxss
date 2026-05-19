@@ -172,3 +172,42 @@
 .pw-btn:active{opacity:0.8}
 .pw-btn-loading{opacity:0.6}
 .pw-note{font-size:10px;color:var(--text-muted);margin-top:10px}
+
+/* ====== 星座星盘样式 ====== */
+.z-big3{display:flex;flex-direction:column;gap:14px}
+.z-b3-item{display:flex;flex-direction:column;align-items:center;gap:4px}
+.z-b3-label{font-size:12px;color:var(--text-muted)}
+.z-b3-sign{display:flex;align-items:center;gap:6px}
+.z-b3-sym{font-size:28px}
+.z-b3-name{font-size:18px;color:var(--text-primary);font-weight:bold}
+.z-b3-desc{font-size:11px;color:var(--text-placeholder)}
+
+.z-pt-header{display:flex;padding:8px 0 10px;border-bottom:1px solid var(--border-color)}
+.z-pt-th{font-size:12px;color:var(--text-muted);text-align:center}
+.z-pt-row{display:flex;padding:10px 0;border-bottom:1px solid var(--border-20);align-items:center}
+.z-pt-td{font-size:13px;color:var(--text-primary);text-align:center}
+
+.z-el-bar{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.z-el-label{font-size:12px;color:var(--text-secondary);min-width:60px}
+.z-el-track{flex:1;height:14px;background:var(--bg-input);border-radius:7px;overflow:hidden}
+.z-el-fill{height:100%;border-radius:7px;transition:width .6s}
+.z-el-count{font-size:11px;color:var(--text-muted);min-width:30px;text-align:right}
+.z-el-summary{font-size:12px;color:var(--text-muted);margin-top:10px;line-height:1.6}
+
+.z-asp-row{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;margin-bottom:4px;border-radius:8px;background:var(--bg-input);gap:6px}
+.z-asp-p{font-size:13px;color:var(--text-primary)}
+.z-asp-sym{font-size:18px}
+.z-asp-type{font-size:12px;color:var(--text-muted)}
+.z-asp-type.green{color:#5a9a6a}
+.z-asp-type.red{color:#e06070}
+
+.z-pats{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.z-pat-tag{padding:6px 16px;border-radius:14px;background:rgba(200,60,40,.1);border:1px solid rgba(200,60,40,.2);font-size:12px;color:#e08070}
+
+/* 深度解读文本块 */
+.z-text-block{font-size:14px;color:var(--text-body);line-height:1.9;white-space:pre-line;word-break:break-word}
+.z-planet-detail{padding:10px 0;border-bottom:1px solid var(--border-20)}
+.z-planet-detail:last-child{border-bottom:none}
+.z-pd-text{font-size:13px;color:var(--text-body);line-height:1.8;white-space:pre-line}
+.z-asp-detail{padding:12px 14px;margin-bottom:8px;background:var(--bg-input);border-radius:8px;border-left:3px solid var(--accent-30)}
+.z-ad-text{font-size:13px;color:var(--text-body);line-height:1.8;white-space:pre-line}

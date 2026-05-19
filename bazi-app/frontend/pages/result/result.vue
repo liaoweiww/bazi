@@ -7,7 +7,7 @@
         <view class="nav-back" @tap="goBack" aria-label="返回排盘页">
           <text class="nav-back__arrow" aria-hidden="true">&#xe600;</text>
         </view>
-        <text class="nav-bar__title">命盘解读</text>
+        <text class="nav-bar__title">{{ activeSystem === 'zodiac' ? '星盘解读' : '命盘解读' }}</text>
         <view class="nav-placeholder"></view>
       </view>
     </view>
@@ -207,13 +207,167 @@
         </view>
       </template>
 
+      <!-- ===== 星座星盘结果 ===== -->
+      <template v-if="!loading && zodiacData && activeSystem === 'zodiac'">
+        <!-- 用户信息条 -->
+        <view class="user-info-bar">
+          <view class="user-info-item">
+            <text class="info-label">姓名</text>
+            <text class="info-value">{{ zodiacData.name }}</text>
+          </view>
+          <view class="user-info-item">
+            <text class="info-label">性别</text>
+            <text class="info-value">{{ zodiacData.gender }}</text>
+          </view>
+          <view class="user-info-item">
+            <text class="info-label">出生</text>
+            <text class="info-value">{{ zodiacData.birth_datetime }}</text>
+          </view>
+        </view>
+
+        <!-- 日月升三大标签 -->
+        <view class="section-card">
+          <view class="section-title">
+            <view class="section-title__icon">星</view>
+            <text class="section-title__text">日月升 · 三大星座</text>
+          </view>
+          <classic-border variant="gold">
+            <view class="big-three">
+              <view class="big-three__item">
+                <text class="big-three__label">太阳星座</text>
+                <ZodiacSignBadge
+                  :name="zodiacData.bigThree?.sun?.sign || sunSign"
+                  :symbol="zodiacData.bigThree?.sun?.symbol || sunSymbol"
+                  :element="sunElement"
+                />
+                <text class="big-three__desc">你的核心自我、意志力和生命力所在</text>
+              </view>
+              <view class="big-three__item">
+                <text class="big-three__label">月亮星座</text>
+                <ZodiacSignBadge
+                  :name="zodiacData.bigThree?.moon?.sign || moonSign"
+                  :symbol="zodiacData.bigThree?.moon?.symbol || moonSymbol"
+                  :element="moonElement"
+                />
+                <text class="big-three__desc">你的情感需求、潜意识和安全感</text>
+              </view>
+              <view class="big-three__item">
+                <text class="big-three__label">上升星座</text>
+                <ZodiacSignBadge
+                  :name="zodiacData.bigThree?.ascendant?.sign || ascSign"
+                  :symbol="zodiacData.bigThree?.ascendant?.symbol || ascSymbol"
+                  :element="ascElement"
+                />
+                <text class="big-three__desc">你给别人的第一印象和人格面具</text>
+              </view>
+            </view>
+          </classic-border>
+        </view>
+
+        <!-- 星盘图 -->
+        <view class="section-card">
+          <view class="section-title">
+            <view class="section-title__icon">盘</view>
+            <text class="section-title__text">星盘图</text>
+          </view>
+          <classic-border>
+            <ZodiacWheel
+              :planets="zodiacData.planets || []"
+              :houses="zodiacData.houses || []"
+              :ascDegree="zodiacData.angles?.ascendant || 0"
+            />
+          </classic-border>
+        </view>
+
+        <!-- 行星落座落宫表 -->
+        <view class="section-card">
+          <view class="section-title">
+            <view class="section-title__icon">星</view>
+            <text class="section-title__text">行星位置</text>
+          </view>
+          <classic-border>
+            <view class="planet-table">
+              <view class="planet-table__header">
+                <text class="planet-table__th" style="flex:1.2">行星</text>
+                <text class="planet-table__th" style="flex:1.5">落座</text>
+                <text class="planet-table__th" style="flex:1.2">度数</text>
+                <text class="planet-table__th" style="flex:1">宫位</text>
+              </view>
+              <view class="planet-table__row" v-for="p in zodiacData.planets" :key="p.name_cn">
+                <text class="planet-table__td" style="flex:1.2">{{ planetSymbol(p.name_cn) }} {{ p.name_cn }}</text>
+                <text class="planet-table__td" style="flex:1.5">{{ p.sign_symbol }} {{ p.sign }}</text>
+                <text class="planet-table__td" style="flex:1.2">{{ p.degree_in_sign }}°</text>
+                <text class="planet-table__td" style="flex:1">第{{ p.house }}宫</text>
+              </view>
+            </view>
+          </classic-border>
+        </view>
+
+        <!-- 元素分布 -->
+        <view class="section-card">
+          <view class="section-title">
+            <view class="section-title__icon section-title__icon--fire">元</view>
+            <text class="section-title__text">元素分布</text>
+          </view>
+          <classic-border>
+            <ElementChart
+              :elements="zodiacData.analysis?.elements || {}"
+              :dominant="zodiacData.analysis?.dominant_element || ''"
+              :summary="zodiacData.analysis?.summary || ''"
+            />
+          </classic-border>
+        </view>
+
+        <!-- 主要相位 -->
+        <view class="section-card" v-if="zodiacData.aspects?.length">
+          <view class="section-title">
+            <view class="section-title__icon section-title__icon--gold">相</view>
+            <text class="section-title__text">主要相位</text>
+          </view>
+          <classic-border>
+            <view class="aspects-list">
+              <AspectBar
+                v-for="(asp, idx) in zodiacData.aspects.slice(0, 10)"
+                :key="idx"
+                :planet1="asp.planet1"
+                :planet2="asp.planet2"
+                :symbol="asp.aspect_symbol"
+                :type="asp.aspect_name_cn"
+                :keyword="asp.keyword"
+                :nature="asp.nature"
+              />
+            </view>
+          </classic-border>
+        </view>
+
+        <!-- 格局检测 -->
+        <view class="section-card" v-if="zodiacData.patterns?.length">
+          <view class="section-title">
+            <view class="section-title__icon section-title__icon--vermillion">局</view>
+            <text class="section-title__text">特殊格局</text>
+          </view>
+          <classic-border variant="vermillion">
+            <view class="patterns-list">
+              <view class="pattern-tag" v-for="pat in zodiacData.patterns" :key="pat">
+                <text>{{ pat }}</text>
+              </view>
+            </view>
+          </classic-border>
+        </view>
+      </template>
+
       <!-- 空状态 -->
-      <view class="empty-section" v-if="!loading && !baziData">
+      <view class="empty-section" v-if="!loading && !baziData && !zodiacData">
         <view class="empty-icon">命</view>
         <text class="empty-title">暂无命盘数据</text>
-        <text class="empty-desc">请先在"排盘"页面输入信息进行排盘</text>
-        <view class="empty-btn" @tap="goToIndex">
-          <text>前往排盘</text>
+        <text class="empty-desc">请先在"首页"选择排盘方式并输入信息</text>
+        <view class="empty-btns">
+          <view class="empty-btn" @tap="goToIndex">
+            <text>八字排盘</text>
+          </view>
+          <view class="empty-btn" @tap="goToIndex">
+            <text>星座命盘</text>
+          </view>
         </view>
       </view>
 
@@ -223,17 +377,23 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import ClassicBorder from '@/components/ClassicBorder.vue'
 import PillarCard from '@/components/PillarCard.vue'
 import WuxingChart from '@/components/WuxingChart.vue'
 import GanzhiTag from '@/components/GanzhiTag.vue'
 import DayunTimeline from '@/components/DayunTimeline.vue'
-import { mockBaziResult } from '@/api/index.js'
+import ZodiacSignBadge from '@/components/ZodiacSignBadge.vue'
+import ZodiacWheel from '@/components/ZodiacWheel.vue'
+import AspectBar from '@/components/AspectBar.vue'
+import ElementChart from '@/components/ElementChart.vue'
+import { mockBaziResult, mockZodiacChart } from '@/api/index.js'
 
 const statusBarHeight = ref(uni.getSystemInfoSync().statusBarHeight || 20)
 const loading = ref(true)
+const activeSystem = ref('bazi')
 const baziData = ref(null)
+const zodiacData = ref(null)
 
 // 四柱数据
 const pillars = computed(() => {
@@ -288,13 +448,63 @@ function goToIndex() {
   uni.switchTab({ url: '/pages/index/index' })
 }
 
+// === 星座相关 ===
+const ELEMENT_MAP = { '火': '火', '土': '土', '风': '风', '水': '水' }
+
+// 从zodiacData推导日月升 (若不存在interpretation)
+const sunPlanet = computed(() => zodiacData.value?.planets?.find(p => p.name_cn === '太阳'))
+const moonPlanet = computed(() => zodiacData.value?.planets?.find(p => p.name_cn === '月亮'))
+const sunSign = computed(() => sunPlanet.value?.sign || '')
+const sunSymbol = computed(() => sunPlanet.value?.sign_symbol || '')
+const sunElement = computed(() => ELEMENT_MAP[sunPlanet.value?.sign_element] || '火')
+const moonSign = computed(() => moonPlanet.value?.sign || '')
+const moonSymbol = computed(() => moonPlanet.value?.sign_symbol || '')
+const moonElement = computed(() => ELEMENT_MAP[moonPlanet.value?.sign_element] || '水')
+const ascSign = computed(() => zodiacData.value?.angles?.ascendant_sign || '')
+const ascSymbol = computed(() => zodiacData.value?.angles?.ascendant_symbol || '')
+const ascElement = computed(() => {
+  const s = zodiacData.value?.angles?.ascendant_sign
+  if (!s) return '风'
+  const el = zodiacData.value?.planets?.find(p => p.sign === s)
+  return ELEMENT_MAP[el?.sign_element] || '风'
+})
+
+function planetSymbol(name) {
+  const map = { '太阳':'☉','月亮':'☽','水星':'☿','金星':'♀','火星':'♂',
+                '木星':'♃','土星':'♄','天王星':'♅','海王星':'♆','冥王星':'♇' }
+  return map[name] || '•'
+}
+
+function zodiacInterpretation(planetName, signName) {
+  return ''  // 后端接口可选
+}
+
 onMounted(() => {
-  // 模拟加载排盘数据
-  // 实际开发中用API: calculateBazi(params) 或从storage读取参数
+  // 读取存储中的系统模式
+  try {
+    const system = uni.getStorageSync('activeSystem')
+    if (system) activeSystem.value = system
+  } catch (e) {}
+
   setTimeout(() => {
-    baziData.value = mockBaziResult()
+    if (activeSystem.value === 'zodiac') {
+      zodiacData.value = mockZodiacChart()
+      // 将后端数据结构转换为UI需要的大三角格式
+      const sunP = zodiacData.value.planets.find(p => p.name_cn === '太阳')
+      const moonP = zodiacData.value.planets.find(p => p.name_cn === '月亮')
+      zodiacData.value.bigThree = {
+        sun: { sign: sunP?.sign, symbol: sunP?.sign_symbol },
+        moon: { sign: moonP?.sign, symbol: moonP?.sign_symbol },
+        ascendant: {
+          sign: zodiacData.value.angles.ascendant_sign,
+          symbol: zodiacData.value.angles.ascendant_symbol
+        }
+      }
+    } else {
+      baziData.value = mockBaziResult()
+    }
     loading.value = false
-  }, 1500)
+  }, 1200)
 })
 </script>
 
@@ -775,4 +985,32 @@ onMounted(() => {
 .safe-bottom {
   height: calc(20rpx + env(safe-area-inset-bottom));
 }
+
+// ===== 星座样式 =====
+.big-three {
+  display: flex; flex-direction: column; gap: 20rpx;
+  &__item { display: flex; flex-direction: column; align-items: center; gap: 8rpx; }
+  &__label { font-size: 22rpx; color: var(--text-muted); font-family: 'STKaiti','KaiTi','楷体',serif; }
+  &__desc { font-size: 22rpx; color: var(--text-placeholder); margin-top: 4rpx; }
+}
+
+.planet-table {
+  &__header { display: flex; padding: 8rpx 0 12rpx; border-bottom: 1rpx solid var(--border-50); }
+  &__th { font-size: 22rpx; color: var(--text-muted); font-family: 'STKaiti','KaiTi','楷体',serif; text-align: center; }
+  &__row { display: flex; padding: 14rpx 0; border-bottom: 1rpx solid var(--border-20); align-items: center;
+    &:last-child { border-bottom: none; }
+  }
+  &__td { font-size: 24rpx; color: var(--text-primary); text-align: center; }
+}
+
+.aspects-list { padding: 8rpx 0; }
+
+.patterns-list { display: flex; flex-wrap: wrap; gap: 12rpx; justify-content: center; padding: 16rpx 0; }
+.pattern-tag {
+  padding: 10rpx 24rpx; border-radius: 20rpx;
+  background: var(--vermillion-10); border: 1rpx solid var(--vermillion-30);
+  font-size: 22rpx; color: var(--vermillion-light); font-family: 'STKaiti','KaiTi','楷体',serif;
+}
+
+.empty-btns { display: flex; gap: 16rpx; }
 </style>

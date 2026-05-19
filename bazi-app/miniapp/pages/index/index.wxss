@@ -80,6 +80,14 @@
 .theme-imperial .card{border:2px solid var(--border-color);box-shadow:0 0 0 1px var(--accent-10)}
 .theme-celadon .card::before{background:linear-gradient(90deg,transparent 0%,var(--accent-08) 20%,var(--accent-15) 50%,var(--accent-08) 80%,transparent 100%);border-radius:0 0 50% 50%}
 
+/* ====== 模式切换 ====== */
+.mode-switch{display:flex;gap:10px;margin:0 0 14px;padding:8px;background:var(--bg-card);border-radius:12px;border:1px solid var(--border-color)}
+.mode-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:12px 0;border-radius:8px;font-size:15px;color:var(--text-muted);transition:all .25s}
+.mode-icon{font-size:20px}
+.mode-on{background:var(--accent-10);border:1px solid var(--accent-30);color:var(--accent-light);font-weight:bold;box-shadow:0 0 12px var(--accent-10)}
+
+.fg-hint{font-size:11px;color:var(--text-placeholder);margin-top:4px;display:block}
+
 /* ====== 今日信息栏 ====== */
 .today-bar{display:flex;align-items:center;padding:12px 14px;margin-bottom:12px;background:var(--bg-card);border-radius:var(--radius-card);border:1px solid var(--border-color)}
 .today-item{display:flex;align-items:center;gap:10px}

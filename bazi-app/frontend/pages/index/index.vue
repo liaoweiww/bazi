@@ -30,6 +30,26 @@
         </view>
       </view>
 
+      <!-- 模式切换：八字 / 星座 -->
+      <view class="mode-switch">
+        <view
+          class="mode-btn"
+          :class="{ 'mode-btn--active': activeMode === 'bazi' }"
+          @tap="activeMode = 'bazi'"
+        >
+          <text class="mode-btn__icon">☯</text>
+          <text class="mode-btn__text">八字排盘</text>
+        </view>
+        <view
+          class="mode-btn"
+          :class="{ 'mode-btn--active': activeMode === 'zodiac' }"
+          @tap="activeMode = 'zodiac'"
+        >
+          <text class="mode-btn__icon">☆</text>
+          <text class="mode-btn__text">星座命盘</text>
+        </view>
+      </view>
+
       <!-- 界面风格选择 -->
       <view class="theme-bar">
         <view class="theme-bar__header">
@@ -56,24 +76,19 @@
         </view>
       </view>
 
-      <!-- 输入表单区域 -->
-      <view class="form-section">
+      <!-- ===== 八字输入表单 ===== -->
+      <view class="form-section" v-if="activeMode === 'bazi'">
         <classic-border variant="gold">
           <view class="form-card">
-            <!-- 姓名 -->
             <view class="form-item">
               <view class="form-item__label">
-                <text class="label-icon">姓</text>
-                <text class="label-text">姓名</text>
+                <text class="label-icon">姓</text><text class="label-text">姓名</text>
               </view>
               <input class="form-item__input" v-model="formData.name" placeholder="请输入姓名…" placeholder-style="color: var(--text-placeholder)" maxlength="20" />
             </view>
-
-            <!-- 性别 -->
             <view class="form-item">
               <view class="form-item__label">
-                <text class="label-icon">性</text>
-                <text class="label-text">性别</text>
+                <text class="label-icon">性</text><text class="label-text">性别</text>
               </view>
               <view class="gender-switch">
                 <view class="gender-switch__option" :class="{ 'gender-switch__option--active': formData.gender === 1 }" @tap="formData.gender = 1">
@@ -84,12 +99,9 @@
                 </view>
               </view>
             </view>
-
-            <!-- 出生日期 -->
             <view class="form-item">
               <view class="form-item__label">
-                <text class="label-icon">诞</text>
-                <text class="label-text">出生日期</text>
+                <text class="label-icon">诞</text><text class="label-text">出生日期</text>
               </view>
               <picker mode="date" :value="formData.birthDate" :end="today" @change="onDateChange">
                 <view class="form-item__picker">
@@ -98,12 +110,9 @@
                 </view>
               </picker>
             </view>
-
-            <!-- 出生时间 -->
             <view class="form-item">
               <view class="form-item__label">
-                <text class="label-icon">时</text>
-                <text class="label-text">出生时间</text>
+                <text class="label-icon">时</text><text class="label-text">出生时间</text>
               </view>
               <picker mode="time" :value="formData.birthTime" @change="onTimeChange">
                 <view class="form-item__picker">
@@ -112,12 +121,9 @@
                 </view>
               </picker>
             </view>
-
-            <!-- 出生地 -->
             <view class="form-item">
               <view class="form-item__label">
-                <text class="label-icon">地</text>
-                <text class="label-text">出生地</text>
+                <text class="label-icon">地</text><text class="label-text">出生地</text>
               </view>
               <picker mode="region" :value="regionIndexes" @change="onRegionChange">
                 <view class="form-item__picker">
@@ -126,8 +132,6 @@
                 </view>
               </picker>
             </view>
-
-            <!-- 经纬度 -->
             <view class="form-item form-item--row" v-if="formData.lng && formData.lat">
               <text class="form-item__coord-label">经纬度：</text>
               <input class="form-item__coord-input" v-model="formData.lng" placeholder="经度" placeholder-style="color: var(--text-placeholder)" />
@@ -136,8 +140,6 @@
             </view>
           </view>
         </classic-border>
-
-        <!-- 排盘按钮 -->
         <view class="submit-section">
           <view class="submit-btn" @tap="handleCalculate">
             <view class="submit-btn__glow"></view>
@@ -145,6 +147,82 @@
             <text class="submit-btn__sub">探寻命理玄机</text>
           </view>
         </view>
+      </view>
+
+      <!-- ===== 星座输入表单 ===== -->
+      <view class="form-section" v-if="activeMode === 'zodiac'">
+        <classic-border variant="gold">
+          <view class="form-card">
+            <view class="form-item">
+              <view class="form-item__label">
+                <text class="label-icon">姓</text><text class="label-text">姓名</text>
+              </view>
+              <input class="form-item__input" v-model="zodiacForm.name" placeholder="请输入姓名…" placeholder-style="color: var(--text-placeholder)" maxlength="20" />
+            </view>
+            <view class="form-item">
+              <view class="form-item__label">
+                <text class="label-icon">性</text><text class="label-text">性别</text>
+              </view>
+              <view class="gender-switch">
+                <view class="gender-switch__option" :class="{ 'gender-switch__option--active': zodiacForm.gender === '男' }" @tap="zodiacForm.gender = '男'">
+                  <text class="gender-icon">♂</text><text>男</text>
+                </view>
+                <view class="gender-switch__option" :class="{ 'gender-switch__option--active': zodiacForm.gender === '女' }" @tap="zodiacForm.gender = '女'">
+                  <text class="gender-icon">♀</text><text>女</text>
+                </view>
+              </view>
+            </view>
+            <view class="form-item">
+              <view class="form-item__label">
+                <text class="label-icon">诞</text><text class="label-text">出生日期</text>
+              </view>
+              <picker mode="date" :value="zodiacForm.birthDate" :end="today" @change="onZodiacDateChange">
+                <view class="form-item__picker">
+                  <text :class="{ 'picker-placeholder': !zodiacForm.birthDate }">{{ zodiacForm.birthDate || '请选择公历出生日期…' }}</text>
+                  <text class="picker-arrow">▼</text>
+                </view>
+              </picker>
+            </view>
+            <view class="form-item">
+              <view class="form-item__label">
+                <text class="label-icon">时</text><text class="label-text">出生时间</text>
+              </view>
+              <picker mode="time" :value="zodiacForm.birthTime" @change="onZodiacTimeChange">
+                <view class="form-item__picker">
+                  <text :class="{ 'picker-placeholder': !zodiacForm.birthTime }">{{ zodiacForm.birthTime || '请选择精确出生时间…' }}</text>
+                  <text class="picker-arrow">▼</text>
+                </view>
+              </picker>
+              <text class="form-item__hint">精确时间是上升星座计算的关键</text>
+            </view>
+            <view class="form-item">
+              <view class="form-item__label">
+                <text class="label-icon">地</text><text class="label-text">出生地</text>
+              </view>
+              <picker mode="region" :value="zodiacRegionIndexes" @change="onZodiacRegionChange">
+                <view class="form-item__picker">
+                  <text :class="{ 'picker-placeholder': !zodiacForm.location }">{{ zodiacForm.location || '请选择省/市/区…' }}</text>
+                  <text class="picker-arrow">▼</text>
+                </view>
+              </picker>
+              <text class="form-item__hint">出生地对上升星座计算至关重要</text>
+            </view>
+            <view class="form-item form-item--row" v-if="zodiacForm.lng">
+              <text class="form-item__coord-label">经纬度：</text>
+              <input class="form-item__coord-input" v-model="zodiacForm.lng" placeholder="经度" placeholder-style="color: var(--text-placeholder)" />
+              <text class="form-item__coord-sep">,</text>
+              <input class="form-item__coord-input" v-model="zodiacForm.lat" placeholder="纬度" placeholder-style="color: var(--text-placeholder)" />
+            </view>
+          </view>
+        </classic-border>
+        <view class="submit-section">
+          <view class="submit-btn" @tap="handleZodiacCalculate">
+            <view class="submit-btn__glow"></view>
+            <text class="submit-btn__text">生 成 星 盘</text>
+            <text class="submit-btn__sub">解析星座命盘</text>
+          </view>
+        </view>
+      </view>
 
         <!-- 古籍引用 -->
         <view class="quote-section">
@@ -227,10 +305,44 @@ _applyTheme(currentTheme.value)
 const statusBarHeight = ref(uni.getSystemInfoSync().statusBarHeight || 20)
 const today = new Date().toISOString().split('T')[0]
 
+// 模式切换
+const activeMode = ref('bazi')
+
+// 八字表单
 const formData = reactive({
   name: '', gender: 1, birthDate: '', birthTime: '', location: '', lng: '', lat: ''
 })
 const regionIndexes = ref([])
+
+// 星座表单
+const zodiacForm = reactive({
+  name: '', gender: '女', birthDate: '', birthTime: '', location: '', lng: '', lat: ''
+})
+const zodiacRegionIndexes = ref([])
+
+// 城市经纬度映射（精确出生地坐标）
+const CITY_COORDS = {
+  '北京市': { lng: 116.4, lat: 39.9, tz: 8 },
+  '上海市': { lng: 121.5, lat: 31.2, tz: 8 },
+  '广州市': { lng: 113.3, lat: 23.1, tz: 8 },
+  '深圳市': { lng: 114.1, lat: 22.5, tz: 8 },
+  '成都市': { lng: 104.1, lat: 30.6, tz: 8 },
+  '重庆市': { lng: 106.5, lat: 29.5, tz: 8 },
+  '杭州市': { lng: 120.2, lat: 30.3, tz: 8 },
+  '武汉市': { lng: 114.3, lat: 30.6, tz: 8 },
+  '西安市': { lng: 108.9, lat: 34.3, tz: 8 },
+  '南京市': { lng: 118.8, lat: 32.1, tz: 8 },
+  '天津市': { lng: 117.2, lat: 39.1, tz: 8 },
+  '沈阳市': { lng: 123.4, lat: 41.8, tz: 8 },
+  '哈尔滨市': { lng: 126.6, lat: 45.8, tz: 8 },
+  '长沙市': { lng: 113.0, lat: 28.2, tz: 8 },
+  '郑州市': { lng: 113.7, lat: 34.8, tz: 8 },
+  '济南市': { lng: 117.0, lat: 36.7, tz: 8 },
+  '福州市': { lng: 119.3, lat: 26.1, tz: 8 },
+  '昆明市': { lng: 102.7, lat: 25.0, tz: 8 },
+  '乌鲁木齐市': { lng: 87.6, lat: 43.8, tz: 6 },
+  '拉萨市': { lng: 91.1, lat: 29.6, tz: 6 },
+}
 
 const quotes = [
   { text: '天尊地卑，乾坤定矣。卑高以陈，贵贱位矣。', source: '周易·系辞上' },
@@ -253,8 +365,37 @@ function handleCalculate() {
   if (!formData.birthDate) { uni.showToast({ title: '请选择出生日期', icon: 'none' }); return }
   if (!formData.birthTime) { uni.showToast({ title: '请选择出生时间', icon: 'none' }); return }
   uni.setStorageSync('baziFormData', { ...formData })
+  uni.setStorageSync('activeSystem', 'bazi')
   uni.switchTab({ url: '/pages/result/result' })
   uni.showToast({ title: '排盘进行中…', icon: 'loading', duration: 1500 })
+}
+
+// === 星座表单处理 ===
+function onZodiacDateChange(e) { zodiacForm.birthDate = e.detail.value }
+function onZodiacTimeChange(e) { zodiacForm.birthTime = e.detail.value }
+function onZodiacRegionChange(e) {
+  const values = e.detail.value
+  zodiacRegionIndexes.value = e.detail.index || []
+  zodiacForm.location = values.join(' ')
+  // 自动匹配经纬度
+  const city = values[1] || values[0]
+  if (CITY_COORDS[city]) {
+    zodiacForm.lng = String(CITY_COORDS[city].lng)
+    zodiacForm.lat = String(CITY_COORDS[city].lat)
+  } else {
+    zodiacForm.lng = '116.4'
+    zodiacForm.lat = '39.9'
+  }
+}
+
+function handleZodiacCalculate() {
+  if (!zodiacForm.name.trim()) { uni.showToast({ title: '请输入姓名', icon: 'none' }); return }
+  if (!zodiacForm.birthDate) { uni.showToast({ title: '请选择出生日期', icon: 'none' }); return }
+  if (!zodiacForm.birthTime) { uni.showToast({ title: '请选择出生时间（上升星座计算必需）', icon: 'none' }); return }
+  uni.setStorageSync('zodiacFormData', { ...zodiacForm })
+  uni.setStorageSync('activeSystem', 'zodiac')
+  uni.switchTab({ url: '/pages/result/result' })
+  uni.showToast({ title: '星盘计算中…', icon: 'loading', duration: 1500 })
 }
 </script>
 
@@ -298,7 +439,34 @@ function handleCalculate() {
   &__diamond { width: 12rpx; height: 12rpx; background: var(--accent-light); transform: rotate(45deg); box-shadow: 0 0 8rpx var(--accent-50); }
 }
 
-// ===== 主题选择条 =====
+// 模式切换
+.mode-switch {
+  display: flex; gap: 16rpx; margin: 0 24rpx 20rpx; padding: 12rpx;
+  background: var(--bg-card); border-radius: 16rpx;
+  border: 1rpx solid var(--border-50);
+}
+.mode-btn {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 6rpx; padding: 18rpx 0; border-radius: 12rpx;
+  background: transparent; transition: all 0.3s;
+  border: 2rpx solid transparent;
+  &__icon { font-size: 36rpx; color: var(--text-muted); transition: color 0.3s; }
+  &__text { font-size: 26rpx; color: var(--text-secondary); font-family: 'STKaiti','KaiTi','楷体',serif; letter-spacing: 4rpx; transition: color 0.3s; }
+  &--active {
+    background: var(--accent-10); border-color: var(--accent-40);
+    box-shadow: 0 0 20rpx var(--accent-15);
+    .mode-btn__icon { color: var(--accent-light); }
+    .mode-btn__text { color: var(--accent-light); font-weight: bold; }
+  }
+}
+
+// 表单提示文字
+.form-item__hint {
+  font-size: 20rpx; color: var(--text-placeholder);
+  font-family: 'STKaiti','KaiTi','楷体',serif; margin-top: 6rpx;
+}
+
+// 主题选择条
 .theme-bar {
   margin: 0 24rpx 16rpx;
   padding: 16rpx 0;

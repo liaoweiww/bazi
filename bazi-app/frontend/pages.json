@@ -3,7 +3,7 @@
     {
       "path": "pages/index/index",
       "style": {
-        "navigationBarTitleText": "易经八字",
+        "navigationBarTitleText": "首页",
         "navigationBarBackgroundColor": "#1a0a00",
         "navigationBarTextStyle": "white",
         "navigationStyle": "custom",
@@ -21,7 +21,7 @@
     {
       "path": "pages/reference/reference",
       "style": {
-        "navigationBarTitleText": "古籍参考",
+        "navigationBarTitleText": "百科",
         "navigationStyle": "custom",
         "enablePullDownRefresh": false
       }
@@ -44,19 +44,19 @@
         "pagePath": "pages/index/index",
         "iconPath": "static/tab-home.png",
         "selectedIconPath": "static/tab-home-active.png",
-        "text": "排盘"
+        "text": "首页"
       },
       {
         "pagePath": "pages/result/result",
         "iconPath": "static/tab-chart.png",
         "selectedIconPath": "static/tab-chart-active.png",
-        "text": "命盘"
+        "text": "解读"
       },
       {
         "pagePath": "pages/reference/reference",
         "iconPath": "static/tab-book.png",
         "selectedIconPath": "static/tab-book-active.png",
-        "text": "古籍"
+        "text": "百科"
       }
     ]
   }

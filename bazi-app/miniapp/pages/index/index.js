@@ -8,6 +8,11 @@ Page({
     name:'', gender:'男', calType:'solar', leap:false,
     sy:'1990',sm:'6',sd:'15', ly:'1990',lm:'5',ld:'21', fh:'8',fm:'0',
     themeStyle: '', currentTheme: '', icons: {},
+    // 模式切换
+    calcMode: 'bazi',
+    // 星座表单
+    zName:'', zGender:'女', zSy:'1995', zSm:'8', zSd:'20',
+    zFh:'12', zFm:'0', zCity:'', zLng:'', zLat:'',
     // 新功能
     showForm: false,
     profiles: [],
@@ -28,6 +33,35 @@ Page({
     // 如果从结果页返回，可能缓存了上次排盘结果，更新日运
     if (app.globalData.paipanResult) {
       this.loadDailyFortune()
+      // 自动恢复上次排盘表单
+      const d = app.globalData.paipanResult
+      if (d.name) this.setData({ name: d.name })
+      if (d.birth_info) {
+        const bi = d.birth_info
+        // 恢复出生日期
+        if (bi.solar_date) {
+          const [y, m, d_] = bi.solar_date.split('-')
+          this.setData({ sy: y, sm: m, sd: d_ })
+        }
+        // 恢复时间
+        if (bi.birth_time) {
+          const [h, mi] = bi.birth_time.split(':')
+          this.setData({ fh: h, fm: mi || '0' })
+        }
+      }
+      if (d.gender) this.setData({ gender: d.gender })
+    }
+    // 恢复上次档案的表单
+    const activeId = wx.getStorageSync('bazi_active_profile')
+    if (activeId && this.data.profiles.length > 0) {
+      const p = this.data.profiles.find(p => p.id === activeId)
+      if (p && !app.globalData.paipanResult) {
+        this.setData({
+          name: p.name, gender: p.gender, calType: p.calendar_type || 'solar',
+          sy: String(p.solar_year || ''), sm: String(p.solar_month || ''),
+          sd: String(p.solar_day || ''), fh: String(p.hour || ''), fm: String(p.minute || '')
+        })
+      }
     }
   },
 
@@ -89,7 +123,26 @@ Page({
     const id = e.currentTarget.dataset.id
     const p = this.data.profiles.find(p => p.id === id)
     if (!p) return
-    // 恢复表单数据
+
+    // 星座档案
+    if (p.calcMode === 'zodiac') {
+      this.setData({
+        calcMode: 'zodiac',
+        zName: p.name, zGender: p.gender,
+        zSy: String(p.solar_year || ''), zSm: String(p.solar_month || ''), zSd: String(p.solar_day || ''),
+        zFh: String(p.hour || ''), zFm: String(p.minute || ''),
+        zCity: p.city || '', zLng: p.lng || '', zLat: p.lat || ''
+      })
+      if (p.zodiacResult) {
+        app.globalData.zodiacResult = p.zodiacResult
+        app.globalData.paipanResult = null
+        wx.setStorageSync('bazi_active_profile', id)
+        wx.navigateTo({ url: '/pages/result/result?mode=zodiac' })
+      }
+      return
+    }
+
+    // 八字档案
     this.setData({
       name: p.name, gender: p.gender, calType: p.calendar_type || 'solar',
       sy: String(p.solar_year || ''), sm: String(p.solar_month || ''),
@@ -166,6 +219,41 @@ Page({
   onFh(e){ this.setData({fh:e.detail.value}) },
   onFm(e){ this.setData({fm:e.detail.value}) },
 
+  // ===== 模式切换 =====
+  onCalcMode(e){ this.setData({calcMode:e.currentTarget.dataset.v}) },
+
+  // ===== 星座表单处理 =====
+  onZName(e){ this.setData({zName:e.detail.value}) },
+  onZGender(e){ this.setData({zGender:e.currentTarget.dataset.v}) },
+  onZSy(e){ this.setData({zSy:e.detail.value}) },
+  onZSm(e){ this.setData({zSm:e.detail.value}) },
+  onZSd(e){ this.setData({zSd:e.detail.value}) },
+  onZFh(e){ this.setData({zFh:e.detail.value}) },
+  onZFm(e){ this.setData({zFm:e.detail.value}) },
+  onZCity(e){
+    const city = e.detail.value
+    this.setData({zCity:city})
+    // 自动匹配经纬度
+    const coords = {
+      '北京':[116.4,39.9], '上海':[121.5,31.2], '广州':[113.3,23.1], '深圳':[114.1,22.5],
+      '成都':[104.1,30.6], '重庆':[106.5,29.5], '杭州':[120.2,30.3], '武汉':[114.3,30.6],
+      '西安':[108.9,34.3], '南京':[118.8,32.1], '天津':[117.2,39.1], '沈阳':[123.4,41.8],
+      '哈尔滨':[126.6,45.8], '长沙':[113.0,28.2], '郑州':[113.7,34.8], '济南':[117.0,36.7],
+      '福州':[119.3,26.1], '昆明':[102.7,25.0], '厦门':[118.1,24.5], '青岛':[120.4,36.1],
+      '大连':[121.6,38.9], '苏州':[120.6,31.3], '宁波':[121.5,29.9], '南宁':[108.3,22.8],
+      '贵阳':[106.7,26.6], '兰州':[103.8,36.1], '太原':[112.5,37.9], '南昌':[115.9,28.7],
+      '合肥':[117.3,31.8], '长春':[125.3,43.9]
+    }
+    for (let k in coords) {
+      if (city.indexOf(k) >= 0) {
+        this.setData({zLng:String(coords[k][0]), zLat:String(coords[k][1])})
+        return
+      }
+    }
+    // 默认
+    this.setData({zLng:'116.4', zLat:'39.9'})
+  },
+
   async doPaipan(){
     const d = this.data
     const api = app.globalData.apiBase
@@ -194,6 +282,71 @@ Page({
         wx.navigateTo({url:'/pages/result/result'})
       } else {
         wx.showToast({title:resp.data.error||'排盘失败',icon:'none'})
+      }
+    } catch(e){
+      wx.hideLoading()
+      wx.showToast({title:'网络请求失败，请检查服务器连接',icon:'none'})
+    }
+  },
+
+  saveZodiacProfile(chartData) {
+    const d = this.data
+    const profile = {
+      id: 'z_' + Date.now().toString(36),
+      name: d.zName || '未命名',
+      gender: d.zGender,
+      calcMode: 'zodiac',
+      solar_year: parseInt(d.zSy), solar_month: parseInt(d.zSm), solar_day: parseInt(d.zSd),
+      hour: parseInt(d.zFh)||0, minute: parseInt(d.zFm)||0,
+      city: d.zCity, lng: d.zLng, lat: d.zLat,
+      zodiacResult: chartData,
+      createdAt: new Date().toISOString()
+    }
+    const profiles = this.data.profiles.slice()
+    // 去重
+    const dup = profiles.findIndex(p =>
+      p.name === profile.name && p.gender === profile.gender &&
+      p.solar_year === profile.solar_year && p.solar_month === profile.solar_month &&
+      p.solar_day === profile.solar_day && p.hour === profile.hour
+    )
+    if (dup >= 0) profiles.splice(dup, 1)
+    profiles.unshift(profile)
+    if (profiles.length > 10) profiles.pop()
+    wx.setStorageSync(PROFILE_KEY, profiles)
+    wx.setStorageSync('bazi_active_profile', profile.id)
+    this.setData({ profiles, activeProfileId: profile.id, showForm: false })
+  },
+
+  async doZodiacChart(){
+    const d = this.data
+    const api = app.globalData.apiBase
+    const sy = parseInt(d.zSy), sm = parseInt(d.zSm), sd = parseInt(d.zSd)
+    if(!d.zName.trim()){ wx.showToast({title:'请输入姓名',icon:'none'}); return }
+    if(!sy||!sm||!sd){ wx.showToast({title:'请填写完整出生日期',icon:'none'}); return }
+    if(!d.zFh){ wx.showToast({title:'请填写出生时间',icon:'none'}); return }
+
+    const body = {
+      name: d.zName, gender: d.zGender,
+      solar_year: sy, solar_month: sm, solar_day: sd,
+      hour: parseInt(d.zFh)||0, minute: parseInt(d.zFm)||0,
+      longitude: parseFloat(d.zLng)||116.4,
+      latitude: parseFloat(d.zLat)||39.9,
+      timezone: 8.0
+    }
+
+    wx.showLoading({title:'星盘计算中...',mask:true})
+    try {
+      const resp = await new Promise((resolve, reject) => {
+        wx.request({url:api+'/astrology/chart',method:'POST',header:REQ_HEADER,data:body,timeout:30000,success:resolve,fail:reject})
+      })
+      wx.hideLoading()
+      if(resp.data.success){
+        app.globalData.zodiacResult = resp.data.data
+        app.globalData.paipanResult = null
+        this.saveZodiacProfile(resp.data.data)
+        wx.navigateTo({url:'/pages/result/result?mode=zodiac'})
+      } else {
+        wx.showToast({title:resp.data.error||'星盘计算失败',icon:'none'})
       }
     } catch(e){
       wx.hideLoading()

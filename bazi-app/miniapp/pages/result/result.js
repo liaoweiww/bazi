@@ -10,6 +10,8 @@ Page({
     unlocking: false,
     themeStyle: '', currentTheme: '', icons: {},
     showCanvas: false,
+    // 模式
+    calcMode: 'bazi',
     // 折叠状态
     showBirth: false,
     showShensha: false,
@@ -34,8 +36,75 @@ Page({
     this.setData({ themeStyle: style, currentTheme: t, icons: icons })
   },
 
-  onLoad() {
+  onLoad(options) {
     this.applyTheme()
+
+    // 判断模式
+    const isZodiac = options && options.mode === 'zodiac'
+    if (isZodiac) {
+      const z = app.globalData.zodiacResult
+      if (!z) {
+        wx.showToast({ title: '请先生成星盘', icon: 'none' })
+        setTimeout(() => wx.navigateBack(), 1500)
+        return
+      }
+      // 处理日月升
+      const sunP = z.planets.find(p => p.name_cn === '太阳')
+      const moonP = z.planets.find(p => p.name_cn === '月亮')
+      const ascSign = z.angles?.ascendant_sign || ''
+      const ascSym = z.angles?.ascendant_symbol || ''
+      const bigThreeList = [
+        { label: '太阳星座', symbol: sunP?.sign_symbol||'', sign: sunP?.sign||'', desc: '核心自我、意志力和生命力所在' },
+        { label: '月亮星座', symbol: moonP?.sign_symbol||'', sign: moonP?.sign||'', desc: '情感需求、潜意识和安全感' },
+        { label: '上升星座', symbol: ascSym, sign: ascSign, desc: '第一印象和人格面具' }
+      ]
+      // 处理元素列表
+      const elConfig = {
+        '火':{icon:'🔥',name:'火象',color:'linear-gradient(90deg,#e04030,#f08050)'},
+        '土':{icon:'🌍',name:'土象',color:'linear-gradient(90deg,#8a7a40,#b8a060)'},
+        '风':{icon:'💨',name:'风象',color:'linear-gradient(90deg,#b0b840,#d8d860)'},
+        '水':{icon:'💧',name:'水象',color:'linear-gradient(90deg,#4060c0,#6080e0)'}
+      }
+      const elList = []
+      if (z.analysis?.elements) {
+        Object.entries(z.analysis.elements).forEach(([key,val]) => {
+          const cfg = elConfig[key] || {icon:'',name:key,color:'#888'}
+          elList.push({ key, icon:cfg.icon, name:cfg.name, count:val.count||0, pct:val.percentage||0, color:cfg.color })
+        })
+      }
+      z.bigThreeList = bigThreeList
+      z.elList = elList
+
+      this.setData({ calcMode: 'zodiac', loaded: true, zodiacData: z })
+      wx.setNavigationBarTitle({ title: '星盘解读' })
+
+      // 加载星盘深度解读
+      const api = app.globalData.apiBase
+      wx.request({
+        url: api + '/astrology/interpret', method: 'POST',
+        header: REQ_HEADER,
+        data: { chart_result: z }, timeout: 15000,
+        success: resp => {
+          if (resp.data.success) {
+            const interp = resp.data.data
+            this.setData({
+              zodiacInterpret: interp,
+              'zodiacData.bigThreeSummary': interp.big_three_summary || '',
+              'zodiacData.personalityText': interp.personality || '',
+              'zodiacData.loveText': interp.love || '',
+              'zodiacData.careerText': interp.career || '',
+              'zodiacData.wealthText': interp.wealth || '',
+              'zodiacData.planetDetails': interp.planet_details || [],
+              'zodiacData.aspectDetails': interp.aspect_details || [],
+              'zodiacData.summaryText': interp.summary || ''
+            })
+          }
+        },
+        fail: err => console.error('zodiac interpret fail:', err)
+      })
+      return
+    }
+
     this.checkPurchased()
     const d = app.globalData.paipanResult
     if (!d) {
@@ -43,6 +112,7 @@ Page({
       setTimeout(() => wx.navigateBack(), 1500)
       return
     }
+    this.setData({ calcMode: 'bazi' })
     const now = new Date()
     const [by, bm, bd] = d.birth_info.solar_date.split('-').map(Number)
     const age = now.getFullYear() - by - ((now.getMonth() + 1 < bm) || (now.getMonth() + 1 === bm && now.getDate() < bd) ? 1 : 0)

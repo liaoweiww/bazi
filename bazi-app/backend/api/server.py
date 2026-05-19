@@ -458,6 +458,168 @@ def api_daily_fortune():
         return jsonify({"error": str(e)}), 500
 
 
+# =============================================================================
+# 星座占星 API 端点
+# =============================================================================
+
+@app.route('/api/astrology/chart', methods=['POST'])
+def api_astrology_chart():
+    """
+    星座星盘计算接口
+
+    请求参数:
+    {
+        "name": "张三",
+        "gender": "男",
+        "solar_year": 1990,
+        "solar_month": 6,
+        "solar_day": 15,
+        "hour": 8,
+        "minute": 30,
+        "longitude": 116.4,
+        "latitude": 39.9,
+        "timezone": 8.0
+    }
+    """
+    try:
+        data = request.get_json()
+        required = ['solar_year', 'solar_month', 'solar_day', 'hour']
+        for field in required:
+            if field not in data:
+                return jsonify({"error": f"缺少必要参数: {field}"}), 400
+
+        from astrology.chart import calculate_chart
+        result = calculate_chart(
+            year=int(data['solar_year']),
+            month=int(data['solar_month']),
+            day=int(data['solar_day']),
+            hour=int(data.get('hour', 0)),
+            minute=int(data.get('minute', 0)),
+            longitude=float(data.get('longitude', 116.4)),
+            latitude=float(data.get('latitude', 39.9)),
+            timezone_offset=float(data.get('timezone', 8.0)),
+            name=data.get('name', ''),
+            gender=data.get('gender', '')
+        )
+        return jsonify({"success": True, "data": result})
+    except ValueError as e:
+        return jsonify({"error": f"参数格式错误: {str(e)}"}), 400
+    except Exception as e:
+        return jsonify({"error": f"星盘计算失败: {str(e)}"}), 500
+
+
+@app.route('/api/astrology/interpret', methods=['POST'])
+def api_astrology_interpret():
+    """
+    星盘解读接口
+
+    请求参数: {"chart_result": {...星盘计算结果...}}
+    返回: 完整星盘解读
+    """
+    try:
+        data = request.get_json()
+        chart_result = data.get('chart_result', {})
+        if not chart_result:
+            return jsonify({"error": "缺少星盘结果"}), 400
+
+        from texts_astrology.engine import AstrologyTextEngine
+        engine = AstrologyTextEngine()
+        result = engine.interpret_full_chart(chart_result)
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        return jsonify({"error": f"星盘解读失败: {str(e)}"}), 500
+
+
+@app.route('/api/astrology/daily', methods=['POST'])
+def api_astrology_daily():
+    """每日星座运势"""
+    try:
+        data = request.get_json()
+        sign_name = data.get('sign', '')
+
+        import random
+        random.seed(f"{datetime.now().strftime('%Y%m%d')}_{sign_name}")
+
+        areas = ['爱情', '事业', '财运', '健康', '社交']
+        scores = {}
+        for area in areas:
+            scores[area] = random.randint(2, 5)
+
+        overall = sum(scores.values()) / len(scores)
+
+        tips_pool = [
+            "今天适合主动出击，把握机会。",
+            "保持低调和耐心，好事即将发生。",
+            "注意身边的小细节，它们可能暗藏重要信息。",
+            "与朋友交流能带来新的灵感和方向。",
+            "给自己一些时间和空间来放松和思考。",
+        ]
+        lucky_color = random.choice(['红色', '蓝色', '绿色', '黄色', '白色', '紫色', '橙色'])
+        lucky_number = random.randint(1, 99)
+
+        return jsonify({"success": True, "data": {
+            "date": datetime.now().strftime("%Y-%m-%d"),
+            "sign": sign_name,
+            "overall_score": round(overall, 1),
+            "area_scores": scores,
+            "lucky_color": lucky_color,
+            "lucky_number": str(lucky_number),
+            "tip": random.choice(tips_pool),
+        }})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/astrology/reference/signs', methods=['GET'])
+def api_astrology_reference_signs():
+    """获取12星座参考数据"""
+    try:
+        from texts_astrology.engine import AstrologyTextEngine
+        engine = AstrologyTextEngine()
+        signs = engine._load_signs()
+        sign_name = request.args.get('name')
+        if sign_name and sign_name in signs:
+            return jsonify({"success": True, "data": signs[sign_name]})
+        return jsonify({"success": True, "data": list(signs.keys()),
+                         "full_data": signs})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/astrology/reference/houses', methods=['GET'])
+def api_astrology_reference_houses():
+    """获取12宫位参考数据"""
+    try:
+        from texts_astrology.engine import AstrologyTextEngine
+        engine = AstrologyTextEngine()
+        houses = engine._load_houses()
+        return jsonify({"success": True, "data": houses})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/astrology/reference/aspects', methods=['GET'])
+def api_astrology_reference_aspects():
+    """获取相位类型参考数据"""
+    try:
+        from texts_astrology.engine import AstrologyTextEngine
+        engine = AstrologyTextEngine()
+        aspects = engine._load_aspects()
+        return jsonify({"success": True, "data": aspects})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/astrology/reference/planets', methods=['GET'])
+def api_astrology_reference_planets():
+    """获取行星参考数据"""
+    try:
+        from astrology.constants import PLANETS
+        return jsonify({"success": True, "data": PLANETS})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 if __name__ == '__main__':
     print("=" * 50)
     print("  易经八字推算系统 API Server")

@@ -1,4 +1,6 @@
 <scroll-view class="wrap theme-root theme-{{currentTheme}}" style="{{themeStyle}}" scroll-y scroll-x="{{false}}" enhanced show-scrollbar="{{false}}" wx:if="{{loaded}}">
+  <!-- ====== 八字命盘内容 ====== -->
+  <block wx:if="{{calcMode==='bazi'}}">
   <!-- ====== 八字命盘 — 钻石布局 ====== -->
   <view class="card">
     <view class="ct">
@@ -77,9 +79,126 @@
       <view class="ir"><text class="dim">性别</text><text>{{birth.gender==='男'?'☰ 乾造':'☷ 坤造'}}</text></view>
     </view>
   </view>
+  </block>
+  <!-- ====== 八字内容结束 ====== -->
+
+  <!-- ====== 星座星盘内容 ====== -->
+  <block wx:if="{{calcMode==='zodiac'}}">
+  <!-- 用户信息 -->
+  <view class="card">
+    <view class="ir"><text class="dim">姓名</text><text class="gold">{{zodiacData.name}}</text></view>
+    <view class="ir"><text class="dim">性别</text><text>{{zodiacData.gender}}</text></view>
+    <view class="ir"><text class="dim">出生</text><text>{{zodiacData.birth_datetime}}</text></view>
+    <view class="ir"><text class="dim">地点</text><text>经度{{zodiacData.birth_location.longitude}} 纬度{{zodiacData.birth_location.latitude}}</text></view>
+  </view>
+
+  <!-- ====== 日月升深度解读 ====== -->
+  <view class="card" wx:if="{{zodiacData.bigThreeSummary}}">
+    <view class="ct"><text class="ct-icon">☆</text>日月升·深度解读</view>
+    <view class="z-text-block">{{zodiacData.bigThreeSummary}}</view>
+  </view>
+
+  <!-- ====== 性格分析 ====== -->
+  <view class="card" wx:if="{{zodiacData.personalityText}}">
+    <view class="ct"><text class="ct-icon">🧠</text>性格分析</view>
+    <view class="z-text-block">{{zodiacData.personalityText}}</view>
+  </view>
+
+  <!-- 行星位置速查表 -->
+  <view class="card">
+    <view class="ct"><text class="ct-icon">🪐</text>行星位置速查</view>
+    <view class="z-pt-header">
+      <text class="z-pt-th" style="flex:1.2">行星</text>
+      <text class="z-pt-th" style="flex:1.5">落座</text>
+      <text class="z-pt-th" style="flex:1">度数</text>
+      <text class="z-pt-th" style="flex:1">宫位</text>
+    </view>
+    <view class="z-pt-row" wx:for="{{zodiacData.planets}}" wx:key="name_cn">
+      <text class="z-pt-td" style="flex:1.2">{{item.name_cn}}</text>
+      <text class="z-pt-td" style="flex:1.5">{{item.sign_symbol}} {{item.sign}}</text>
+      <text class="z-pt-td" style="flex:1">{{item.degree_in_sign}}°</text>
+      <text class="z-pt-td" style="flex:1">{{item.is_retrograde?'逆行·第':''}}{{item.house}}宫</text>
+    </view>
+  </view>
+
+  <!-- 元素分布 -->
+  <view class="card" wx:if="{{zodiacData.analysis}}">
+    <view class="ct"><text class="ct-icon">🔥</text>元素与模式</view>
+    <view class="z-el-bar" wx:for="{{zodiacData.elList}}" wx:key="key">
+      <text class="z-el-label">{{item.icon}} {{item.name}}</text>
+      <view class="z-el-track"><view class="z-el-fill" style="width:{{item.pct}}%;background:{{item.color}}"></view></view>
+      <text class="z-el-count">{{item.count}}颗({{item.pct}}%)</text>
+    </view>
+    <view class="z-el-summary">{{zodiacData.analysis.summary}}</view>
+  </view>
+
+  <!-- ====== 行星逐一详读 ====== -->
+  <view class="card" wx:if="{{zodiacData.planetDetails && zodiacData.planetDetails.length > 0}}">
+    <view class="ct"><text class="ct-icon">🔍</text>行星逐一解读</view>
+    <block wx:for="{{zodiacData.planetDetails}}" wx:key="*this" wx:for-item="pd">
+      <view class="z-planet-detail">
+        <text class="z-pd-text">{{pd}}</text>
+      </view>
+    </block>
+  </view>
+
+  <!-- ====== 爱情分析 ====== -->
+  <view class="card" wx:if="{{zodiacData.loveText}}">
+    <view class="ct"><text class="ct-icon">❤️</text>爱情运势</view>
+    <view class="z-text-block">{{zodiacData.loveText}}</view>
+  </view>
+
+  <!-- ====== 事业分析 ====== -->
+  <view class="card" wx:if="{{zodiacData.careerText}}">
+    <view class="ct"><text class="ct-icon">💼</text>事业分析</view>
+    <view class="z-text-block">{{zodiacData.careerText}}</view>
+  </view>
+
+  <!-- ====== 财运分析 ====== -->
+  <view class="card" wx:if="{{zodiacData.wealthText}}">
+    <view class="ct"><text class="ct-icon">💰</text>财运分析</view>
+    <view class="z-text-block">{{zodiacData.wealthText}}</view>
+  </view>
+
+  <!-- 主要相位速查 -->
+  <view class="card" wx:if="{{zodiacData.aspects && zodiacData.aspects.length > 0}}">
+    <view class="ct"><text class="ct-icon">⚡</text>相位速查</view>
+    <view class="z-asp-row" wx:for="{{zodiacData.aspects}}" wx:key="*this" wx:for-item="asp">
+      <text class="z-asp-p">{{asp.planet1}}</text>
+      <text class="z-asp-sym">{{asp.aspect_symbol}}</text>
+      <text class="z-asp-type {{asp.nature==='和谐'?'green':asp.nature==='紧张'?'red':''}}">{{asp.aspect_name_cn}}</text>
+      <text class="z-asp-p">{{asp.planet2}}</text>
+    </view>
+  </view>
+
+  <!-- ====== 相位逐一解读 ====== -->
+  <view class="card" wx:if="{{zodiacData.aspectDetails && zodiacData.aspectDetails.length > 0}}">
+    <view class="ct"><text class="ct-icon">📖</text>相位深度解读</view>
+    <block wx:for="{{zodiacData.aspectDetails}}" wx:key="*this" wx:for-item="ad">
+      <view class="z-asp-detail">
+        <text class="z-ad-text">{{ad}}</text>
+      </view>
+    </block>
+  </view>
+
+  <!-- 格局检测 -->
+  <view class="card" wx:if="{{zodiacData.patterns && zodiacData.patterns.length > 0}}">
+    <view class="ct"><text class="ct-icon">⬡</text>特殊格局</view>
+    <view class="z-pats">
+      <text class="z-pat-tag" wx:for="{{zodiacData.patterns}}" wx:key="*this">{{item}}</text>
+    </view>
+  </view>
+
+  <!-- 综述 -->
+  <view class="card" wx:if="{{zodiacData.summaryText}}">
+    <view class="ct"><text class="ct-icon">✨</text>星盘综述</view>
+    <view class="z-text-block">{{zodiacData.summaryText}}</view>
+  </view>
+  </block>
+  <!-- ====== 星座内容结束 ====== -->
 
   <!-- ====== 付费解锁墙 ====== -->
-  <view wx:if="{{!purchased}}" class="card paywall-card">
+  <view wx:if="{{calcMode==='bazi' && !purchased}}" class="card paywall-card">
     <view class="pw-icon">🔒</view>
     <view class="pw-title">解锁完整命盘解读</view>
     <view class="pw-desc">格局分析 · 大运流年 · 年运时运 · 白话解读 · 破解补益 · 运势总结</view>
@@ -92,7 +211,7 @@
   </view>
 
   <!-- ====== 以下为付费内容 ====== -->
-  <block wx:if="{{purchased}}">
+  <block wx:if="{{calcMode==='bazi' && purchased}}">
 
   <!-- ====== 格局喜用 ====== -->
   <view class="card">
@@ -407,7 +526,7 @@
     <text class="btn-icon">{{icons.back}}</text> 重 新 排 盘
   </view>
   <!-- 分享海报 -->
-  <view class="btn btn-share" bindtap="generateSharePoster">
+  <view wx:if="{{calcMode==='bazi'}}" class="btn btn-share" bindtap="generateSharePoster">
     <text class="btn-icon">📤</text> 生成分享海报
   </view>
   <view style="height:20px"></view>
