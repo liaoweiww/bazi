@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.DS_Store
+签到记录/
+uploads/
+*.xlsx

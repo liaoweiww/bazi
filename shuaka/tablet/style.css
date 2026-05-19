@@ -1,0 +1,354 @@
+/* ============================================================
+   签到叫号大屏 — 样式表
+   动态主题 · 大字体 · 全屏适配 · 平板优先
+   CSS 自定义属性由 app.js 根据后台设置动态注入
+   ============================================================ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  /* 默认主题 (暗夜黑) — 会被 JS 覆盖 */
+  --bg-primary: #0f1923;
+  --bg-secondary: #1a2736;
+  --bg-row: #152230;
+  --bg-row-alt: #1a2a3a;
+  --text-primary: #e8edf2;
+  --text-secondary: #8899aa;
+  --text-muted: #556677;
+  --accent: #3b82f6;
+  --green: #22c55e;
+  --yellow: #eab308;
+  --red: #ef4444;
+  --border: #1e3044;
+  --header-bg: #0d1520;
+  /* 字体缩放: small=0.85, normal=1, large=1.2, xlarge=1.5 */
+  --font-scale: 1;
+  --font-xl: calc(clamp(2rem, 5vw, 3rem) * var(--font-scale));
+  --font-lg: calc(clamp(1.2rem, 3vw, 1.8rem) * var(--font-scale));
+  --font-md: calc(clamp(1rem, 2.5vw, 1.4rem) * var(--font-scale));
+  --font-sm: calc(clamp(0.85rem, 2vw, 1.1rem) * var(--font-scale));
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+               "Microsoft YaHei", "Helvetica Neue", sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---- 全屏容器 ---- */
+.screen {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  max-height: 100vh;
+  padding: 0.8rem;
+  gap: 0.6rem;
+}
+
+/* ---- 头部 ---- */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.8rem 1.5rem;
+  background: var(--header-bg);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header-logo {
+  height: clamp(40px, 6vw, 64px);
+  max-width: clamp(120px, 20vw, 200px);
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.header-title {
+  font-size: var(--font-xl);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.header-subtitle {
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
+}
+
+.header-subtitle:empty {
+  display: none;
+}
+
+.header-time {
+  font-size: var(--font-lg);
+  font-weight: 500;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ---- 统计栏 ---- */
+.stats-bar {
+  display: flex;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.stat-item {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.7rem 1.2rem;
+  background: var(--bg-secondary);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+.stat-label {
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
+}
+
+.stat-value {
+  font-size: var(--font-lg);
+  font-weight: 700;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-value.overdue {
+  color: var(--red);
+}
+
+/* ---- 表格容器 ---- */
+.table-container {
+  flex: 1;
+  overflow-y: auto;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg-secondary);
+  min-height: 0;
+}
+
+.table-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.table-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+/* ---- 签到表格 ---- */
+.signin-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.signin-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.signin-table th {
+  padding: 0.9rem 0.6rem;
+  background: var(--header-bg);
+  color: var(--text-secondary);
+  font-size: var(--font-sm);
+  font-weight: 600;
+  text-align: center;
+  letter-spacing: 0.04em;
+  border-bottom: 2px solid var(--border);
+}
+
+.signin-table td {
+  padding: 0.85rem 0.6rem;
+  text-align: center;
+  font-size: var(--font-md);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-primary);
+}
+
+.signin-table tbody tr {
+  transition: background 0.3s;
+}
+
+.signin-table tbody tr:nth-child(even) {
+  background: var(--bg-row-alt);
+}
+
+.signin-table tbody tr:nth-child(odd) {
+  background: var(--bg-row);
+}
+
+.signin-table tbody tr:hover {
+  background: color-mix(in srgb, var(--accent) 15%, var(--bg-secondary));
+}
+
+/* 新签到高亮动画 */
+.signin-table tbody tr.row-new {
+  animation: highlightIn 1.5s ease-out;
+}
+
+@keyframes highlightIn {
+  0%   { background: color-mix(in srgb, var(--green) 40%, var(--bg-secondary)); }
+  100% { background: inherit; }
+}
+
+/* 空状态 */
+.empty-row td {
+  padding: 3rem !important;
+  color: var(--text-muted) !important;
+  font-size: var(--font-lg) !important;
+}
+
+/* 列宽 */
+.col-seq    { width: 6%; }
+.col-name   { width: 10%; }
+.col-idnum  { width: 18%; display: none; }
+.col-idnum.show { display: table-cell; }
+.col-time   { width: 16%; }
+.col-wait   { width: 16%; }
+.col-loc    { width: 12%; }
+.col-loc.hide { display: none; }
+.col-status { width: 20%; }
+.col-status.hide { display: none; }
+
+/* ---- 状态标签 ---- */
+.status-tag {
+  display: inline-block;
+  padding: 0.25rem 0.8rem;
+  border-radius: 20px;
+  font-size: var(--font-sm);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.status-normal {
+  background: rgba(34, 197, 94, 0.15);
+  color: var(--green);
+}
+
+.status-warning {
+  background: rgba(234, 179, 8, 0.15);
+  color: var(--yellow);
+  animation: pulse-warn 1s ease-in-out infinite;
+}
+
+.status-overdue {
+  background: rgba(239, 68, 68, 0.18);
+  color: var(--red);
+  animation: pulse-overdue 0.8s ease-in-out infinite;
+}
+
+@keyframes pulse-warn {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.6; }
+}
+
+@keyframes pulse-overdue {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.5; }
+}
+
+/* ---- 底部状态栏 ---- */
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1.2rem;
+  background: var(--header-bg);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
+}
+
+.footer-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 0.4rem;
+  background: var(--yellow);
+}
+
+.footer-dot.connected {
+  background: var(--green);
+}
+
+.footer-dot.disconnected {
+  background: var(--red);
+}
+
+.footer-refresh {
+  color: var(--text-muted);
+}
+
+/* ---- 全屏按钮 ---- */
+.fullscreen-btn {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  backdrop-filter: blur(8px);
+  transition: background 0.2s;
+}
+
+.fullscreen-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* ---- 响应式：小屏平板 ---- */
+@media (max-width: 768px) {
+  .screen { padding: 0.4rem; gap: 0.4rem; }
+  .header { padding: 0.6rem 1rem; }
+  .header-logo { height: 36px; max-width: 100px; }
+  .signin-table th,
+  .signin-table td { padding: 0.6rem 0.3rem; }
+  .col-loc { display: none; }
+  .col-idnum { display: none; }
+}

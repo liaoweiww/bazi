@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title id="page-title">签到叫号大屏</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="screen">
+  <!-- 头部 -->
+  <header class="header">
+    <div class="header-left">
+      <img class="header-logo" id="header-logo" src="" alt="" style="display:none">
+      <div class="header-text">
+        <div class="header-title" id="header-title">签到叫号大屏</div>
+        <div class="header-subtitle" id="header-subtitle"></div>
+      </div>
+    </div>
+    <div class="header-time" id="clock">--</div>
+  </header>
+
+  <!-- 统计栏 -->
+  <div class="stats-bar">
+    <div class="stat-item">
+      <span class="stat-label">今日签到</span>
+      <span class="stat-value" id="stat-today">0</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">等待中</span>
+      <span class="stat-value" id="stat-waiting">0</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">超时</span>
+      <span class="stat-value overdue" id="stat-overdue">0</span>
+    </div>
+  </div>
+
+  <!-- 主表格 -->
+  <main class="table-container">
+    <table class="signin-table">
+      <thead>
+        <tr>
+          <th class="col-seq">序号</th>
+          <th class="col-name">姓名</th>
+          <th class="col-idnum">身份证号</th>
+          <th class="col-time">签到时间</th>
+          <th class="col-wait">等待时长</th>
+          <th class="col-loc">地点</th>
+          <th class="col-status">状态</th>
+        </tr>
+      </thead>
+      <tbody id="table-body">
+        <tr class="empty-row">
+          <td colspan="7">暂无签到记录</td>
+        </tr>
+      </tbody>
+    </table>
+  </main>
+
+  <!-- 底部状态栏 -->
+  <footer class="footer">
+    <span class="footer-dot" id="status-dot"></span>
+    <span id="status-text">连接中...</span>
+    <span class="footer-refresh">自动刷新 · <span id="countdown">5</span>秒</span>
+  </footer>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>后台管理 - 签到叫号系统</title>
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+<div class="admin-layout">
+  <!-- 侧边栏 -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">签到系统管理</div>
+    <nav class="sidebar-nav">
+      <a class="nav-item active" data-tab="display">大屏显示</a>
+      <a class="nav-item" data-tab="theme">主题模板</a>
+      <a class="nav-item" data-tab="voice">语音设置</a>
+      <a class="nav-item" data-tab="timer">计时提醒</a>
+      <a class="nav-item" data-tab="data">数据管理</a>
+    </nav>
+    <div class="sidebar-footer">
+      <a href="/" target="_blank">预览大屏 →</a>
+    </div>
+  </aside>
+
+  <!-- 主内容区 -->
+  <main class="main-content">
+    <!-- 大屏显示设置 -->
+    <section class="tab-panel active" id="panel-display">
+      <h2 class="panel-title">大屏显示设置</h2>
+
+      <div class="form-group">
+        <label>企业 Logo</label>
+        <div class="logo-upload">
+          <div class="logo-preview" id="logo-preview">
+            <span id="logo-placeholder">暂无 Logo</span>
+            <img id="logo-img" src="" alt="Logo" style="display:none">
+          </div>
+          <div class="logo-actions">
+            <input type="file" id="logo-input" accept="image/*" hidden>
+            <button class="btn btn-secondary" onclick="document.getElementById('logo-input').click()">选择图片</button>
+            <button class="btn btn-danger-outline" id="btn-remove-logo" onclick="removeLogo()">移除 Logo</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group flex-1">
+          <label>大屏标题</label>
+          <input type="text" id="cfg-title" placeholder="签到叫号大屏">
+        </div>
+        <div class="form-group flex-1">
+          <label>副标题</label>
+          <input type="text" id="cfg-subtitle" placeholder="可选">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group flex-1">
+          <label>字体大小</label>
+          <select id="cfg-font-scale">
+            <option value="small">小号</option>
+            <option value="normal" selected>标准</option>
+            <option value="large">大号</option>
+            <option value="xlarge">超大</option>
+          </select>
+        </div>
+        <div class="form-group flex-1">
+          <label>刷新间隔（秒）</label>
+          <input type="number" id="cfg-refresh" min="2" max="60" value="5">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group flex-1">
+          <label class="checkbox-label">
+            <input type="checkbox" id="cfg-mask-names" checked>
+            姓名隐私脱敏（张**）
+          </label>
+        </div>
+        <div class="form-group flex-1">
+          <label class="checkbox-label">
+            <input type="checkbox" id="cfg-show-location" checked>
+            显示签到地点列
+          </label>
+        </div>
+        <div class="form-group flex-1">
+          <label class="checkbox-label">
+            <input type="checkbox" id="cfg-show-status">
+            显示状态标签
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <!-- 主题模板 -->
+    <section class="tab-pane" id="panel-theme">
+      <h2 class="panel-title">主题模板</h2>
+      <div class="theme-grid" id="theme-grid">
+        <!-- JS 动态填充 -->
+      </div>
+
+      <h3 class="subsection-title">自定义颜色</h3>
+      <div class="form-row">
+        <div class="form-group flex-1">
+          <label>主背景色</label>
+          <div class="color-input-row">
+            <input type="color" id="cfg-bg-primary" value="#0f1923">
+            <input type="text" id="cfg-bg-primary-txt" value="#0f1923" maxlength="7">
+          </div>
+        </div>
+        <div class="form-group flex-1">
+          <label>强调色</label>
+          <div class="color-input-row">
+            <input type="color" id="cfg-accent" value="#3b82f6">
+            <input type="text" id="cfg-accent-txt" value="#3b82f6" maxlength="7">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 语音设置 -->
+    <section class="tab-pane" id="panel-voice">
+      <h2 class="panel-title">语音播报设置</h2>
+
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input type="checkbox" id="cfg-voice-enabled" checked>
+          启用语音播报
+        </label>
+      </div>
+
+      <div class="form-group">
+        <label>签到欢迎语模板</label>
+        <input type="text" id="cfg-welcome-tpl" value="{name}，欢迎签到！">
+        <span class="form-hint">{name} 会被替换为姓名</span>
+      </div>
+
+      <div class="form-group">
+        <label>超时提醒语模板</label>
+        <input type="text" id="cfg-remind-tpl" value="{name}，您的等待时间已到40分钟，请留意叫号。">
+        <span class="form-hint">{name} 会被替换为姓名</span>
+      </div>
+    </section>
+
+    <!-- 计时设置 -->
+    <section class="tab-pane" id="panel-timer">
+      <h2 class="panel-title">计时提醒设置</h2>
+
+      <div class="form-row">
+        <div class="form-group flex-1">
+          <label>超时提醒（分钟）</label>
+          <input type="number" id="cfg-remind-minutes" min="5" max="120" value="40">
+        </div>
+        <div class="form-group flex-1">
+          <label>预警提醒（分钟）</label>
+          <input type="number" id="cfg-warning-minutes" min="5" max="120" value="35">
+          <span class="form-hint">平板大屏上提前黄色闪烁预警</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 数据管理 -->
+    <section class="tab-pane" id="panel-data">
+      <h2 class="panel-title">数据管理</h2>
+
+      <div class="form-group">
+        <label>签到记录目录</label>
+        <input type="text" id="cfg-excel-dir" readonly>
+        <span class="form-hint">在 config.yaml 中修改</span>
+      </div>
+
+      <div class="form-group">
+        <label>签到地点标识</label>
+        <input type="text" id="cfg-location" readonly>
+        <span class="form-hint">在 config.yaml 中修改</span>
+      </div>
+
+      <div class="stat-cards" id="stat-cards">
+        <!-- JS 动态填充 -->
+      </div>
+
+      <div style="margin-top:1.2rem">
+        <button class="btn btn-secondary" onclick="window.open('/')">
+          打开叫号大屏
+        </button>
+      </div>
+    </section>
+
+    <!-- 底部保存栏 -->
+    <div class="save-bar">
+      <span class="save-status" id="save-status"></span>
+      <button class="btn btn-primary" onclick="saveAllSettings()">保存设置</button>
+    </div>
+  </main>
+</div>
+
+<script src="admin.js"></script>
+</body>
+</html>
