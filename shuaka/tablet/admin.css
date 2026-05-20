@@ -59,6 +59,7 @@ html, body {
 .sidebar-nav {
   flex: 1;
   padding: 0.6rem 0;
+  overflow-y: auto;
 }
 
 .nav-item {
@@ -393,6 +394,51 @@ select {
   opacity: 1;
 }
 
+/* ---- 人员管理表格 ---- */
+#panel-people table th,
+#panel-people table td {
+  padding: 0.55rem 0.5rem;
+  white-space: nowrap;
+}
+
+#panel-people table tbody tr:hover {
+  background: #f9fafb;
+}
+
+#panel-people table tbody td {
+  border-bottom: 1px solid #f3f4f6;
+}
+
+/* ---- 跑马灯块 ---- */
+.mq-block {
+  background: #f9fafb;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.mq-block .mq-block-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.8rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ---- 弹窗通用 ---- */
+#login-overlay[style*="flex"],
+#edit-modal[style*="flex"],
+#crop-modal[style*="flex"] {
+  /* JS 直接设 display:flex */
+}
+
+/* ---- 裁剪弹窗 ---- */
+#crop-viewport img {
+  max-width: none;
+}
+
 /* ---- 响应式 ---- */
 @media (max-width: 768px) {
   .sidebar { width: 60px; }
@@ -405,4 +451,6 @@ select {
   .form-row { flex-direction: column; gap: 0; }
   .theme-grid { grid-template-columns: repeat(2, 1fr); }
   .stat-cards { flex-direction: column; }
+  #panel-people table { font-size: 0.7rem; }
+  #panel-people table th, #panel-people table td { padding: 0.3rem 0.25rem; }
 }
