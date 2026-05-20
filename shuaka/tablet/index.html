@@ -3,71 +3,87 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<title id="page-title">签到叫号大屏</title>
+<title id="page-title">叫号系统</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
 <div class="screen">
-  <!-- 头部 -->
-  <header class="header">
-    <div class="header-left">
-      <img class="header-logo" id="header-logo" src="" alt="" style="display:none">
-      <div class="header-text">
-        <div class="header-title" id="header-title">签到叫号大屏</div>
-        <div class="header-subtitle" id="header-subtitle"></div>
+  <header class="topbar">
+    <div class="topbar-left">
+      <img class="topbar-logo" id="header-logo" src="" alt="">
+      <div class="topbar-text">
+        <div class="topbar-title" id="header-title">叫号系统</div>
+        <div class="topbar-sub" id="header-subtitle"></div>
       </div>
     </div>
-    <div class="header-time" id="clock">--</div>
+    <div class="topbar-right">
+      <div class="topbar-date" id="clock-date">--</div>
+      <div class="topbar-time" id="clock-time">--</div>
+    </div>
   </header>
-
-  <!-- 统计栏 -->
-  <div class="stats-bar">
-    <div class="stat-item">
-      <span class="stat-label">今日签到</span>
-      <span class="stat-value" id="stat-today">0</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-label">等待中</span>
-      <span class="stat-value" id="stat-waiting">0</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-label">超时</span>
-      <span class="stat-value overdue" id="stat-overdue">0</span>
-    </div>
+  <div class="main-area">
+    <aside class="hero-panel">
+      <div class="calling-card" id="calling-card">
+        <div class="calling-label">当前叫号</div>
+        <div class="calling-num" id="calling-num">--</div>
+        <div class="calling-name" id="calling-name">等待叫号</div>
+        <div class="calling-window" id="calling-window">请到窗口办理</div>
+        <div class="marquee-wrap marquee-1" id="marquee-1" style="display:none;margin-top:auto;width:100%;border:none;background:transparent;"><div class="marquee-inner" id="marquee-1-text"></div></div>
+      </div>
+      <div class="call-actions">
+        <button class="btn-call-next" onclick="callNext()">📢 叫下一位</button>
+        <div class="call-actions-row">
+          <button class="btn-action btn-done" onclick="markDone()">✓ 已完成</button>
+          <button class="btn-action btn-pass" onclick="markPass()">⊘ 过号</button>
+          <button class="btn-action btn-recall" onclick="reCall()">↻ 重叫</button>
+        </div>
+      </div>
+      <button class="btn-signin-hero" onclick="showSigninDialog()">＋ 签到登记</button>
+      <div class="stats-mini">
+        <div class="stat-mini"><div class="stat-mini-icon">👥</div><div class="stat-mini-info"><div class="stat-mini-val" id="stat-today">0</div><div class="stat-mini-lbl">今日</div></div></div>
+        <div class="stat-mini"><div class="stat-mini-icon">⏳</div><div class="stat-mini-info"><div class="stat-mini-val" id="stat-waiting">0</div><div class="stat-mini-lbl">等待</div></div></div>
+        <div class="stat-mini"><div class="stat-mini-icon">✅</div><div class="stat-mini-info"><div class="stat-mini-val" id="stat-done">0</div><div class="stat-mini-lbl">完成</div></div></div>
+        <div class="stat-mini"><div class="stat-mini-icon">🔔</div><div class="stat-mini-info"><div class="stat-mini-val overdue" id="stat-overdue">0</div><div class="stat-mini-lbl">超时</div></div></div>
+      </div>
+    </aside>
+    <main class="queue-panel">
+      <div class="queue-section queue-section-top">
+        <div class="queue-header">
+          <span class="queue-title">⏳ 等待队列（按签到先后排列）</span>
+          <span class="queue-count" id="queue-wait-count">0人</span>
+          <div class="marquee-wrap marquee-inline" id="marquee-2" style="display:none;flex:1;margin:0 1rem;min-width:0;"><div class="marquee-inner" id="marquee-2-text"></div></div>
+        </div>
+        <div class="queue-table-wrap"><table class="queue-table"><thead><tr><th>#</th><th>姓名</th><th>签到</th><th>等待</th><th>倒计时</th><th>次数</th><th>地点</th><th>状态/操作</th></tr></thead><tbody id="table-waiting"></tbody></table></div>
+      </div>
+      <div class="queue-section queue-section-bottom">
+        <div class="queue-header">
+          <span class="queue-title">📋 已叫号 / 过号 / 超时</span>
+          <span class="queue-count" id="queue-done-count">0人</span>
+          <div class="marquee-wrap marquee-inline" id="marquee-3" style="display:none;flex:1;margin:0 1rem;min-width:0;"><div class="marquee-inner" id="marquee-3-text"></div></div>
+        </div>
+        <div class="queue-table-wrap"><table class="queue-table"><thead><tr><th>#</th><th>姓名</th><th>签到</th><th>等待</th><th>倒计时</th><th>次数</th><th>地点</th><th>操作</th></tr></thead><tbody id="table-history"></tbody></table></div>
+      </div>
+    </main>
   </div>
-
-  <!-- 主表格 -->
-  <main class="table-container">
-    <table class="signin-table">
-      <thead>
-        <tr>
-          <th class="col-seq">序号</th>
-          <th class="col-name">姓名</th>
-          <th class="col-idnum">身份证号</th>
-          <th class="col-time">签到时间</th>
-          <th class="col-wait">等待时长</th>
-          <th class="col-loc">地点</th>
-          <th class="col-status">状态</th>
-        </tr>
-      </thead>
-      <tbody id="table-body">
-        <tr class="empty-row">
-          <td colspan="7">暂无签到记录</td>
-        </tr>
-      </tbody>
-    </table>
-  </main>
-
-  <!-- 底部状态栏 -->
-  <footer class="footer">
-    <span class="footer-dot" id="status-dot"></span>
-    <span id="status-text">连接中...</span>
-    <span class="footer-refresh">自动刷新 · <span id="countdown">5</span>秒</span>
-  </footer>
+  <footer class="bottombar"><span class="bottombar-dot" id="status-dot"></span><span id="status-text">连接中...</span><span class="bottombar-refresh">刷新 · <span id="countdown">5</span>s</span></footer>
 </div>
+
+<div id="signin-dialog" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.75);z-index:200;align-items:center;justify-content:center;">
+  <div style="background:#1a2736;border:1px solid #1e3044;border-radius:16px;padding:2rem;width:380px;max-width:90vw;">
+    <h3 style="margin-bottom:1.2rem;color:#e8edf2;text-align:center;">签到登记</h3>
+    <div style="margin-bottom:1rem;"><input type="text" id="signin-name" placeholder="姓名" style="width:100%;padding:0.6rem;border:1px solid #1e3044;border-radius:8px;background:#0d1520;color:#e8edf2;font-size:1rem;outline:none;box-sizing:border-box;"></div>
+    <div style="margin-bottom:1.2rem;"><input type="text" id="signin-id" placeholder="身份证号（可选）" style="width:100%;padding:0.6rem;border:1px solid #1e3044;border-radius:8px;background:#0d1520;color:#e8edf2;font-size:1rem;outline:none;box-sizing:border-box;"></div>
+    <div style="display:flex;gap:0.5rem;">
+      <button onclick="document.getElementById('signin-dialog').style.display='none'" style="flex:1;padding:0.65rem;border:1px solid #1e3044;border-radius:8px;background:transparent;color:#8899aa;font-size:0.95rem;cursor:pointer;">取消</button>
+      <button onclick="doSignin()" style="flex:2;padding:0.65rem;border:none;border-radius:8px;background:#3b82f6;color:#fff;font-size:0.95rem;font-weight:600;cursor:pointer;">确认签到</button>
+    </div>
+    <div id="signin-msg" style="text-align:center;margin-top:0.8rem;font-size:0.85rem;display:none;"></div>
+  </div>
+</div>
+
+<a href="/report" class="float-btn float-report" title="报表">📊</a>
+<a href="/admin" class="float-btn float-admin" title="后台">⚙</a>
+<button class="float-btn float-fs" title="全屏" onclick="document.documentElement.requestFullscreen().catch(()=>{})">⛶</button>
 
 <script src="app.js"></script>
 </body>

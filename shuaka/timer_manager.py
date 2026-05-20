@@ -1,8 +1,8 @@
 """
-40分钟计时提醒管理器
-- 每有一条新签到，启动一个40分钟倒计时
-- 时间到后触发语音提醒
-- 后台线程 + 优先级队列实现
+计时提醒管理器
+- 每条签到启动一个倒计时
+- 时间到后语音提醒（每人仅提醒一次）
+- 后台线程 + 优先级队列
 """
 
 import time
@@ -14,7 +14,8 @@ class TimerManager:
     def __init__(self, remind_minutes, voice_broadcaster):
         self.remind_seconds = remind_minutes * 60
         self.voice = voice_broadcaster
-        self._heap = []  # (trigger_timestamp, name, id_number)
+        self._heap = []  # (trigger_timestamp, name, id_number, sign_time_key)
+        self._reminded = set()  # 已提醒记录，防止重复
         self._lock = threading.Lock()
         self._running = False
         self._thread = None
@@ -28,35 +29,44 @@ class TimerManager:
         self._running = False
 
     def add_timer(self, name, id_number):
-        """添加一个40分钟计时器"""
+        """添加计时器，到期后提醒一遍"""
         trigger_time = time.time() + self.remind_seconds
+        # 用 name+id+timestamp 作为唯一标识
+        key = f"{name}|{id_number}|{int(time.time())}"
         with self._lock:
-            heapq.heappush(self._heap, (trigger_time, name, id_number))
+            heapq.heappush(self._heap, (trigger_time, name, id_number, key))
 
     def get_active_timers(self):
-        """获取当前活跃的计时器列表"""
+        """获取当前活跃计时器"""
         with self._lock:
             now = time.time()
             return [
                 {"name": name, "id_number": id_number,
                  "remaining_seconds": max(0, int(t - now))}
-                for t, name, id_number in self._heap
+                for t, name, id_number, _ in self._heap
             ]
 
     def _worker(self):
-        """后台检查线程，每秒检查一次是否有到期的计时器"""
+        """每秒检查到期计时器，每人提醒一遍后移除"""
         while self._running:
             triggered = []
             now = time.time()
 
             with self._lock:
                 while self._heap and self._heap[0][0] <= now:
-                    triggered.append(heapq.heappop(self._heap))
+                    _, name, id_number, key = heapq.heappop(self._heap)
+                    if key and key not in self._reminded:
+                        self._reminded.add(key)
+                        triggered.append((name, id_number))
 
-            for _, name, _ in triggered:
+            for name, _ in triggered:
                 try:
                     self.voice.remind(name)
                 except Exception:
                     pass
+
+            # 定期清理已提醒集合（超过24小时的记录）
+            if len(self._reminded) > 1000:
+                self._reminded.clear()
 
             time.sleep(1)

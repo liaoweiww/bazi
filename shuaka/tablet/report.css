@@ -1,0 +1,119 @@
+/* ===== 报表页面样式 ===== */
+* { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --bg:#0f1419; --bg2:#1a1f2b; --card:#161c26;
+  --text:#e2e6ec; --text2:#8b95a5; --text3:#545d6b;
+  --accent:#4f8fff; --green:#00d68f; --yellow:#ffaa00; --red:#ff3d57;
+  --border:#1e2633; --radius:12px;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+  background:var(--bg); color:var(--text); min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+
+.report-layout { max-width:1200px; margin:0 auto; padding:1.2rem; }
+
+/* 头部 */
+.rp-header {
+  display:flex; justify-content:space-between; align-items:center;
+  margin-bottom:1.2rem; flex-wrap:wrap; gap:0.5rem;
+}
+.rp-header h1 { font-size:1.5rem; font-weight:800; }
+.rp-sub { font-size:0.82rem; color:var(--text2); margin-left:0.5rem; }
+.rp-link {
+  color:var(--accent); text-decoration:none; font-size:0.85rem;
+  margin-left:0.5rem; padding:0.4rem 1rem; border:1px solid var(--border);
+  border-radius:8px; transition:all 0.2s;
+}
+.rp-link:hover { background:rgba(79,143,255,0.1); }
+.rp-btn {
+  background:var(--accent); color:#fff; border:none; font-size:0.85rem;
+  padding:0.5rem 1.1rem; border-radius:8px; cursor:pointer; font-weight:600;
+  transition:all 0.2s; font-family:inherit; margin-right:0.5rem;
+}
+.rp-btn:hover { opacity:0.85; }
+
+/* 概览卡片 */
+.rp-cards {
+  display:grid; grid-template-columns:repeat(4,1fr); gap:0.8rem; margin-bottom:1.2rem;
+}
+.rp-card {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:var(--radius); padding:1rem 1.2rem; text-align:center;
+}
+.rp-card-val { font-size:2rem; font-weight:800; color:var(--accent); }
+.rp-card-val.red { color:var(--red); }
+.rp-card-val.green { color:var(--green); }
+.rp-card-lbl { font-size:0.78rem; color:var(--text3); margin-top:0.2rem; }
+
+/* 图表区 */
+.rp-charts { display:grid; grid-template-columns:1fr 1fr; gap:0.8rem; margin-bottom:0.8rem; }
+.rp-chart-box {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:var(--radius); padding:1rem;
+}
+.rp-chart-box h3 { font-size:0.9rem; color:var(--text2); margin-bottom:0.8rem; font-weight:600; }
+.rp-chart-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem; }
+.rp-chart-header h3 { margin-bottom:0; }
+.rp-chart-header select {
+  background:var(--bg2); color:var(--text); border:1px solid var(--border);
+  border-radius:6px; padding:0.25rem 0.6rem; font-size:0.8rem; cursor:pointer;
+}
+.rp-chart-box canvas { max-height:280px; }
+.rp-chart-half { grid-column:span 1; }
+
+/* ===== 人员名单表格 ===== */
+.rp-table-section {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:var(--radius); padding:1rem; margin-top:0.8rem;
+}
+.rp-table-header {
+  display:flex; justify-content:space-between; align-items:center;
+  margin-bottom:0.8rem; flex-wrap:wrap; gap:0.5rem;
+}
+.rp-table-header h3 { font-size:0.95rem; font-weight:600; }
+.rp-table-actions { display:flex; gap:0.5rem; }
+.rp-table-actions input, .rp-table-actions select {
+  background:var(--bg2); color:var(--text); border:1px solid var(--border);
+  border-radius:6px; padding:0.35rem 0.7rem; font-size:0.8rem; outline:none;
+}
+.rp-table-actions input:focus, .rp-table-actions select:focus { border-color:var(--accent); }
+.rp-table-actions input { width:160px; }
+
+.rp-table-wrap { overflow-x:auto; }
+.rp-table {
+  width:100%; border-collapse:collapse; font-size:0.85rem;
+}
+.rp-table th {
+  padding:0.6rem 0.5rem; color:var(--text3); font-size:0.72rem;
+  font-weight:600; text-align:left; letter-spacing:0.04em;
+  border-bottom:1px solid var(--border); white-space:nowrap;
+}
+.rp-table td {
+  padding:0.55rem 0.5rem; border-bottom:1px solid rgba(255,255,255,0.03);
+  white-space:nowrap;
+}
+.rp-table tbody tr:hover { background:rgba(79,143,255,0.05); }
+.rp-table tbody tr:nth-child(even) { background:rgba(255,255,255,0.012); }
+
+.rp-table-footer {
+  margin-top:0.6rem; font-size:0.8rem; color:var(--text3);
+}
+
+/* 状态标签 */
+.tag-sm {
+  display:inline-block; padding:0.15rem 0.5rem; border-radius:12px;
+  font-size:0.7rem; font-weight:600;
+}
+.tag-ok { background:rgba(0,214,143,0.15); color:var(--green); }
+.tag-warn { background:rgba(255,170,0,0.15); color:var(--yellow); animation:blink 1s infinite; }
+.tag-bad { background:rgba(255,61,87,0.18); color:var(--red); animation:blink 0.7s infinite; }
+@keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
+
+@media (max-width:768px) {
+  .rp-cards { grid-template-columns:repeat(2,1fr); }
+  .rp-charts { grid-template-columns:1fr; }
+}

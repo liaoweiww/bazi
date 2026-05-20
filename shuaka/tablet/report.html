@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数据报表 - 签到统计</title>
+<link rel="stylesheet" href="report.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<div class="report-layout">
+  <header class="rp-header">
+    <div class="rp-header-left">
+      <h1>数据报表</h1>
+      <span class="rp-sub" id="rp-location"></span>
+    </div>
+    <div class="rp-header-right">
+      <button class="rp-btn" onclick="exportExcel()">📥 导出Excel</button>
+      <a href="/" class="rp-link">叫号大屏</a>
+      <a href="/admin" class="rp-link">后台管理</a>
+    </div>
+  </header>
+
+  <!-- 概览卡片 -->
+  <div class="rp-cards" id="rp-cards"></div>
+
+  <!-- 图表区 -->
+  <div class="rp-charts">
+    <div class="rp-chart-box">
+      <div class="rp-chart-header">
+        <h3>签到趋势</h3>
+        <select id="period-select" onchange="loadCharts()">
+          <option value="day">按天</option>
+          <option value="week" selected>按周</option>
+          <option value="month">按月</option>
+        </select>
+      </div>
+      <canvas id="chart-trend"></canvas>
+    </div>
+    <div class="rp-chart-box">
+      <h3>时段热力分布</h3>
+      <canvas id="chart-hourly"></canvas>
+    </div>
+  </div>
+
+  <div class="rp-charts">
+    <div class="rp-chart-box rp-chart-half">
+      <h3>状态占比</h3>
+      <canvas id="chart-status"></canvas>
+    </div>
+    <div class="rp-chart-box rp-chart-half">
+      <h3>地点分布</h3>
+      <canvas id="chart-location"></canvas>
+    </div>
+  </div>
+
+  <!-- 人员名单 -->
+  <div class="rp-table-section">
+    <div class="rp-table-header">
+      <h3>签到人员名单</h3>
+      <div class="rp-table-actions">
+        <input type="text" id="table-search" placeholder="搜索姓名..." oninput="filterTable()">
+        <select id="table-loc-filter" onchange="filterTable()">
+          <option value="">全部地点</option>
+        </select>
+      </div>
+    </div>
+    <div class="rp-table-wrap">
+      <table class="rp-table" id="signin-table">
+        <thead>
+          <tr>
+            <th>序号</th>
+            <th>姓名</th>
+            <th>身份证号</th>
+            <th>签到时间</th>
+            <th>已等待</th>
+            <th>倒计时</th>
+            <th>地点</th>
+            <th>状态</th>
+          </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+    <div class="rp-table-footer">
+      <span id="table-count">共 0 人</span>
+    </div>
+  </div>
+</div>
+
+<script src="report.js"></script>
+</body>
+</html>

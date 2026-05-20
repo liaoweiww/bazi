@@ -42,9 +42,9 @@ class ExcelManager:
             ws.column_dimensions['F'].width = 10
             wb.save(filepath)
 
-    def add_record(self, name, id_number, sign_time=None):
+    def add_record(self, name, id_number, sign_time=None, status="等待中", extra=None, _rebuild=False):
         """
-        添加一条签到记录
+        添加一条签到记录。_rebuild=True 时只写Excel不更新缓存。
         返回: 记录字典
         """
         sign_time = sign_time or datetime.now()
@@ -57,8 +57,7 @@ class ExcelManager:
             wb = load_workbook(filepath)
             ws = wb.active
 
-            # 序号 = 现有行数
-            seq = ws.max_row  # 第1行是表头，所以行数-1=记录数，新序号=记录数+1=ws.max_row
+            seq = ws.max_row
 
             record = {
                 "seq": seq,
@@ -66,15 +65,18 @@ class ExcelManager:
                 "id_number": id_number,
                 "sign_time": time_str,
                 "location": self.location,
-                "status": "等待中"
+                "status": status
             }
 
-            ws.append([seq, name, id_number, time_str, self.location, "等待中"])
+            ws.append([seq, name, id_number, time_str, self.location, status])
             wb.save(filepath)
 
-            # 更新内存缓存
-            self._records_cache.append(record)
-            self._records_cache.sort(key=lambda r: r["sign_time"], reverse=True)
+            if extra:
+                record.update(extra)
+
+            if not _rebuild:
+                self._records_cache.append(record)
+                self._records_cache.sort(key=lambda r: r["sign_time"], reverse=True)
 
             return record
 

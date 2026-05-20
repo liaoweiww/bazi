@@ -1,0 +1,12 @@
+{
+  "admin": {
+    "password": "admin123",
+    "role": "admin",
+    "name": "管理员"
+  },
+  "lw": {
+    "password": "liaowei88",
+    "role": "user",
+    "name": ""
+  }
+}
