@@ -112,12 +112,27 @@
     const marqueeTab = document.querySelector('[data-tab="marquee"]');
     if (marqueeTab) marqueeTab.addEventListener('click', loadMarquees);
 
+    // 光晕强度滑块标签
+    const glowSlider = document.getElementById('cfg-glow-intensity');
+    if (glowSlider) {
+      glowSlider.addEventListener('input', function() {
+        updateGlowLabel(parseInt(this.value));
+      });
+    }
+
     document.addEventListener('keydown', (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
         e.preventDefault();
         saveAllSettings();
       }
     });
+  }
+
+  function updateGlowLabel(val) {
+    const el = document.getElementById('glow-label');
+    if (!el) return;
+    const labels = {1: '当前：淡雅', 2: '当前：标准', 3: '当前：加强'};
+    el.textContent = labels[val] || '当前：标准';
   }
 
   async function init() {
@@ -284,6 +299,10 @@
     setChecked('cfg-mask-names', d.mask_names !== false);
     setChecked('cfg-show-location', d.show_location !== false);
     setChecked('cfg-show-status', d.show_status !== false);
+    setChecked('cfg-glow-enabled', d.glow_enabled !== false);
+    const gi = d.glow_intensity || 2;
+    setVal('cfg-glow-intensity', gi);
+    updateGlowLabel(gi);
 
     selectedTheme = d.theme || 'dark';
     renderThemeGrid(themes);
@@ -321,6 +340,8 @@
     d.theme = selectedTheme;
     d.bg_primary = getVal('cfg-bg-primary');
     d.accent = getVal('cfg-accent');
+    d.glow_enabled = isChecked('cfg-glow-enabled');
+    d.glow_intensity = parseInt(getVal('cfg-glow-intensity')) || 2;
 
     v.enabled = isChecked('cfg-voice-enabled');
     v.welcome_template = getVal('cfg-welcome-tpl');
@@ -331,18 +352,22 @@
     t.countdown_enabled = isChecked('cfg-countdown-enabled');
     t.countdown_minutes = parseInt(getVal('cfg-countdown-minutes')) || 40;
 
-    // 跑马灯
-    const mqs = [];
-    for (let i = 0; i < 3; i++) {
-      mqs.push({
-        enabled: isChecked('mq-enabled-' + i),
-        text: getVal('mq-text-' + i),
-        size: getVal('mq-size-' + i),
-        color: getVal('mq-color-' + i),
-        speed: parseInt(getVal('mq-speed-' + i)) || 12,
-        delay: parseFloat(getVal('mq-delay-' + i)) || 0,
-        gradient: isChecked('mq-gradient-' + i)
-      });
+    // 跑马灯（仅在已加载表单时才读取，否则保留原值）
+    const mqFormExists = document.getElementById('mq-text-0');
+    let mqs = currentSettings.marquees || [];
+    if (mqFormExists) {
+      mqs = [];
+      for (let i = 0; i < 3; i++) {
+        mqs.push({
+          enabled: isChecked('mq-enabled-' + i),
+          text: getVal('mq-text-' + i),
+          size: getVal('mq-size-' + i),
+          color: getVal('mq-color-' + i),
+          speed: parseInt(getVal('mq-speed-' + i)) || 12,
+          delay: parseFloat(getVal('mq-delay-' + i)) || 0,
+          gradient: isChecked('mq-gradient-' + i)
+        });
+      }
     }
 
     return { display: d, voice: v, timer: t, themes: currentSettings.themes, marquees: mqs };

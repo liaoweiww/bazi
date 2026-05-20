@@ -1,25 +1,82 @@
 {
   "display": {
-    "title": "中国人寿首展用签到系统",
+    "title": "中国人寿收展健康体检专用签到系统",
     "location": "",
-    "subtitle": "",
+    "subtitle": "123",
     "logo_url": "/uploads/logo.png",
     "theme": "dark",
-    "font_scale": "normal",
+    "font_scale": "small",
     "refresh_interval": 5,
-    "mask_names": false,
+    "mask_names": true,
     "show_location": true,
     "show_id_number": false,
     "show_status": true,
     "bg_primary": "#0f1923",
-    "accent": "#3b82f6"
+    "accent": "#08fd39",
+    "glow_enabled": true,
+    "glow_intensity": 2
   },
   "themes": {
-    "dark": {"name":"暗夜黑","bg_primary":"#0f1923","bg_secondary":"#1a2736","bg_row":"#152230","bg_row_alt":"#1a2a3a","text_primary":"#e8edf2","text_secondary":"#8899aa","accent":"#3b82f6","border":"#1e3044","header_bg":"#0d1520"},
-    "blue": {"name":"深海蓝","bg_primary":"#0a1628","bg_secondary":"#112240","bg_row":"#0d1f3c","bg_row_alt":"#132848","text_primary":"#ccd6f6","text_secondary":"#8892b0","accent":"#64ffda","border":"#1e3a5f","header_bg":"#060e1a"},
-    "green": {"name":"商务绿","bg_primary":"#0a1f14","bg_secondary":"#0f2d1f","bg_row":"#0c2418","bg_row_alt":"#11301e","text_primary":"#d1e7d6","text_secondary":"#7fa98b","accent":"#4ade80","border":"#1a3d28","header_bg":"#06140c"},
-    "purple": {"name":"科技紫","bg_primary":"#120c1e","bg_secondary":"#1a1035","bg_row":"#150e28","bg_row_alt":"#1e1238","text_primary":"#e0d5f5","text_secondary":"#9785c1","accent":"#a78bfa","border":"#2d1f4e","header_bg":"#0a0614"},
-    "light": {"name":"简约白","bg_primary":"#f0f2f5","bg_secondary":"#ffffff","bg_row":"#ffffff","bg_row_alt":"#f7f8fa","text_primary":"#1a1a2e","text_secondary":"#6b7280","accent":"#2563eb","border":"#e5e7eb","header_bg":"#ffffff"}
+    "dark": {
+      "name": "暗夜黑",
+      "bg_primary": "#0f1923",
+      "bg_secondary": "#1a2736",
+      "bg_row": "#152230",
+      "bg_row_alt": "#1a2a3a",
+      "text_primary": "#e8edf2",
+      "text_secondary": "#8899aa",
+      "accent": "#3b82f6",
+      "border": "#1e3044",
+      "header_bg": "#0d1520"
+    },
+    "blue": {
+      "name": "深海蓝",
+      "bg_primary": "#0a1628",
+      "bg_secondary": "#112240",
+      "bg_row": "#0d1f3c",
+      "bg_row_alt": "#132848",
+      "text_primary": "#ccd6f6",
+      "text_secondary": "#8892b0",
+      "accent": "#64ffda",
+      "border": "#1e3a5f",
+      "header_bg": "#060e1a"
+    },
+    "green": {
+      "name": "商务绿",
+      "bg_primary": "#0a1f14",
+      "bg_secondary": "#0f2d1f",
+      "bg_row": "#0c2418",
+      "bg_row_alt": "#11301e",
+      "text_primary": "#d1e7d6",
+      "text_secondary": "#7fa98b",
+      "accent": "#4ade80",
+      "border": "#1a3d28",
+      "header_bg": "#06140c"
+    },
+    "purple": {
+      "name": "科技紫",
+      "bg_primary": "#120c1e",
+      "bg_secondary": "#1a1035",
+      "bg_row": "#150e28",
+      "bg_row_alt": "#1e1238",
+      "text_primary": "#e0d5f5",
+      "text_secondary": "#9785c1",
+      "accent": "#a78bfa",
+      "border": "#2d1f4e",
+      "header_bg": "#0a0614"
+    },
+    "light": {
+      "name": "简约白",
+      "bg_primary": "#f0f2f5",
+      "bg_secondary": "#ffffff",
+      "bg_row": "#ffffff",
+      "bg_row_alt": "#f7f8fa",
+      "text_primary": "#1a1a2e",
+      "text_secondary": "#6b7280",
+      "accent": "#2563eb",
+      "border": "#e5e7eb",
+      "header_bg": "#ffffff"
+    }
   },
   "voice": {
     "enabled": true,
@@ -35,8 +92,32 @@
     "countdown_minutes": 50
   },
   "marquees": [
-    {"enabled":true,"text":"欢迎光临中国人寿服务大厅！请先到前台签到登记，取号后请在休息区耐心等候，留意屏幕叫号信息和语音播报，轮到您时请前往对应窗口办理业务。","size":"0.8rem","color":"#3b82f6","speed":80,"delay":0,"gradient":true},
-    {"enabled":true,"text":"温馨提示：请妥善保管好您的叫号单及个人证件。过号未到者需重新排队取号，敬请谅解。办理过程中如遇任何问题，可随时向工作人员寻求帮助。","size":"0.75rem","color":"#8899aa","speed":88,"delay":0,"gradient":false},
-    {"enabled":true,"text":"业务办理完毕后请及时离柜，检查并收好您的证件、单据及个人物品，谨防遗漏。感谢您的信任与支持！期待再次为您服务，祝您生活愉快！","size":"0.75rem","color":"#3b82f6","speed":96,"delay":0,"gradient":false}
+    {
+      "color": "#3b82f6",
+      "delay": 0,
+      "enabled": true,
+      "gradient": true,
+      "size": "0.8rem",
+      "speed": 80,
+      "text": "欢迎光临中国人寿服务大厅！请先到前台签到登记，取号后请在休息区耐心等候，留意屏幕叫号信息和语音播报，轮到您时请前往对应窗口办理业务。"
+    },
+    {
+      "color": "#8899aa",
+      "delay": 0,
+      "enabled": true,
+      "gradient": false,
+      "size": "0.75rem",
+      "speed": 88,
+      "text": "温馨提示：请妥善保管好您的叫号单及个人证件。过号未到者需重新排队取号，敬请谅解。办理过程中如遇任何问题，可随时向工作人员寻求帮助。"
+    },
+    {
+      "color": "#3b82f6",
+      "delay": 0,
+      "enabled": true,
+      "gradient": false,
+      "size": "0.75rem",
+      "speed": 96,
+      "text": "业务办理完毕后请及时离柜，检查并收好您的证件、单据及个人物品，谨防遗漏。感谢您的信任与支持！期待再次为您服务，祝您生活愉快！"
+    }
   ]
 }

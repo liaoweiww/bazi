@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>后台管理 - 签到叫号系统</title>
-<link rel="stylesheet" href="admin.css">
+<link rel="stylesheet" href="admin.css?v=1.8">
 </head>
 <body>
 
@@ -110,6 +110,25 @@
             <input type="checkbox" id="cfg-show-status">
             显示状态标签
           </label>
+        </div>
+      </div>
+
+      <h3 class="subsection-title">叫号窗口光晕效果</h3>
+      <div class="form-row">
+        <div class="form-group flex-1">
+          <label class="checkbox-label">
+            <input type="checkbox" id="cfg-glow-enabled" checked>
+            启用呼吸光晕
+          </label>
+        </div>
+        <div class="form-group flex-1">
+          <label>光晕强度</label>
+          <div style="display:flex;align-items:center;gap:0.5rem;">
+            <span style="font-size:0.75rem;color:var(--text-secondary);">淡</span>
+            <input type="range" id="cfg-glow-intensity" min="1" max="3" value="2" style="flex:1;">
+            <span style="font-size:0.75rem;color:var(--text-secondary);">强</span>
+          </div>
+          <span class="form-hint" id="glow-label">当前：标准</span>
         </div>
       </div>
     </section>
@@ -328,6 +347,6 @@ document.addEventListener('click',function(e){
   if(p)p.classList.add('active');
 });
 </script>
-<script src="admin.js"></script>
+<script src="admin.js?v=1.8"></script>
 </body>
 </html>

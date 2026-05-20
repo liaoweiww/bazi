@@ -281,6 +281,17 @@ def get_settings():
 def update_settings():
     data = request.get_json()
     if data:
+        # 保护跑马灯：如果提交的 marquees 全是空的，保留原值不覆盖
+        if "marquees" in data:
+            mqs = data["marquees"]
+            all_empty = all(
+                not (m.get("enabled") and m.get("text", "").strip())
+                for m in mqs
+            )
+            if all_empty:
+                existing = load_settings()
+                if existing.get("marquees"):
+                    data["marquees"] = existing["marquees"]
         save_settings(data, merge=True)
         # 同步地点名到 Excel 管理器
         if "display" in data and "location" in data["display"] and data["display"]["location"]:

@@ -14,7 +14,14 @@ async function ls(){
   s('--bg',d.bg_primary||th.bg_primary||'#0a0e14');s('--bg2',th.bg_secondary||'#131820');s('--bg3',th.bg_row||'#1a1f2b');
   s('--card',th.bg_row_alt||'#161c26');s('--text',th.text_primary||'#e2e6ec');s('--text2',th.text_secondary||'#8b95a5');
   s('--accent',d.accent||th.accent||'#4f8fff');s('--border',th.border||'#1e2633');
-  // marquees
+  // 简约白主题 class 切换（CSS 已有 html.theme-light 覆盖规则）
+  document.documentElement.classList.toggle('theme-light', d.theme==='light');
+  // 光晕效果
+  let glowOn = d.glow_enabled !== false, glowInt = d.glow_intensity || 2;
+  document.documentElement.classList.toggle('glow-off', !glowOn);
+  let glowCfg = {1:[0.04,0.9,1.05,6], 2:[0.08,0.85,1.15,3], 3:[0.15,0.75,1.3,1.8]}[glowInt] || [0.08,0.85,1.15,3];
+  s('--glow-opacity-idle', glowCfg[0]); s('--glow-scale-min', glowCfg[1]); s('--glow-scale-max', glowCfg[2]); s('--glow-speed', glowCfg[3]+'s');
+  s('--glow-opacity-active', glowCfg[0]*2.5); s('--glow-scale-min-active', glowCfg[1]-0.05); s('--glow-scale-max-active', glowCfg[2]+0.05);
   let mqs=cfg.marquees||[];
   for(let i=0;i<3;i++){let mq=mqs[i],w=$('marquee-'+(i+1)),tx=$('marquee-'+(i+1)+'-text');
     if(!w||!tx)continue;
