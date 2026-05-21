@@ -5,7 +5,7 @@
     "subtitle": "123",
     "logo_url": "/uploads/logo.png",
     "theme": "dark",
-    "font_scale": "small",
+    "font_scale": "xlarge",
     "refresh_interval": 5,
     "mask_names": true,
     "show_location": true,

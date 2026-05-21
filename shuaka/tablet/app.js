@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-let R=5,W=35,O=40,CE=true,CM=40,recs=[],cd=5,cur=null,cfg={display:{},timer:{}};
+let R=5,W=35,O=40,CE=true,CM=40,recs=[],cd=5,cur=null,justCleared=false,cfg={display:{},timer:{}};
 const $=id=>document.getElementById(id);
 
 async function ls(){
@@ -14,6 +14,9 @@ async function ls(){
   s('--bg',d.bg_primary||th.bg_primary||'#0a0e14');s('--bg2',th.bg_secondary||'#131820');s('--bg3',th.bg_row||'#1a1f2b');
   s('--card',th.bg_row_alt||'#161c26');s('--text',th.text_primary||'#e2e6ec');s('--text2',th.text_secondary||'#8b95a5');
   s('--accent',d.accent||th.accent||'#4f8fff');s('--border',th.border||'#1e2633');
+  // 字体大小
+  let fs = {small:'0.85', normal:'1', large:'1.18', xlarge:'1.35'}[d.font_scale] || '1';
+  s('--font-scale', fs);
   // 简约白主题 class 切换（CSS 已有 html.theme-light 覆盖规则）
   document.documentElement.classList.toggle('theme-light', d.theme==='light');
   // 光晕效果
@@ -51,40 +54,63 @@ async function us(seq,loc,status,recalled){
   for(let r of recs){if(r.seq===seq&&r.location===loc){r.status=status;if(recalled!==undefined)r._recalled=recalled;break;}}
 }
 
+// ======= 医院式叫号流程 =======
+// 叫下一位：如有当前叫号未完成 → 自动完成；取等待队列第1人叫号
 window.callNext=async function(){
+  // 如果当前有正在叫号的人，先自动完成
+  if(cur && cur.status==='已叫号'){
+    cur.status='已完成'; await us(cur.seq,cur.location,'已完成');
+  }
   let w=[...recs].filter(r=>!['已叫号','已过号','已完成'].includes(r.status||'')).sort((a,b)=>a.sign_time.localeCompare(b.sign_time));
-  if(!w.length){alert('没有等待中的人员');return;}
-  let p=w[0],rc=(p._recalled||0)+1;
+  if(!w.length){ cur=null; justCleared=true; rcd(); rd(recs); return; }
+  let p=w[0], rc=(p._recalled||0)+1;
   await us(p.seq,p.location,'已叫号',rc);
-  cur=p;p._recalled=rc;p.status='已叫号';ucd(p);
+  cur=p; justCleared=false; p._recalled=rc; p.status='已叫号'; ucd(p);
   spk((rc>1?'第'+rc+'次叫号，':'')+'请'+p.name+'到窗口办理');
   rd(recs);
 };
 
+// 已完成：立即清屏
 window.markDone=async function(){
   if(!cur){alert('没有正在叫号的人员');return;}
-  cur.status='已完成';await us(cur.seq,cur.location,'已完成');spk(cur.name+'办理完成');cur=null;rcd();rd(recs);
+  cur.status='已完成'; await us(cur.seq,cur.location,'已完成');
+  spk(cur.name+'办理完成');
+  cur=null; justCleared=true; rcd(); rd(recs);
 };
 
+// 过号：立即清屏
 window.markPass=async function(){
   if(!cur){alert('没有正在叫号的人员');return;}
-  cur.status='已过号';await us(cur.seq,cur.location,'已过号');spk('过号，请'+cur.name+'稍后重叫');cur=null;rcd();rd(recs);
+  cur.status='已过号'; await us(cur.seq,cur.location,'已过号');
+  spk('过号，请'+cur.name+'稍后重叫');
+  cur=null; justCleared=true; rcd(); rd(recs);
 };
 
+// 重叫：有当前人 → 重播；无当前人 → 取最近过号/已叫号者重新叫
 window.reCall=async function(){
   if(!cur){
     let cs=recs.filter(r=>['已过号','已叫号'].includes(r.status||''));
     if(!cs.length){alert('没有可重叫的人员');return;}
-    let p=cs.sort((a,b)=>b.sign_time.localeCompare(a.sign_time))[0],rc=(p._recalled||0)+1;
-    await us(p.seq,p.location,'已叫号',rc);cur=p;p.status='已叫号';p._recalled=rc;ucd(p);spk('请'+p.name+'到窗口办理');rd(recs);return;
+    let p=cs.sort((a,b)=>b.sign_time.localeCompare(a.sign_time))[0], rc=(p._recalled||0)+1;
+    await us(p.seq,p.location,'已叫号',rc);
+    cur=p; justCleared=false; p.status='已叫号'; p._recalled=rc; ucd(p);
+    spk('请'+p.name+'到窗口办理'); rd(recs); return;
   }
-  let rc=(cur._recalled||0)+1;await us(cur.seq,cur.location,'已叫号',rc);cur._recalled=rc;spk('再次叫号，请'+cur.name+'到窗口办理');ucd(cur);rd(recs);
+  let rc=(cur._recalled||0)+1; await us(cur.seq,cur.location,'已叫号',rc);
+  cur._recalled=rc; ucd(cur);
+  spk('再次叫号，请'+cur.name+'到窗口办理'); rd(recs);
 };
 
+// 从历史列表指定叫号
 window.callSpecific=async function(seq,loc){
-  let p=recs.find(r=>r.seq===seq&&r.location===loc);if(!p)return;
-  let rc=(p._recalled||0)+1;await us(seq,loc,'已叫号',rc);cur=p;p.status='已叫号';p._recalled=rc;ucd(p);
-  spk((rc>1?'第'+rc+'次叫号，':'')+'请'+p.name+'到窗口办理');rd(recs);
+  // 如有当前叫号 → 自动完成
+  if(cur && cur.status==='已叫号'){
+    cur.status='已完成'; await us(cur.seq,cur.location,'已完成');
+  }
+  let p=recs.find(r=>r.seq===seq&&r.location===loc); if(!p) return;
+  let rc=(p._recalled||0)+1; await us(seq,loc,'已叫号',rc);
+  cur=p; justCleared=false; p.status='已叫号'; p._recalled=rc; ucd(p);
+  spk((rc>1?'第'+rc+'次叫号，':'')+'请'+p.name+'到窗口办理'); rd(recs);
 };
 
 function ucd(p){$('calling-num').textContent=String(p.seq).padStart(2,'0');$('calling-name').textContent=p.name;
@@ -95,7 +121,7 @@ function rd(data){
   recs=data;let dd=cfg.display||{},srt=[...data].sort((a,b)=>a.sign_time.localeCompare(b.sign_time));
   let wt=srt.filter(r=>!['已叫号','已过号','已完成'].includes(r.status||'')&&wm(r.sign_time)<O);
   let hy=srt.filter(r=>['已叫号','已过号','已完成'].includes(r.status||'')||wm(r.sign_time)>=O);
-  if(!cur&&hy.length){let lt=hy.filter(r=>r.status==='已叫号').sort((a,b)=>b.sign_time.localeCompare(a.sign_time))[0];if(lt)cur=lt;}
+  if(!cur&&!justCleared&&hy.length){let lt=hy.filter(r=>r.status==='已叫号').sort((a,b)=>b.sign_time.localeCompare(a.sign_time))[0];if(lt)cur=lt;}
   let td=new Date().toISOString().slice(0,10);
   $('stat-today').textContent=data.filter(r=>r.sign_time.startsWith(td)).length;
   $('stat-waiting').textContent=wt.length;$('stat-done').textContent=data.filter(r=>r.status==='已完成').length;

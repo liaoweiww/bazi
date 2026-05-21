@@ -5,7 +5,7 @@
   --accent:#4f8fff;--accent2:#6c5ce7;--green:#00d68f;--yellow:#ffaa00;--red:#ff3d57;
   --border:#1e2633;--radius:14px;--radius-sm:10px;
 }
-html,body{height:100%;width:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
+html,body{height:100%;width:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;font-size:calc(1rem * var(--font-scale, 1))}
 body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px);background-size:60px 60px}
 body::after{content:'';position:fixed;z-index:0;pointer-events:none;width:400px;height:400px;background:radial-gradient(circle,rgba(79,143,255,0.04) 0%,transparent 70%);border-radius:50%;animation:floatGlow 8s ease-in-out infinite}
 @keyframes floatGlow{0%,100%{top:10%;left:10%}25%{top:60%;left:70%}50%{top:70%;left:30%}75%{top:20%;left:80%}}
@@ -41,8 +41,8 @@ html.glow-off .calling-card::before{animation:none;opacity:0}
 html.glow-off .calling-card.active::before{animation:none;opacity:0}
 html.glow-off .calling-card.active::after{display:none}
 /* 叫号动态光环 */
-.calling-card.active::after{content:'';position:absolute;top:-6px;left:-6px;right:-6px;bottom:-6px;border:3px solid transparent;border-radius:var(--radius);background:conic-gradient(from 0deg,var(--accent),transparent,var(--accent2),transparent,var(--accent));mask:radial-gradient(circle,transparent 60%,#000 62%);-webkit-mask:radial-gradient(circle,transparent 60%,#000 62%);animation:ringRotate 3s linear infinite;z-index:0;pointer-events:none}
-@keyframes ringRotate{0%{transform:rotate(0deg);filter:blur(8px);opacity:0.6}100%{transform:rotate(360deg);filter:blur(8px);opacity:0.6}}
+.calling-card.active::after{content:'';position:absolute;top:-4px;left:-4px;right:-4px;bottom:-4px;border:2px solid var(--accent);border-radius:calc(var(--radius) + 4px);animation:ringPulse 2s ease-in-out infinite;z-index:0;pointer-events:none;opacity:0.3}
+@keyframes ringPulse{0%,100%{opacity:0.15;transform:scale(1)}50%{opacity:0.45;transform:scale(1.01)}}
 /* 叫号数字跳动 */
 .calling-num{font-size:clamp(3rem,7vw,5rem);font-weight:900;line-height:1;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 20px rgba(79,143,255,0.3));z-index:1;transition:all 0.3s}
 .calling-card.active .calling-num{animation:numPop 0.8s ease-out}
@@ -146,7 +146,7 @@ html.theme-light .topbar-title{-webkit-text-fill-color:var(--text);background:no
 html.theme-light .topbar-time{-webkit-text-fill-color:var(--accent);background:none}
 html.theme-light .screen::before{border-color:rgba(37,99,235,0.08)}
 html.theme-light .screen::after{background:rgba(37,99,235,0.04)}
-html.theme-light .calling-card.active::after{background:conic-gradient(from 0deg,#2563eb,transparent,#2563eb,transparent,#2563eb)}
+html.theme-light .calling-card.active::after{border-color:#2563eb}
 html.theme-light .calling-num{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 
 @media(max-width:768px){.main-area{flex-direction:column}.hero-panel{width:100%;flex-direction:row;align-items:stretch}.calling-card{flex:1;min-width:120px}.calling-num{font-size:2rem}.calling-name{font-size:1.1rem}.stats-mini{flex-direction:column;width:clamp(120px,25vw,160px)}}
