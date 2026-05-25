@@ -122,8 +122,7 @@
 
     const usersTab = document.querySelector('[data-tab="users"]');
     if (usersTab) usersTab.addEventListener('click', loadUsers);
-    const peopleTab = document.querySelector('[data-tab="people"]');
-    if (peopleTab) peopleTab.addEventListener('click', loadPeople);
+    // people tab merged into data panel
     const marqueeTab = document.querySelector('[data-tab="marquee"]');
     if (marqueeTab) marqueeTab.addEventListener('click', loadMarquees);
 
@@ -307,7 +306,7 @@
     const d = s.display || {}, v = s.voice || {}, t = s.timer || {}, themes = s.themes || {};
 
     setVal('cfg-title', d.title || '签到叫号大屏');
-    setVal('cfg-location', d.location || '');
+    setVal('cfg-location-input', d.location || '');
     setVal('cfg-subtitle', d.subtitle || '');
     setVal('cfg-font-scale', d.font_scale || 'normal');
     setVal('cfg-refresh', d.refresh_interval || 5);
@@ -346,6 +345,9 @@
     setVal('cfg-countdown-minutes', t.countdown_minutes || 40);
 
     showLogo(d.logo_url || '');
+    // 同步地点到数据面板只读字段
+    var locDP = document.getElementById('cfg-location');
+    if (locDP && d.location) locDP.value = d.location;
     const logoUrl = d.logo_url || '';
     document.getElementById('btn-crop-logo').style.display = logoUrl ? '' : 'none';
   }
@@ -353,7 +355,7 @@
   function collectSettingsFromForm() {
     const d = currentSettings.display || {}, v = currentSettings.voice || {}, t = currentSettings.timer || {};
     d.title = getVal('cfg-title') || '签到叫号大屏';
-    d.location = getVal('cfg-location');
+    d.location = getVal('cfg-location-input');
     d.subtitle = getVal('cfg-subtitle');
     d.font_scale = getVal('cfg-font-scale');
     d.refresh_interval = parseInt(getVal('cfg-refresh')) || 5;
@@ -439,27 +441,51 @@
 
   async function loadStats() {
     try {
-      const resp = await fetch('/api/status');
-      const data = await resp.json();
-      const cards = document.getElementById('stat-cards');
-      if (cards) cards.innerHTML = `
-        <div class="stat-card"><div class="stat-num">${data.today_count || 0}</div><div class="stat-label">今日签到</div></div>
-        <div class="stat-card"><div class="stat-num">${data.record_count || 0}</div><div class="stat-label">总记录数</div></div>
-        <div class="stat-card"><div class="stat-num">${data.ngrok_url ? '外网已通' : '仅内网'}</div><div class="stat-label">外网连接</div></div>
-        <div class="stat-card"><div class="stat-num">${data.status||'--'}</div><div class="stat-label">系统状态</div></div>`;
+      var resp = await fetch('/api/status');
+      var data = await resp.json();
+      var today = data.today_count || 0;
+      var total = data.record_count || 0;
+      var ngrok = data.ngrok_url ? '外网已通' : '仅内网';
+      var status = data.status || '运行中';
+      // 同时获取详细统计
+      var statsResp = await fetch('/api/stats?period=all').catch(function(){return null});
+      var statsData = statsResp ? await statsResp.json() : {};
+      var thisWeek = statsData.this_week || 0;
+      var thisMonth = statsData.this_month || 0;
+
+      var cards = document.getElementById('stat-cards');
+      if (cards) cards.innerHTML =
+        '<div class="sc-item sc-today"><div class="sc-icon-wrap"><span class="sc-icon">📅</span><span class="sc-pulse"></span></div><div class="sc-body"><div class="sc-val" data-target="'+today+'">0</div><div class="sc-lbl">今日签到</div></div><div class="sc-bar" style="height:'+Math.min(today*8,40)+'px"></div></div>'+
+        '<div class="sc-item sc-total"><div class="sc-icon-wrap"><span class="sc-icon">👥</span><span class="sc-pulse"></span></div><div class="sc-body"><div class="sc-val" data-target="'+total+'">0</div><div class="sc-lbl">总记录数</div></div><div class="sc-bar" style="height:'+Math.min(total*0.4,40)+'px"></div></div>'+
+        '<div class="sc-item sc-week"><div class="sc-icon-wrap"><span class="sc-icon">📆</span><span class="sc-pulse"></span></div><div class="sc-body"><div class="sc-val" data-target="'+thisWeek+'">0</div><div class="sc-lbl">本周签到</div></div><div class="sc-bar" style="height:'+Math.min(thisWeek*5,40)+'px"></div></div>'+
+        '<div class="sc-item sc-month"><div class="sc-icon-wrap"><span class="sc-icon">📊</span><span class="sc-pulse"></span></div><div class="sc-body"><div class="sc-val" data-target="'+thisMonth+'">0</div><div class="sc-lbl">本月签到</div></div><div class="sc-bar" style="height:'+Math.min(thisMonth*2,40)+'px"></div></div>';
+      // 数字滚动动画
+      setTimeout(function(){
+        document.querySelectorAll('.sc-val').forEach(function(el){
+          var target=parseInt(el.dataset.target)||0;
+          var cur=0,step=target>60?Math.ceil(target/30):1;
+          var timer=setInterval(function(){
+            cur+=step;if(cur>=target){cur=target;clearInterval(timer)}
+            el.textContent=cur;
+          },20);
+        });
+      },100);
+
       // 填充路径信息
-      var dirEl = document.getElementById('cfg-excel-dir');
-      var locEl = document.getElementById('cfg-location');
-      if (!dirEl.value && !locEl.value) {
-        try {
-          var mr = await fetch('/api/monitor');
-          var md = await mr.json();
-          if (dirEl) dirEl.value = md.excel_dir ? md.excel_dir.path : '请在 config.yaml 中配置';
-        } catch(e) {}
-      }
-    } catch (e) { /* ignore */ }
-    // 同时加载回收站
-    if (typeof window._loadRecycle === 'function') window._loadRecycle();
+      var dirEl=document.getElementById('cfg-excel-dir');
+      var locEl=document.getElementById('cfg-location');
+      if(dirEl&&!dirEl.value)dirEl.value='加载中...';
+      if(locEl)locEl.value=statsData.location||'';
+      try{
+        var mr=await fetch('/api/monitor');
+        var md=await mr.json();
+        if(dirEl)dirEl.value=(md.excel_dir&&md.excel_dir.path)||dirEl.value;
+      var locInp=document.getElementById('cfg-location-input');
+      if(locInp&&!locInp.value&&statsData.location)locInp.value=statsData.location;
+      }catch(e){}
+    } catch(e){}
+    if(typeof loadPeople==='function')loadPeople();
+    if(typeof window._loadRecycle==='function')window._loadRecycle();
   }
 
   // ========== 用户管理 ==========
@@ -471,13 +497,15 @@
       if (!data.ok) return;
       const container = document.getElementById('user-list');
       if (!container) return;
-      container.innerHTML = Object.entries(data.users).map(([u, info]) => `
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:0.6rem 0.8rem;border:1px solid #e5e7eb;border-radius:6px;margin-bottom:0.4rem;background:#fafbfc;">
-          <div><strong>${u}</strong><span style="color:#6b7280;margin-left:0.5rem;font-size:0.85rem;">${info.name || ''} · ${info.role === 'admin' ? '管理员' : '普通用户'}</span></div>
-          ${u !== 'admin' ? `<button class="btn btn-danger-outline" onclick="window._deleteUser('${u}')" style="font-size:0.8rem;padding:0.3rem 0.7rem;">删除</button>` : '<span style="color:#6b7280;font-size:0.8rem;">系统管理员</span>'}
-        </div>`).join('');
+      container.innerHTML = Object.entries(data.users).map(([u, info]) =>
+        '<div class="dm-card" style="margin-bottom:0.3rem;padding:0">'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;padding:0.55rem 0.8rem;">'+
+        '<div><strong>'+u+'</strong><span style="color:#6b7280;margin-left:0.5rem;font-size:0.82rem;">'+escHtml(info.name||'')+' · '+(info.role==='admin'?'管理员':'普通用户')+'</span></div>'+
+        (u!=='admin'?'<button class="btn btn-danger-outline btn-sm" onclick="window._deleteUser(\''+u+'\')">删除</button>':'<span style="color:#9ca3af;font-size:0.75rem;">系统管理员</span>')+
+        '</div></div>').join('');
     } catch (e) { /* ignore */ }
-    // 同时加载回收站
+    // 同时加载人员列表和回收站
+    if (typeof loadPeople === 'function') loadPeople();
     if (typeof window._loadRecycle === 'function') window._loadRecycle();
   }
 
@@ -511,6 +539,27 @@
   window.addUser = _addUser;
   window.deleteUser = _deleteUser;
   window._deleteUser = _deleteUser;
+  window._changePwd = _changePwd;
+  window._changePwd = async function() {
+    var u = document.getElementById('pwd-user')?.value?.trim();
+    var p = document.getElementById('pwd-new')?.value?.trim();
+    if (!u || !p) { alert('请输入用户名和新密码'); return; }
+    if (p.length < 6) { alert('密码至少6位'); return; }
+    if (!(await cfConfirm('确定修改用户 ' + u + ' 的密码？'))) return;
+    try {
+      var resp = await fetch('/api/change_password', {
+        method: 'POST', headers: authHeaders(),
+        body: JSON.stringify({ username: u, new_password: p })
+      });
+      var data = await resp.json();
+      alert(data.message || (data.ok ? '密码已修改' : '修改失败'));
+      if (data.ok) {
+        var uEl=document.getElementById('pwd-user');if(uEl)uEl.value='';
+        var pEl=document.getElementById('pwd-new');if(pEl)pEl.value='';
+      }
+    } catch(e) { alert('请求失败'); }
+  };
+
   window._adminLogin = doLogin;
 
   async function _manualSignin() {
@@ -663,25 +712,21 @@
     if (!container) return;
     container.innerHTML = names.map((name, i) => {
       const m = mqs[i] || { enabled: false, text: '', size: '0.8rem', color: '#4f8fff', speed: 12, delay: 0, gradient: false };
-      return `<div class="mq-block">
-        <div class="mq-block-header">
-          <strong>位置${i+1}：${name}</strong>
-          <label class="checkbox-label"><input type="checkbox" id="mq-enabled-${i}" ${m.enabled?'checked':''}> 启用</label>
-        </div>
-        <div class="form-group"><label>滚动文字</label><input type="text" id="mq-text-${i}" value="${escAttr1(m.text)}"></div>
-        <div class="form-row">
-          <div class="form-group flex-1"><label>字体大小</label><select id="mq-size-${i}">${['0.65rem','0.7rem','0.75rem','0.8rem','0.9rem','1rem','1.1rem','1.2rem'].map(s => `<option value="${s}" ${m.size===s?'selected':''}>${s}</option>`).join('')}</select></div>
-          <div class="form-group flex-1"><label>滚动速度</label><select id="mq-speed-${i}">${[{v:120,t:'极慢'},{v:80,t:'慢'},{v:50,t:'中'},{v:30,t:'快'},{v:15,t:'极快'}].map(o => `<option value="${o.v}" ${m.speed==o.v?'selected':''}>${o.t} (${o.v}秒)</option>`).join('')}</select></div>
-          <div class="form-group flex-1"><label>延迟启动(秒)</label><input type="number" id="mq-delay-${i}" value="${m.delay||0}" min="0" max="60" step="0.5"></div>
-        </div>
-        <div class="form-row">
-          <div class="form-group flex-1">
-            <label>文字颜色</label>
-            <div class="color-input-row"><input type="color" id="mq-color-${i}" value="${m.color||'#4f8fff'}"><input type="text" id="mq-color-${i}-txt" value="${m.color||'#4f8fff'}" maxlength="7"></div>
-          </div>
-          <div class="form-group flex-1"><label class="checkbox-label"><input type="checkbox" id="mq-gradient-${i}" ${m.gradient?'checked':''}> 渐变效果</label></div>
-        </div>
-      </div>`;
+      return '<div class="dm-card" style="margin-bottom:0.5rem">'+
+        '<div class="dm-card-hd"><span class="dm-card-icon">📟</span><h3>位置'+(i+1)+'：'+name+'</h3>'+
+        '<label class="checkbox-label" style="margin-right:0.8rem"><input type="checkbox" id="mq-enabled-'+(i)+'" '+(m.enabled?'checked':'')+'> 启用</label>'+
+        '<button class="dm-collapse" onclick="this.closest(\'.dm-card\').classList.toggle(\'collapsed\')">−</button></div>'+
+        '<div class="dm-card-bd">'+
+        '<div class="dm-field" style="margin-bottom:0.5rem"><label>滚动文字</label><input type="text" id="mq-text-'+i+'" class="dm-input" value="'+escAttr1(m.text)+'" style="width:100%"></div>'+
+        '<div class="dm-row">'+
+        '<div class="dm-field"><label>字体大小</label><select id="mq-size-'+i+'" class="dm-input" style="width:100%">'+['0.65rem','0.7rem','0.75rem','0.8rem','0.9rem','1rem','1.1rem','1.2rem'].map(s => '<option value="'+s+'" '+(m.size===s?'selected':'')+'>'+s+'</option>').join('')+'</select></div>'+
+        '<div class="dm-field"><label>滚动速度</label><select id="mq-speed-'+i+'" class="dm-input" style="width:100%">'+[{v:120,t:'极慢'},{v:80,t:'慢'},{v:50,t:'中'},{v:30,t:'快'},{v:15,t:'极快'}].map(o => '<option value="'+o.v+'" '+(m.speed==o.v?'selected':'')+'>'+o.t+' ('+o.v+'秒)</option>').join('')+'</select></div>'+
+        '<div class="dm-field"><label>延迟(秒)</label><input type="number" id="mq-delay-'+i+'" class="dm-input" value="'+(m.delay||0)+'" min="0" max="60" step="0.5" style="width:100%"></div>'+
+        '</div>'+
+        '<div class="dm-row" style="margin-top:0.4rem">'+
+        '<div class="dm-field"><label>文字颜色</label><div class="color-input-row"><input type="color" id="mq-color-'+i+'" value="'+(m.color||'#4f8fff')+'"><input type="text" id="mq-color-'+i+'-txt" value="'+(m.color||'#4f8fff')+'" maxlength="7"></div></div>'+
+        '<div class="dm-field"><label class="checkbox-label"><input type="checkbox" id="mq-gradient-'+i+'" '+(m.gradient?'checked':'')+'> 渐变效果</label></div>'+
+        '</div></div></div>';
     }).join('');
 
     // 颜色同步
@@ -694,31 +739,77 @@
   }
   function escAttr1(s) { return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-  // 人员管理
+  // 人员管理（已合并到数据面板）
+  var _allPeople=[];
   async function loadPeople() {
     try {
       const resp = await fetch('/api/signins');
-      const data = await resp.json();
-      const sorted = [...data].sort((a,b) => b.sign_time.localeCompare(a.sign_time));
-      const container = document.getElementById('people-list');
-      const countEl = document.getElementById('people-count');
-      if (countEl) countEl.textContent = `共 ${sorted.length} 人`;
-      if (!container) return;
-      container.innerHTML = sorted.map(r => `
-        <tr>
-          <td><input type="checkbox" class="people-cb" data-seq="${r.seq}" data-loc="${escAttr(r.location)}"></td>
-          <td>${r.seq}</td>
-          <td>${escHtml(r.name)}</td>
-          <td style="font-variant-numeric:tabular-nums;">${r.id_number||'--'}</td>
-          <td>${r.sign_time}</td>
-          <td>${escHtml(r.location)}</td>
-          <td>${r.status||'等待中'}</td>
-          <td>
-            <button class="btn btn-secondary" style="font-size:0.75rem;padding:0.25rem 0.5rem;" onclick="window._editRecord(${r.seq},'${escAttr(r.location)}','${escAttr(r.name)}','${escAttr(r.id_number||'')}')">编辑</button>
-            <button class="btn btn-danger-outline" style="font-size:0.75rem;padding:0.25rem 0.5rem;" onclick="window._delOne(${r.seq},'${escAttr(r.location)}')">删除</button>
-          </td>
-        </tr>`).join('');
+      _allPeople = await resp.json();
+      _allPeople.sort((a,b) => b.sign_time.localeCompare(a.sign_time));
+      // 填充地点下拉
+      var locs={};
+      _allPeople.forEach(r=>{if(r.location)locs[r.location]=1});
+      var ppLoc=document.getElementById('pp-loc');
+      if(ppLoc&&!ppLoc.dataset.filled){ppLoc.innerHTML='<option value="">全部地点</option>'+Object.keys(locs).map(l=>'<option value="'+escAttr(l)+'">'+l+'</option>').join('');ppLoc.dataset.filled='1';}
+      _renderPeople(_allPeople);
     } catch(e) {}
+  }
+
+  window._filterPeople=function(){
+    var q=(document.getElementById('pp-search')?.value||'').toLowerCase();
+    var loc=document.getElementById('pp-loc')?.value||'';
+    var st=document.getElementById('pp-status')?.value||'';
+    var recs=_allPeople.filter(r=>{
+      if(q&&r.name.toLowerCase().indexOf(q)<0)return false;
+      if(loc&&r.location!==loc)return false;
+      if(st&&r.status!==st)return false;
+      return true;
+    });
+    _renderPeople(recs);
+  };
+
+  window._selectByStatus=function(st){
+    document.querySelectorAll('.people-cb').forEach(cb=>{cb.checked=false});
+    document.querySelectorAll('.people-cb').forEach(cb=>{
+      if(cb.dataset.status===st)cb.checked=true;
+    });
+    _updateSelectedCount();
+  };
+
+  function _updateSelectedCount(){
+    var cbs=document.querySelectorAll('.people-cb:checked');
+    var el=document.getElementById('pp-selected-count');
+    if(el)el.textContent=cbs.length?'已选 '+cbs.length+' 人':'';
+  }
+
+  window._showSigninForm=function(){
+    var f=document.getElementById('quick-signin-form');
+    if(!f)return;
+    var isOpen=f.style.display==='flex';
+    f.style.display=isOpen?'none':'flex';
+    if(!isOpen){document.getElementById('manual-name')?.focus();}
+  };
+
+  function _renderPeople(recs){
+    var container=document.getElementById('people-list');
+    var countEl=document.getElementById('people-count');
+    if(countEl)countEl.textContent='共 '+recs.length+' 人';
+    if(!container)return;
+    container.innerHTML=recs.map(r=>`
+      <tr>
+        <td><input type="checkbox" class="people-cb" data-seq="${r.seq}" data-loc="${escAttr(r.location)}" data-status="${escAttr(r.status||'等待中')}" onclick="event.stopPropagation();_updateSelectedCount()"></td>
+        <td>${r.seq}</td>
+        <td><strong>${escHtml(r.name)}</strong></td>
+        <td style="font-variant-numeric:tabular-nums;">${r.id_number||'--'}</td>
+        <td style="font-variant-numeric:tabular-nums;font-size:0.8rem;">${r.sign_time}</td>
+        <td>${escHtml(r.location)}</td>
+        <td><span class="tg tg-${r.status==='已完成'?'ok':r.status==='已过号'?'warn':r.status==='已叫号'?'ok':'ok'}">${r.status||'等待中'}</span></td>
+        <td>
+          <button class="btn btn-secondary" style="font-size:0.7rem;padding:0.2rem 0.4rem;" onclick="window._editRecord(${r.seq},'${escAttr(r.location)}','${escAttr(r.name)}','${escAttr(r.id_number||'')}')">编辑</button>
+          <button class="btn btn-danger-outline" style="font-size:0.7rem;padding:0.2rem 0.4rem;" onclick="window._delOne(${r.seq},'${escAttr(r.location)}')">删除</button>
+        </td>
+      </tr>`).join('');
+    _updateSelectedCount();
   }
 
   function escAttr(s) { return String(s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;'); }

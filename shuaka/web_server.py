@@ -999,6 +999,24 @@ def api_verify_password():
 
 
 
+
+@app.route("/api/change_password", methods=["POST"])
+def api_change_password():
+    """修改用户密码"""
+    data = request.get_json() or {}
+    username = data.get("username", "").strip()
+    new_password = data.get("new_password", "").strip()
+    if not username or not new_password:
+        return jsonify({"ok": False, "error": "用户名和密码不能为空"}), 400
+    if len(new_password) < 6:
+        return jsonify({"ok": False, "error": "密码至少6位"}), 400
+    users = load_users()
+    if username not in users:
+        return jsonify({"ok": False, "error": "用户不存在"}), 404
+    users[username]["password"] = new_password
+    save_users(users)
+    return jsonify({"ok": True, "message": f"用户 {username} 密码已修改"})
+
 def start_server(host="0.0.0.0", port=5002):
     local_ip = get_local_ip()
     all_ips = get_all_ips()
