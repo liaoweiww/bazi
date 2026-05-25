@@ -16,9 +16,41 @@ class ExcelManager:
         self.excel_dir = os.path.abspath(excel_dir)
         self.location = location
         self.lock = threading.Lock()
-        self._records_cache = []  # 所有记录的内存缓存
+        self._records_cache = []
 
         os.makedirs(self.excel_dir, exist_ok=True)
+        self._load_cache_from_files()
+
+    def _load_cache_from_files(self):
+        """启动时从所有 Excel 文件加载记录到内存缓存"""
+        records = []
+        try:
+            for filename in sorted(os.listdir(self.excel_dir)):
+                if not filename.endswith('.xlsx') or filename.startswith('~$'):
+                    continue
+                filepath = os.path.join(self.excel_dir, filename)
+                try:
+                    wb = load_workbook(filepath, read_only=True, data_only=True)
+                    ws = wb.active
+                    for row in ws.iter_rows(min_row=2, values_only=True):
+                        if row[0] is None:
+                            continue
+                        records.append({
+                            "seq": row[0],
+                            "name": str(row[1]) if row[1] else "",
+                            "id_number": str(row[2]) if row[2] else "",
+                            "sign_time": str(row[3]) if row[3] else "",
+                            "location": str(row[4]) if row[4] else "",
+                            "status": str(row[5]) if row[5] else "等待中",
+                            "_recalled": 0
+                        })
+                    wb.close()
+                except Exception:
+                    continue
+        except Exception:
+            pass
+        records.sort(key=lambda r: r["sign_time"], reverse=True)
+        self._records_cache = records
 
     def _filepath(self, loc=None):
         """获取指定地点的 Excel 文件路径"""
@@ -134,16 +166,18 @@ class ExcelManager:
 
             wb = load_workbook(filepath)
             ws = wb.active
-            for row in ws.iter_rows(min_row=2):
-                if row[0].value == seq:
-                    row[5].value = new_status
-                    wb.save(filepath)
+            try:
+                for row in ws.iter_rows(min_row=2):
+                    if str(row[0].value) == str(seq):
+                        row[5].value = new_status
+                        wb.save(filepath)
 
-                    # 更新缓存
-                    for r in self._records_cache:
-                        if r["seq"] == seq and r["location"] == location:
-                            r["status"] = new_status
-                            break
-                    return True
-            wb.close()
-            return False
+                        # 更新缓存
+                        for r in self._records_cache:
+                            if str(r["seq"]) == str(seq) and r["location"] == location:
+                                r["status"] = new_status
+                                break
+                        return True
+                return False
+            finally:
+                wb.close()

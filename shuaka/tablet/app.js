@@ -1,11 +1,12 @@
 (function(){
 'use strict';
-let R=5,W=35,O=40,CE=true,CM=40,recs=[],cd=5,cur=null,justCleared=false,cfg={display:{},timer:{}};
+let R=5,W=35,O=40,CE=true,CM=40,recs=[],cd=5,cur=null,justCleared=false,vTpl={},cfg={display:{},timer:{}};
 const $=id=>document.getElementById(id);
 
 async function ls(){
   try{let r=await fetch('/api/settings');cfg=await r.json();let d=cfg.display||{},t=cfg.timer||{};
   R=d.refresh_interval||5;W=t.warning_minutes||35;O=t.remind_minutes||40;CE=t.countdown_enabled!==false;CM=t.countdown_minutes||40;
+  let vc=cfg.voice||{}; vTpl=vc.templates||{};
   $('header-title').textContent=d.title||'叫号系统';$('page-title').textContent=(d.title||'叫号')+' · 叫号';
   $('header-subtitle').textContent=d.subtitle||d.location||'';
   if(d.logo_url){let l=$('header-logo');l.src=d.logo_url;l.style.display='block';}
@@ -44,6 +45,7 @@ function clk(){let n=new Date(),p=v=>String(v).padStart(2,'0');
 clk();setInterval(clk,1000);
 
 function spk(t){try{let u=new SpeechSynthesisUtterance(t);u.lang='zh-CN';u.rate=0.85;speechSynthesis.cancel();speechSynthesis.speak(u);}catch(e){}}
+function tpl(t,vars){let s=t||'';if(vars)for(let k in vars)s=s.replace(new RegExp('{'+k+'}','g'),vars[k]);return s;}
 
 async function fd(){try{let r=await fetch('/api/signins');if(!r.ok)throw new Error();rd(await r.json());ss(true);}catch(e){ss(false);}}
 function ss(ok){$('status-dot').className='bottombar-dot '+(ok?'online':'offline');$('status-text').textContent=ok?'实时连接':'连接断开';}
@@ -66,7 +68,7 @@ window.callNext=async function(){
   let p=w[0], rc=(p._recalled||0)+1;
   await us(p.seq,p.location,'已叫号',rc);
   cur=p; justCleared=false; p._recalled=rc; p.status='已叫号'; ucd(p);
-  spk((rc>1?'第'+rc+'次叫号，':'')+'请'+p.name+'到窗口办理');
+  spk(rc>1?tpl(vTpl.recall_nth||'第{n}次叫号，请{name}嘉宾到检测室',{n:rc,name:p.name}):tpl(vTpl.call||'有请{name}嘉宾到检测室',{name:p.name}));
   rd(recs);
 };
 
@@ -74,7 +76,7 @@ window.callNext=async function(){
 window.markDone=async function(){
   if(!cur){alert('没有正在叫号的人员');return;}
   cur.status='已完成'; await us(cur.seq,cur.location,'已完成');
-  spk(cur.name+'办理完成');
+  spk(tpl(vTpl.done||'{name}嘉宾检测完毕',{name:cur.name}));
   cur=null; justCleared=true; rcd(); rd(recs);
 };
 
@@ -82,7 +84,7 @@ window.markDone=async function(){
 window.markPass=async function(){
   if(!cur){alert('没有正在叫号的人员');return;}
   cur.status='已过号'; await us(cur.seq,cur.location,'已过号');
-  spk('过号，请'+cur.name+'稍后重叫');
+  spk(tpl(vTpl.pass||'过号，请{name}稍后重叫',{name:cur.name}));
   cur=null; justCleared=true; rcd(); rd(recs);
 };
 
@@ -94,11 +96,11 @@ window.reCall=async function(){
     let p=cs.sort((a,b)=>b.sign_time.localeCompare(a.sign_time))[0], rc=(p._recalled||0)+1;
     await us(p.seq,p.location,'已叫号',rc);
     cur=p; justCleared=false; p.status='已叫号'; p._recalled=rc; ucd(p);
-    spk('请'+p.name+'到窗口办理'); rd(recs); return;
+    spk(tpl(vTpl.call||'有请{name}嘉宾到检测室',{name:p.name})); rd(recs); return;
   }
   let rc=(cur._recalled||0)+1; await us(cur.seq,cur.location,'已叫号',rc);
   cur._recalled=rc; ucd(cur);
-  spk('再次叫号，请'+cur.name+'到窗口办理'); rd(recs);
+  spk(tpl(vTpl.recall||'再次叫号，请{name}嘉宾到检测室',{name:cur.name})); rd(recs);
 };
 
 // 从历史列表指定叫号
@@ -110,7 +112,7 @@ window.callSpecific=async function(seq,loc){
   let p=recs.find(r=>r.seq===seq&&r.location===loc); if(!p) return;
   let rc=(p._recalled||0)+1; await us(seq,loc,'已叫号',rc);
   cur=p; justCleared=false; p.status='已叫号'; p._recalled=rc; ucd(p);
-  spk((rc>1?'第'+rc+'次叫号，':'')+'请'+p.name+'到窗口办理'); rd(recs);
+  spk(rc>1?tpl(vTpl.recall_nth||'第{n}次叫号，请{name}嘉宾到检测室',{n:rc,name:p.name}):tpl(vTpl.call||'有请{name}嘉宾到检测室',{name:p.name})); rd(recs);
 };
 
 function ucd(p){$('calling-num').textContent=String(p.seq).padStart(2,'0');$('calling-name').textContent=p.name;
@@ -131,26 +133,58 @@ function rd(data){
 }
 
 function rr(tid,rows,dd,sb){
-  let tb=document.getElementById(tid);if(!tb)return;
-  if(!rows.length){tb.innerHTML='<tr><td colspan="8" style="text-align:center;padding:1.5rem;color:var(--text3);">—</td></tr>';return;}
-  tb.innerHTML=rows.map((r,i)=>{
-    let m=wm(r.sign_time),nm=dd.mask_names!==false?mk(r.name):r.name,st=r.status||'等待中';
-    let ic=st==='已叫号',ip=st==='已过号',id=st==='已完成',io=!['已叫号','已过号','已完成'].includes(st)&&m>=O;
-    let cls='ok',txt='等待中';
-    if(id){cls='ok';txt='已完成';}else if(ip){cls='warn';txt='已过号';}else if(ic){cls='ok';txt='已叫号';}else if(io){cls='bad';txt='已超时';}else if(m>=W){cls='warn';txt='即将超时';}
-    let rm=CM-m,pct=Math.max(0,Math.min(100,Math.round((rm/CM)*100))),ie=id||ip;
-    let cc=ie?'var(--text3)':ic?'var(--accent)':rm<=0?'var(--red)':rm<=10?'var(--yellow)':'var(--green)';
-    let ct=ie?'--':ic?'叫号中':rm<=0?'超时':rm<60?rm+'':Math.floor(rm/60)+'h'+rm%60+'m';
-    let circ=2*Math.PI*12,dash=ie||ic?circ:circ*(1-pct/100);
-    let cdH='<div class="cd-ring-wrap"><svg class="cd-ring" viewBox="0 0 32 32"><circle class="cd-ring-bg" cx="16" cy="16" r="12"/><circle class="cd-ring-fill" cx="16" cy="16" r="12" stroke-dasharray="'+circ.toFixed(1)+'" stroke-dashoffset="'+dash.toFixed(1)+'" style="stroke:'+cc+'"/></svg><span class="cd-ring-text" style="color:'+cc+'">'+ct+'</span></div>';
-    let rc=r._recalled||0,rct=rc>0?rc+'次':'';
-    let rs=id?'opacity:0.35':ip?'opacity:0.4':io?'background:rgba(255,61,87,0.06)!important':ic?'background:rgba(79,143,255,0.08)!important;font-weight:600':'';
-    let ah=sb?'<button class="btn-call-row" onclick="event.stopPropagation();callSpecific('+r.seq+',\''+ea(r.location)+'\')">📢 叫号</button>':
-      '<div class="row-actions"><span class="tag tag-'+cls+'">'+txt+'</span><button class="btn-row-icon" onclick="event.stopPropagation();openQuickEdit('+r.seq+',\''+ea(r.location)+'\',\''+ea(r.name)+'\',\''+ea(r.id_number||'')+'\')">✎</button><button class="btn-row-icon btn-row-del" onclick="event.stopPropagation();delQ('+r.seq+',\''+ea(r.location)+'\')">✕</button><span class="drag-handle" draggable="true" data-seq="'+r.seq+'" data-loc="'+ea(r.location)+'">⠿</span></div>';
-    let ch=sb?'onclick="callSpecific('+r.seq+',\''+ea(r.location)+'\')"':'',rcl=sb?'can-call':'waiting-row';
-    return '<tr class="'+rcl+'" style="'+rs+'" '+ch+'><td>'+(i+1)+'</td><td><strong>'+eh(nm)+'</strong></td><td class="q-col-time" title="'+r.sign_time+'">'+r.sign_time.slice(11,19)+'</td><td>'+(ie?'--':fw(m))+'</td><td>'+(CE?cdH:'')+'</td><td>'+rct+'</td><td>'+eh(r.location)+'</td><td>'+ah+'</td></tr>';
-  }).join('');
-}
+	  let tb=document.getElementById(tid);if(!tb)return;
+	  let cols=sb?6:8; // 历史表6列，等待表8列
+	  if(!rows.length){tb.innerHTML='<tr><td colspan="'+cols+'" style="text-align:center;padding:1.5rem;color:var(--text3);">—</td></tr>';return;}
+	  tb.innerHTML=rows.map((r,i)=>{
+	    let m=wm(r.sign_time),nm=dd.mask_names!==false?mk(r.name):r.name,st=r.status||'等待中';
+	    let ic=st==='已叫号',ip=st==='已过号',id=st==='已完成',io=!['已叫号','已过号','已完成'].includes(st)&&m>=O;
+	    let cls='ok',txt='等待中';
+	    if(id){cls='ok';txt='已完成';}else if(ip){cls='warn';txt='已过号';}else if(ic){cls='ok';txt='已叫号';}else if(io){cls='bad';txt='已超时';}else if(m>=W){cls='warn';txt='即将超时';}
+	    let rm=CM-m,pct=Math.max(0,Math.min(100,Math.round((rm/CM)*100))),ie=id||ip;
+	    let cc=ie?'var(--text3)':ic?'var(--accent)':rm<=0?'var(--red)':rm<=10?'var(--yellow)':'var(--green)';
+	    let ct=ie?'--':ic?'叫号中':rm<=0?'超时':rm<60?rm+'':Math.floor(rm/60)+'h'+rm%60+'m';
+	    let circ=2*Math.PI*12,dash=ie||ic?circ:circ*(1-pct/100);
+	    let cdH='<div class="cd-ring-wrap"><svg class="cd-ring" viewBox="0 0 32 32"><circle class="cd-ring-bg" cx="16" cy="16" r="12"/><circle class="cd-ring-fill" cx="16" cy="16" r="12" stroke-dasharray="'+circ.toFixed(1)+'" stroke-dashoffset="'+dash.toFixed(1)+'" style="stroke:'+cc+'"/></svg><span class="cd-ring-text" style="color:'+cc+'">'+ct+'</span></div>';
+	    let rc=r._recalled||0,rct=rc>0?rc+'次':'';
+	    let rs=id?'opacity:0.35':ip?'opacity:0.4':io?'background:rgba(255,61,87,0.06)!important':ic?'background:rgba(79,143,255,0.08)!important;font-weight:600':'';
+	    let ah, ch='', rcl='';
+	    if(sb){
+	      // 历史区：精简操作按钮
+	      let restoreBtn='<button class="btn-row-icon" style="font-size:0.7rem;padding:0.1rem 0.35rem;width:auto;border-radius:6px" onclick="event.stopPropagation();restoreToWait('+r.seq+',\''+ea(r.location)+'\','+(id?'true':'false')+')" title="恢复至等待队列">↩</button>';
+	      if(id){
+	        ah='<div class="row-actions" style="gap:0.2rem"><span class="tag tag-ok" style="font-size:0.68rem">✔ 已完成</span>'+restoreBtn+'</div>';
+	        rcl='';
+	      }else{
+	        let callBtn='<button class="btn-call-row" onclick="event.stopPropagation();callSpecific('+r.seq+',\''+ea(r.location)+'\')">📢 叫号</button>';
+	        ah='<div class="row-actions" style="gap:0.25rem">'+callBtn+restoreBtn+'</div>';
+	        ch='onclick="callSpecific('+r.seq+',\''+ea(r.location)+'\')"';
+	        rcl='can-call';
+	      }
+	      // 历史表列: # 姓名 签到 等待 次数 操作
+	      return '<tr class="'+rcl+'" style="'+rs+'" '+ch+'><td>'+(i+1)+'</td><td><strong>'+eh(nm)+'</strong></td><td class="q-col-time" title="'+r.sign_time+'">'+r.sign_time.slice(11,19)+'</td><td>'+fw(m)+'</td><td>'+rct+'</td><td>'+ah+'</td></tr>';
+	    }else{
+	      ah='<div class="row-actions"><span class="tag tag-'+cls+'">'+txt+'</span><button class="btn-row-icon" onclick="event.stopPropagation();openQuickEdit('+r.seq+',\''+ea(r.location)+'\',\''+ea(r.name)+'\',\''+ea(r.id_number||'')+'\')">✎</button><button class="btn-row-icon btn-row-del" onclick="event.stopPropagation();delQ('+r.seq+',\''+ea(r.location)+'\')">✕</button><span class="drag-handle" draggable="true" data-seq="'+r.seq+'" data-loc="'+ea(r.location)+'">⠿</span></div>';
+	      rcl='waiting-row';
+	      // 等待表列: # 姓名 签到 等待 倒计时 次数 地点 操作
+	      return '<tr class="'+rcl+'" style="'+rs+'" '+ch+'><td>'+(i+1)+'</td><td><strong>'+eh(nm)+'</strong></td><td class="q-col-time" title="'+r.sign_time+'">'+r.sign_time.slice(11,19)+'</td><td>'+fw(m)+'</td><td>'+(CE?cdH:'')+'</td><td>'+rct+'</td><td>'+eh(r.location)+'</td><td>'+ah+'</td></tr>';
+	    }
+	  }).join('');
+	}
+	
+	// ===== 恢复至等待队列 =====
+	window.restoreToWait=async function(seq,loc,isCompleted){
+	  if(isCompleted){
+	    if(!confirm('确定将该已完成人员恢复到等待队列？')) return;
+	  }
+	  let now=new Date().toISOString().replace('T',' ').slice(0,19);
+	  try{
+	    await fetch('/api/restore_record',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({seq,location:loc})});
+	  }catch(e){}
+	  // 本地同步：重置状态+时间，等钟从0开始
+	  for(let r of recs){if(r.seq===seq&&r.location===loc){r.status='等待中';r.sign_time=now;break;}}
+	  rd(recs);
+	};
 
 function mk(n){if(!n||n==='未知')return n;return n[0]+'*'.repeat(n.length-1);}
 function eh(s){let d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
@@ -165,7 +199,7 @@ window.doSignin=async function(){
   try{let r=await fetch('/api/manual_signin',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:nm,id_number:id})});
     let d=await r.json();
     if(d.ok){msg.textContent='✓ '+nm+' 签到成功！请稍候等待叫号';msg.style.color='#22c55e';msg.style.display='block';
-      $('signin-name').value='';$('signin-id').value='';spk('欢迎'+nm+'，请稍候等待叫号');fd();
+      $('signin-name').value='';$('signin-id').value='';spk(tpl(vTpl.welcome||'{name}，欢迎签到！',{name:nm}));fd();
       setTimeout(()=>{$('signin-dialog').style.display='none';},1500);
     }else{msg.textContent='✗ '+(d.error||'失败');msg.style.color='#ef4444';msg.style.display='block';}
   }catch(e){msg.textContent='网络错误';msg.style.color='#ef4444';msg.style.display='block';}
@@ -177,10 +211,88 @@ window.delQ=async function(seq,loc){
   try{await fetch('/api/delete_records',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({targets:[{seq,location:loc}]})});fd();}catch(e){alert('删除失败');}
 };
 
-window.openQuickEdit=function(seq,loc,name,id){alert('编辑: '+name);};
+// ===== 编辑人员 =====
+window.openQuickEdit=function(seq,loc,name,id){
+  $('#edit-seq').value=seq; $('#edit-loc').value=loc||'';
+  $('#edit-name').value=name||''; $('#edit-idnum').value=id||'';
+  $('#edit-dialog').style.display='flex'; $('#edit-name').focus();
+};
+window.doEditSave=async function(){
+  let seq=parseInt($('#edit-seq').value), loc=$('#edit-loc').value;
+  let nm=$('#edit-name').value.trim(), idnum=$('#edit-idnum').value.trim();
+  if(!nm){alert('请输入姓名');return;}
+  try{await fetch('/api/update_record',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({seq,location:loc,name:nm,id_number:idnum,_set_status:'',name:nm})});}catch(e){}
+  for(let r of recs){if(r.seq===seq&&(r.location||'')===loc){r.name=nm;r.id_number=idnum;break;}}
+  $('#edit-dialog').style.display='none'; rd(recs);
+};
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&$('#edit-dialog').style.display==='flex')doEditSave();});
+
+// ===== 拖拽排序 =====
+let dragSrc=null;
+function dtAttach(tbodyId){
+  let tb=document.getElementById(tbodyId); if(!tb) return;
+  tb.addEventListener('dragstart',e=>{
+    let h=e.target.closest('.drag-handle'); if(!h) return;
+    dragSrc={seq:parseInt(h.dataset.seq),loc:h.dataset.loc||''};
+    e.target.closest('tr').style.opacity='0.4';
+    e.dataTransfer.effectAllowed='move';
+  });
+  tb.addEventListener('dragend',e=>{
+    let h=e.target.closest('.drag-handle'); if(h) e.target.closest('tr').style.opacity='';
+  });
+  tb.addEventListener('dragover',e=>{e.preventDefault(); e.dataTransfer.dropEffect='move';});
+  tb.addEventListener('drop',e=>{
+    e.preventDefault();
+    let tr=e.target.closest('tr'); if(!tr||!dragSrc) return;
+    let tgtH=tr.querySelector('.drag-handle');
+    if(!tgtH) return;
+    let tgtSeq=parseInt(tgtH.dataset.seq), tgtLoc=tgtH.dataset.loc||'';
+    if(tgtSeq===dragSrc.seq&&tgtLoc===dragSrc.loc) return;
+    // 交换两个记录的签到时间来实现排序调整
+    let srcR=recs.find(r=>r.seq===dragSrc.seq&&(r.location||'')===dragSrc.loc);
+    let tgtR=recs.find(r=>r.seq===tgtSeq&&(r.location||'')===tgtLoc);
+    if(srcR&&tgtR){let tmp=srcR.sign_time; srcR.sign_time=tgtR.sign_time; tgtR.sign_time=tmp;}
+    // 同步到服务端（交换 sign_time）
+    fetch('/api/swap_records',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({a:{seq:dragSrc.seq,loc:dragSrc.loc},b:{seq:tgtSeq,loc:tgtLoc}})}).catch(()=>{});
+    rd(recs); dragSrc=null;
+  });
+}
 
 function lp(){fd();cd=R;}
 setInterval(()=>{cd--;if(cd<0)cd=R;$('countdown').textContent=cd;},1000);
 
-(async()=>{await ls();fd();setInterval(lp,R*1000);setInterval(async()=>{await ls();},30000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)lp();});})();
+	// ===== 系统监控面板 =====
+	let monitorExpanded = false;
+	window.toggleMonitor = function(){
+		monitorExpanded = !monitorExpanded;
+		$('monitor-panel').classList.toggle('expanded', monitorExpanded);
+	};
+	async function fetchMonitor(){
+		try{
+			let r = await fetch('/api/monitor');
+			if(!r.ok) return;
+			let d = await r.json();
+			let cr = d.card_reader || {};
+			let dot = $('mon-card-dot'), status = $('mon-card-status');
+			dot.className = 'monitor-dot ' + (cr.online ? 'online' : 'idle');
+			if(cr.online){
+				status.textContent = cr.total_reads + '次' + (cr.last_name ? ' · '+cr.last_name : '');
+			}else{
+				status.textContent = '离线';
+			}
+			let xl = d.excel_dir || {};
+			$('mon-excel-count').textContent = (xl.files||[]).length + '文件';
+			let ul = $('mon-file-list');
+			if(xl.files && xl.files.length){
+				ul.innerHTML = xl.files.map(f =>
+					'<li><a href="/api/excel/view/'+encodeURIComponent(f.name)+'" target="_blank" style="color:var(--accent);text-decoration:none;cursor:pointer">'+eh2(f.name)+'</a><span>'+f.size_kb+'KB · '+f.modified+'</span></li>'
+				).join('');
+			}else{
+				ul.innerHTML = '<li>暂无文件</li>';
+			}
+		}catch(e){}
+	}
+	function eh2(s){let d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+
+	(async()=>{await ls();fd();fetchMonitor();dtAttach('table-waiting');setInterval(lp,R*1000);setInterval(async()=>{await ls();},30000);setInterval(fetchMonitor,15000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)lp();});})();
 })();

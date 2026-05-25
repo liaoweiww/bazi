@@ -316,6 +316,14 @@
     setChecked('cfg-voice-enabled', v.enabled !== false);
     setVal('cfg-welcome-tpl', v.welcome_template || '{name}，欢迎签到！');
     setVal('cfg-remind-tpl', v.remind_template || '{name}，您的等待时间已到，请留意叫号。');
+    let vt = v.templates || {};
+    setVal('cfg-tpl-call', vt.call || '有请{name}嘉宾到检测室');
+    setVal('cfg-tpl-recall', vt.recall || '再次叫号，请{name}嘉宾到检测室');
+    setVal('cfg-tpl-recall-nth', vt.recall_nth || '第{n}次叫号，请{name}嘉宾到检测室');
+    setVal('cfg-tpl-done', vt.done || '{name}嘉宾检测完毕');
+    setVal('cfg-tpl-pass', vt.pass || '过号，请{name}稍后重叫');
+    setVal('cfg-tpl-startup', vt.startup || '签到系统已启动');
+    setVal('cfg-tpl-shutdown', vt.shutdown || '签到系统已关闭');
 
     setVal('cfg-remind-minutes', t.remind_minutes || 40);
     setVal('cfg-warning-minutes', t.warning_minutes || 35);
@@ -346,6 +354,14 @@
     v.enabled = isChecked('cfg-voice-enabled');
     v.welcome_template = getVal('cfg-welcome-tpl');
     v.remind_template = getVal('cfg-remind-tpl');
+    if (!v.templates) v.templates = {};
+    v.templates.call = getVal('cfg-tpl-call');
+    v.templates.recall = getVal('cfg-tpl-recall');
+    v.templates.recall_nth = getVal('cfg-tpl-recall-nth');
+    v.templates.done = getVal('cfg-tpl-done');
+    v.templates.pass = getVal('cfg-tpl-pass');
+    v.templates.startup = getVal('cfg-tpl-startup');
+    v.templates.shutdown = getVal('cfg-tpl-shutdown');
 
     t.remind_minutes = parseInt(getVal('cfg-remind-minutes')) || 40;
     t.warning_minutes = parseInt(getVal('cfg-warning-minutes')) || 35;

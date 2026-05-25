@@ -13,13 +13,27 @@
   <div id="loading-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.9);z-index:200;display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:#6b7280;">加载中...</div>
 
   <!-- 登录遮罩 -->
-  <div id="login-overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:150;align-items:center;justify-content:center;">
-    <div style="background:#fff;border-radius:12px;padding:2.5rem;min-width:360px;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
-      <h2 style="margin-bottom:1.5rem;text-align:center;">后台管理登录</h2>
-      <div class="form-group"><label>用户名</label><input type="text" id="login-user" placeholder="请输入用户名"></div>
-      <div class="form-group"><label>密码</label><input type="password" id="login-pass" placeholder="请输入密码"></div>
-      <div id="login-error" style="color:#ef4444;font-size:0.85rem;margin-bottom:0.8rem;display:none;"></div>
-      <button class="btn btn-primary" id="login-btn" style="width:100%;">登 录</button>
+  <div id="login-overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(7,12,20,0.85);z-index:150;align-items:center;justify-content:center;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);">
+    <div style="background:linear-gradient(160deg,rgba(20,30,48,0.98),rgba(14,20,32,0.98));border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:2.8rem 2.2rem;width:400px;max-width:90vw;box-shadow:0 25px 80px rgba(0,0,0,0.6);text-align:center;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;color:#e8edf2;">
+      <div style="width:52px;height:52px;margin:0 auto 1.2rem;background:linear-gradient(135deg,#4f8fff,#6c5ce7);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;box-shadow:0 10px 32px rgba(79,143,255,0.2);">☰</div>
+      <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:0.3rem;letter-spacing:0.03em;background:linear-gradient(135deg,#e8edf2,#4f8fff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">会话已过期</h2>
+      <p style="font-size:0.8rem;color:#8899aa;margin-bottom:1.8rem;">请重新登录以继续管理</p>
+      <div style="margin-bottom:1rem;text-align:left;">
+        <label style="display:block;font-size:0.72rem;font-weight:600;color:#8899aa;margin-bottom:0.3rem;text-transform:uppercase;letter-spacing:0.04em;">用户名</label>
+        <div style="position:relative;">
+          <span style="position:absolute;left:0.75rem;top:50%;transform:translateY(-50%);font-size:0.95rem;color:#545d6b;">👤</span>
+          <input type="text" id="login-user" placeholder="请输入用户名" style="width:100%;padding:0.65rem 0.8rem 0.65rem 2.3rem;border:1.5px solid rgba(255,255,255,0.08);border-radius:10px;background:rgba(255,255,255,0.03);color:#e8edf2;font-size:0.9rem;outline:none;font-family:inherit;box-sizing:border-box;transition:border-color 0.2s;" onfocus="this.style.borderColor='#4f8fff'" onblur="this.style.borderColor='rgba(255,255,255,0.08)'">
+        </div>
+      </div>
+      <div style="margin-bottom:1rem;text-align:left;">
+        <label style="display:block;font-size:0.72rem;font-weight:600;color:#8899aa;margin-bottom:0.3rem;text-transform:uppercase;letter-spacing:0.04em;">密码</label>
+        <div style="position:relative;">
+          <span style="position:absolute;left:0.75rem;top:50%;transform:translateY(-50%);font-size:0.95rem;color:#545d6b;">🔒</span>
+          <input type="password" id="login-pass" placeholder="请输入密码" style="width:100%;padding:0.65rem 0.8rem 0.65rem 2.3rem;border:1.5px solid rgba(255,255,255,0.08);border-radius:10px;background:rgba(255,255,255,0.03);color:#e8edf2;font-size:0.9rem;outline:none;font-family:inherit;box-sizing:border-box;transition:border-color 0.2s;" onfocus="this.style.borderColor='#4f8fff'" onblur="this.style.borderColor='rgba(255,255,255,0.08)'">
+        </div>
+      </div>
+      <div id="login-error" style="color:#ff3d57;font-size:0.8rem;margin-bottom:0.8rem;display:none;text-align:center;padding:0.4rem;border-radius:8px;background:rgba(255,61,87,0.08);"></div>
+      <button id="login-btn" style="width:100%;padding:0.7rem;border:none;border-radius:10px;background:linear-gradient(135deg,#4f8fff,#6c5ce7);color:#fff;font-size:0.95rem;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:0.04em;box-shadow:0 6px 20px rgba(79,143,255,0.25);transition:all 0.2s;" onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 10px 28px rgba(79,143,255,0.35)'" onmouseout="this.style.transform='';this.style.boxShadow='0 6px 20px rgba(79,143,255,0.25)'">登 录</button>
     </div>
   </div>
 
@@ -179,7 +193,40 @@
       <div class="form-group">
         <label>超时提醒语模板</label>
         <input type="text" id="cfg-remind-tpl" value="{name}，您的等待时间已到40分钟，请留意叫号。">
-        <span class="form-hint">{name} 会被替换为姓名</span>
+        <span class="form-hint">{name} 替换为姓名</span>
+      </div>
+
+      <h3 style="margin:1.5rem 0 0.8rem;font-size:0.95rem;color:var(--accent, #3b82f6);border-bottom:1px solid var(--border, #e5e7eb);padding-bottom:0.4rem;">叫号播报模板</h3>
+
+      <div class="form-group">
+        <label>叫号（首次）</label>
+        <input type="text" id="cfg-tpl-call" value="请{name}到窗口办理">
+        <span class="form-hint">{name}=姓名</span>
+      </div>
+      <div class="form-group">
+        <label>重叫（再次）</label>
+        <input type="text" id="cfg-tpl-recall" value="再次叫号，请{name}到窗口办理">
+      </div>
+      <div class="form-group">
+        <label>重复叫号（第N次）</label>
+        <input type="text" id="cfg-tpl-recall-nth" value="第{n}次叫号，请{name}到窗口办理">
+        <span class="form-hint">{n}=叫号次数 {name}=姓名</span>
+      </div>
+      <div class="form-group">
+        <label>办理完成</label>
+        <input type="text" id="cfg-tpl-done" value="{name}办理完成">
+      </div>
+      <div class="form-group">
+        <label>过号</label>
+        <input type="text" id="cfg-tpl-pass" value="过号，请{name}稍后重叫">
+      </div>
+      <div class="form-group">
+        <label>系统启动语</label>
+        <input type="text" id="cfg-tpl-startup" value="签到系统已启动">
+      </div>
+      <div class="form-group">
+        <label>系统关闭语</label>
+        <input type="text" id="cfg-tpl-shutdown" value="签到系统已关闭">
       </div>
     </section>
 

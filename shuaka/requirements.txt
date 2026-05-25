@@ -1,5 +1,12 @@
-pynput>=1.7.6
+# 核心依赖（全平台）
 openpyxl>=3.1.0
 flask>=2.3.0
 pyyaml>=6.0
-pyttsx3>=2.90
+
+# macOS 读卡器监听
+pynput>=1.7.6; sys_platform == "darwin"
+
+# Windows 语音播报 (macOS 用系统 say 命令)
+pyttsx3>=2.90; sys_platform == "win32"
+
+# Windows 读卡器监听使用 ctypes 调用系统 API，无需额外 pip 依赖

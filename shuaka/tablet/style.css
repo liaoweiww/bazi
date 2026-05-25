@@ -29,20 +29,34 @@ body::after{content:'';position:fixed;z-index:0;pointer-events:none;width:400px;
 .main-area{flex:1;display:flex;gap:0.6rem;min-height:0}
 .hero-panel{width:clamp(200px,26vw,290px);flex-shrink:0;display:flex;flex-direction:column;gap:0.5rem}
 
-.calling-card{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(145deg,var(--card),var(--bg2));border:2px solid var(--border);border-radius:var(--radius);padding:1.2rem;position:relative;overflow:visible;transition:all 0.5s}
-/* 呼吸背景：一直在，叫号时更明显，强度由 JS 设置的 --glow-* 变量控制 */
-.calling-card::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(ellipse at center,rgba(79,143,255,0.08) 0%,rgba(108,92,231,0.04) 40%,transparent 70%);animation:breatheBg var(--glow-speed,3s) ease-in-out infinite}
+.calling-card{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px solid transparent;border-radius:var(--radius);padding:1.2rem;position:relative;overflow:visible;transition:all 0.5s;
+  background:linear-gradient(145deg,var(--card),var(--bg2)) padding-box,
+    linear-gradient(135deg,rgba(79,143,255,0.1),rgba(108,92,231,0.05),rgba(79,143,255,0.02),rgba(108,92,231,0.06),rgba(79,143,255,0.1)) border-box;
+  animation:borderFlow 8s linear infinite;
+  background-size:100% 100%,200% 200%;
+}
+/* 待机渐变边框：8s 流光循环 */
+@keyframes borderFlow{0%{background-position:0% 0%,0% 50%}50%{background-position:0% 0%,100% 50%}100%{background-position:0% 0%,0% 50%}}
+/* 呼吸内部光晕 */
+.calling-card::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;border-radius:calc(var(--radius) - 2px);background:radial-gradient(ellipse at center,rgba(79,143,255,0.08) 0%,rgba(108,92,231,0.04) 40%,transparent 70%);animation:breatheBg var(--glow-speed,3s) ease-in-out infinite;z-index:0;pointer-events:none}
 @keyframes breatheBg{0%,100%{opacity:var(--glow-opacity-idle,0.3);transform:scale(var(--glow-scale-min,0.85))}50%{opacity:1;transform:scale(var(--glow-scale-max,1.15))}}
-.calling-card.active{border-color:var(--accent);box-shadow:0 0 40px rgba(79,143,255,0.15),inset 0 0 60px rgba(79,143,255,0.03)}
+.calling-card.active{box-shadow:0 0 40px rgba(79,143,255,0.2),0 0 80px rgba(108,92,231,0.1),inset 0 0 60px rgba(79,143,255,0.04);
+  background:linear-gradient(145deg,var(--card),var(--bg2)) padding-box,
+    conic-gradient(from 0deg,var(--accent),var(--accent2),rgba(79,143,255,0.3),var(--accent),var(--accent2)) border-box;
+  animation:borderFlow 3s linear infinite;
+  background-size:100% 100%,200% 200%;
+}
 .calling-card.active::before{background:radial-gradient(ellipse at center,rgba(79,143,255,0.2) 0%,rgba(108,92,231,0.1) 40%,transparent 70%);animation:breatheBgActive calc(var(--glow-speed,3s) * 0.5) ease-in-out infinite}
 @keyframes breatheBgActive{0%,100%{opacity:var(--glow-opacity-active,0.4);transform:scale(var(--glow-scale-min-active,0.8))}50%{opacity:1;transform:scale(var(--glow-scale-max-active,1.2))}}
 /* 关闭光晕 */
 html.glow-off .calling-card::before{animation:none;opacity:0}
 html.glow-off .calling-card.active::before{animation:none;opacity:0}
 html.glow-off .calling-card.active::after{display:none}
-/* 叫号动态光环 */
-.calling-card.active::after{content:'';position:absolute;top:-4px;left:-4px;right:-4px;bottom:-4px;border:2px solid var(--accent);border-radius:calc(var(--radius) + 4px);animation:ringPulse 2s ease-in-out infinite;z-index:0;pointer-events:none;opacity:0.3}
-@keyframes ringPulse{0%,100%{opacity:0.15;transform:scale(1)}50%{opacity:0.45;transform:scale(1.01)}}
+html.glow-off .calling-card{animation:none;background:linear-gradient(145deg,var(--card),var(--bg2)) padding-box,linear-gradient(135deg,rgba(79,143,255,0.1),rgba(108,92,231,0.05),rgba(79,143,255,0.02),rgba(108,92,231,0.06),rgba(79,143,255,0.1)) border-box}
+html.glow-off .calling-card.active{background:linear-gradient(145deg,var(--card),var(--bg2)) padding-box,var(--accent) border-box}
+/* 叫号动态光环：旋转渐变环 */
+.calling-card.active::after{content:'';position:absolute;top:-5px;left:-5px;right:-5px;bottom:-5px;border-radius:calc(var(--radius) + 5px);background:conic-gradient(from 0deg,transparent 15%,var(--accent) 35%,var(--accent2) 55%,rgba(0,214,143,0.4) 65%,transparent 85%);z-index:-1;pointer-events:none;animation:ringRotate 4s linear infinite;filter:blur(6px);}
+@keyframes ringRotate{0%{transform:rotate(0deg);opacity:0.4}50%{opacity:0.7}100%{transform:rotate(360deg);opacity:0.4}}
 /* 叫号数字跳动 */
 .calling-num{font-size:clamp(3rem,7vw,5rem);font-weight:900;line-height:1;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 20px rgba(79,143,255,0.3));z-index:1;transition:all 0.3s}
 .calling-card.active .calling-num{animation:numPop 0.8s ease-out}
@@ -127,9 +141,12 @@ tr.can-call{cursor:pointer}tr.can-call:hover{background:rgba(79,143,255,0.08)!im
 html.theme-light body::before{background-image:linear-gradient(rgba(0,0,0,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,0.04) 1px,transparent 1px)}
 html.theme-light body::after{background:radial-gradient(circle,rgba(37,99,235,0.06) 0%,transparent 70%)}
 html.theme-light .topbar{background:linear-gradient(135deg,#f8f9fb,#e8ecf1)}
-html.theme-light .calling-card{background:linear-gradient(145deg,#f8f9fb,#fff)}
+html.theme-light .calling-card{background:linear-gradient(145deg,#f8f9fb,#fff) padding-box,
+    linear-gradient(135deg,rgba(37,99,235,0.1),rgba(37,99,235,0.05),rgba(37,99,235,0.02),rgba(37,99,235,0.06),rgba(37,99,235,0.1)) border-box}
 html.theme-light .calling-card::before{background:radial-gradient(ellipse at center,rgba(37,99,235,0.08) 0%,rgba(37,99,235,0.03) 40%,transparent 70%)}
-html.theme-light .calling-card.active{box-shadow:0 0 40px rgba(37,99,235,0.08),inset 0 0 60px rgba(37,99,235,0.03)}
+html.theme-light .calling-card.active{box-shadow:0 0 40px rgba(37,99,235,0.12),0 0 80px rgba(37,99,235,0.06),inset 0 0 60px rgba(37,99,235,0.04);
+  background:linear-gradient(145deg,#f8f9fb,#fff) padding-box,
+    conic-gradient(from 0deg,#2563eb,#6366f1,rgba(37,99,235,0.3),#2563eb,#6366f1) border-box}
 html.theme-light .calling-card.active::before{background:radial-gradient(ellipse at center,rgba(37,99,235,0.18) 0%,rgba(37,99,235,0.08) 40%,transparent 70%);animation:breatheBgActive 1.5s ease-in-out infinite}
 html.theme-light .queue-table tbody tr:nth-child(even){background:rgba(0,0,0,0.02)}
 html.theme-light .stat-mini{background:rgba(0,0,0,0.02)}
@@ -146,8 +163,133 @@ html.theme-light .topbar-title{-webkit-text-fill-color:var(--text);background:no
 html.theme-light .topbar-time{-webkit-text-fill-color:var(--accent);background:none}
 html.theme-light .screen::before{border-color:rgba(37,99,235,0.08)}
 html.theme-light .screen::after{background:rgba(37,99,235,0.04)}
-html.theme-light .calling-card.active::after{border-color:#2563eb}
+html.theme-light .calling-card.active::after{background:conic-gradient(from 0deg,transparent 15%,#2563eb 35%,#6366f1 55%,rgba(37,99,235,0.4) 65%,transparent 85%)}
 html.theme-light .calling-num{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 
-@media(max-width:768px){.main-area{flex-direction:column}.hero-panel{width:100%;flex-direction:row;align-items:stretch}.calling-card{flex:1;min-width:120px}.calling-num{font-size:2rem}.calling-name{font-size:1.1rem}.stats-mini{flex-direction:column;width:clamp(120px,25vw,160px)}}
-@media(max-width:480px){.screen{padding:0.2rem;gap:0.25rem}.topbar{padding:0.4rem 0.7rem}.topbar-logo{height:24px;max-width:60px}.topbar-title{font-size:0.9rem}.topbar-time{font-size:1.1rem}.calling-card{padding:0.6rem}.calling-num{font-size:1.5rem}.calling-name{font-size:0.9rem}.queue-table th,.queue-table td{padding:0.3rem 0.1rem;font-size:0.6rem}.float-btn{width:30px;height:30px;font-size:0.8rem;right:5px}.float-fs{bottom:5px}.float-admin{bottom:40px}.float-report{bottom:75px}}
+/* ========== 系统监控面板 ========== */
+.monitor-panel{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:0.5rem 0.7rem;display:flex;align-items:center;gap:0.6rem;font-size:0.7rem;color:var(--text2);flex-shrink:0;flex-wrap:wrap;transition:all 0.3s}
+.monitor-panel.compact{padding:0.3rem 0.5rem;gap:0.3rem}
+.monitor-item{display:flex;align-items:center;gap:0.25rem;white-space:nowrap}
+.monitor-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.monitor-dot.online{background:var(--green);box-shadow:0 0 6px var(--green)}
+.monitor-dot.offline{background:var(--red)}
+.monitor-dot.idle{background:var(--yellow)}
+.monitor-val{font-weight:600;color:var(--text);font-variant-numeric:tabular-nums}
+.monitor-files{display:none;font-size:0.65rem;color:var(--text3);width:100%}
+.monitor-panel.expanded .monitor-files{display:block}
+.monitor-files summary{cursor:pointer;color:var(--accent);font-size:0.7rem;margin-bottom:0.2rem}
+.monitor-files ul{list-style:none;padding:0;margin:0}
+.monitor-files li{display:flex;justify-content:space-between;padding:0.15rem 0;border-bottom:1px solid rgba(255,255,255,0.03);font-size:0.62rem}
+
+/* ========== 响应式布局 ========== */
+/* 平板横屏 / 桌面 */
+@media(min-width:1025px){
+  .hero-panel{width:clamp(220px,24vw,290px)}
+}
+
+/* 平板竖屏 769-1024 */
+@media(max-width:1024px){
+  .hero-panel{width:clamp(180px,28vw,260px)}
+  .calling-num{font-size:clamp(2.2rem,5vw,3.5rem)}
+  .calling-name{font-size:clamp(1rem,2.2vw,1.3rem)}
+  .queue-table th,.queue-table td{font-size:0.65rem;padding:0.4rem 0.15rem}
+}
+
+/* 小平板 / 大屏手机横屏 641-768 */
+@media(max-width:768px){
+  .main-area{flex-direction:column}
+  .hero-panel{width:100%;flex-direction:row;align-items:stretch;gap:0.4rem}
+  .calling-card{flex:1;min-width:120px;padding:0.8rem}
+  .calling-num{font-size:2rem}
+  .calling-name{font-size:1.1rem}
+  .calling-label{font-size:0.6rem}
+  .calling-window{font-size:0.7rem}
+  .call-actions{flex-shrink:0;width:clamp(130px,30vw,200px)}
+  .call-actions-row{grid-template-columns:1fr 1fr 1fr;gap:0.25rem}
+  .btn-call-next{font-size:0.8rem;padding:0.6rem}
+  .btn-action{font-size:0.65rem;padding:0.4rem 0.2rem}
+  .btn-signin-hero{font-size:0.7rem;padding:0.4rem}
+  .stats-mini{flex-direction:row;width:auto;gap:0.25rem}
+  .stat-mini{flex-direction:column;align-items:center;text-align:center;padding:0.3rem 0.5rem}
+  .stat-mini-icon{font-size:0.75rem}
+  .stat-mini-val{font-size:0.8rem}
+  .stat-mini-lbl{font-size:0.55rem}
+  .queue-table th,.queue-table td{font-size:0.62rem;padding:0.35rem 0.1rem}
+  /* 隐藏次要列 */
+  .queue-table th:nth-child(4),.queue-table td:nth-child(4),
+  .queue-table th:nth-child(5),.queue-table td:nth-child(5),
+  .queue-table th:nth-child(7),.queue-table td:nth-child(7){display:none}
+}
+
+/* 手机 480-640 */
+@media(max-width:640px){
+  .screen{padding:0.25rem;gap:0.3rem}
+  .topbar{padding:0.4rem 0.6rem;gap:0.4rem}
+  .topbar-logo{height:22px;max-width:50px}
+  .topbar-title{font-size:0.85rem}
+  .topbar-sub{font-size:0.62rem}
+  .topbar-time{font-size:1rem}
+  .topbar-date{font-size:0.62rem}
+  .hero-panel{gap:0.3rem}
+  .calling-card{padding:0.5rem;min-width:100px}
+  .calling-num{font-size:1.6rem}
+  .calling-name{font-size:0.9rem}
+  .call-actions{width:clamp(110px,28vw,160px)}
+  .btn-call-next{font-size:0.72rem;padding:0.55rem;border-radius:10px}
+  .btn-action{font-size:0.6rem;padding:0.35rem 0.15rem;border-radius:6px}
+  .btn-signin-hero{font-size:0.65rem;padding:0.35rem}
+  .stats-mini{gap:0.2rem}
+  .stat-mini{padding:0.25rem 0.4rem}
+  .stat-mini-val{font-size:0.7rem}
+  .queue-title{font-size:0.72rem}
+  .queue-count{font-size:0.62rem;padding:0.1rem 0.4rem}
+  .queue-table th,.queue-table td{font-size:0.58rem;padding:0.3rem 0.08rem}
+  .queue-section-top{flex:2}
+  .queue-section-bottom{flex:1}
+  .monitor-panel{padding:0.3rem 0.5rem;gap:0.3rem;font-size:0.62rem}
+  .float-btn{width:28px;height:28px;font-size:0.75rem;right:4px}
+  .btn-row-icon{width:18px;height:18px;font-size:0.6rem}
+}
+
+/* 小手机 < 480 */
+@media(max-width:480px){
+  .screen{padding:0.15rem;gap:0.2rem}
+  .topbar{padding:0.3rem 0.5rem;border-radius:10px}
+  .topbar-left{gap:0.4rem}
+  .topbar-logo{height:18px;max-width:40px}
+  .topbar-title{font-size:0.75rem}
+  .topbar-sub{font-size:0.55rem}
+  .topbar-time{font-size:0.9rem;letter-spacing:0.02em}
+  .topbar-date{font-size:0.55rem}
+  .main-area{gap:0.25rem}
+  .hero-panel{flex-direction:column;gap:0.25rem}
+  .calling-card{flex:none;min-height:80px;padding:0.5rem 0.4rem;border-radius:10px}
+  .calling-num{font-size:1.8rem}
+  .calling-name{font-size:0.85rem}
+  .calling-window{font-size:0.65rem;margin-top:0.2rem;padding:0.2rem 0.6rem}
+  .call-actions{width:100%;flex-direction:column;gap:0.2rem}
+  .btn-call-next{font-size:0.85rem;padding:0.7rem;min-height:44px}
+  .call-actions-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.3rem}
+  .btn-action{font-size:0.72rem;padding:0.5rem 0.2rem;min-height:40px;border-radius:8px}
+  .btn-signin-hero{font-size:0.72rem;padding:0.5rem;min-height:40px}
+  .stats-mini{display:grid;grid-template-columns:1fr 1fr;gap:0.2rem}
+  .stat-mini{flex-direction:row;justify-content:center;padding:0.35rem 0.5rem}
+  .stat-mini-icon{font-size:0.7rem}
+  .stat-mini-val{font-size:0.75rem}
+  .queue-table th,.queue-table td{font-size:0.55rem;padding:0.25rem 0.05rem}
+  /* 进一步隐藏列: 手机只显示 序号 姓名 状态 操作 */
+  .queue-table th:nth-child(3),.queue-table td:nth-child(3),
+  .queue-table th:nth-child(6),.queue-table td:nth-child(6){display:none}
+  .monitor-panel{gap:0.2rem;font-size:0.58rem;padding:0.25rem 0.4rem;border-radius:8px}
+  .monitor-dot{width:6px;height:6px}
+  .bottombar{font-size:0.6rem;padding:0.25rem 0.5rem}
+  .float-btn{width:26px;height:26px;font-size:0.7rem;right:3px}
+  .float-fs{bottom:3px}.float-admin{bottom:33px}.float-report{bottom:63px}
+  /* 签到弹窗全屏 */
+  #signin-dialog>div{width:100%!important;max-width:100vw!important;margin:0.5rem;border-radius:12px;padding:1.2rem}
+  #signin-dialog h3{font-size:1rem;margin-bottom:0.8rem}
+  #signin-dialog input{font-size:0.9rem;padding:0.55rem}
+  #signin-dialog button{font-size:0.85rem;padding:0.55rem}
+  .cd-ring-wrap{width:28px;height:28px}
+  .cd-ring-text{font-size:0.5rem}
+}

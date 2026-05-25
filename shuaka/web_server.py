@@ -15,6 +15,7 @@ import hashlib
 import socket
 import secrets
 import threading
+from datetime import datetime
 from functools import wraps
 from flask import Flask, jsonify, request, send_from_directory
 
@@ -34,6 +35,33 @@ app.config["SECRET_KEY"] = secrets.token_hex(32)
 # 全局引用
 _excel_manager = None
 _ngrok_url = None
+
+# 监控状态（跨模块共享）
+_monitor_state = {
+    "card_reader": {
+        "online": False,
+        "last_read": None,      # ISO timestamp
+        "last_name": "",
+        "last_id": "",
+        "total_reads": 0
+    },
+    "started_at": None          # 系统启动时间
+}
+
+
+def set_monitor_card_online(online=True):
+    _monitor_state["card_reader"]["online"] = online
+
+
+def set_monitor_card_read(name, id_number):
+    _monitor_state["card_reader"]["last_read"] = datetime.now().isoformat()
+    _monitor_state["card_reader"]["last_name"] = name
+    _monitor_state["card_reader"]["last_id"] = id_number[:4] + "****" + id_number[-4:] if len(id_number) == 18 else id_number
+    _monitor_state["card_reader"]["total_reads"] += 1
+
+
+def set_monitor_started():
+    _monitor_state["started_at"] = datetime.now().isoformat()
 
 # 登录令牌存储 {token: {username, role, expires}}
 _sessions = {}
@@ -348,6 +376,29 @@ def update_location():
     return jsonify({"ok": True, "location": data["location"]})
 
 
+@app.route("/api/monitor")
+def api_monitor():
+    """返回系统监控状态：读卡器、Excel同步文件"""
+    import glob as glob_mod
+    result = {
+        "card_reader": dict(_monitor_state["card_reader"]),
+        "started_at": _monitor_state["started_at"],
+        "excel_dir": {
+            "path": os.path.abspath(_excel_manager.excel_dir) if _excel_manager else "",
+            "files": []
+        }
+    }
+    if _excel_manager:
+        for fp in sorted(glob_mod.glob(os.path.join(_excel_manager.excel_dir, "签到记录_*.xlsx"))):
+            st = os.stat(fp)
+            result["excel_dir"]["files"].append({
+                "name": os.path.basename(fp),
+                "size_kb": round(st.st_size / 1024, 1),
+                "modified": datetime.fromtimestamp(st.st_mtime).strftime("%Y-%m-%d %H:%M:%S")
+            })
+    return jsonify(result)
+
+
 @app.route("/api/manual_signin", methods=["POST"])
 def manual_signin():
     """网页手动签到"""
@@ -375,6 +426,70 @@ def manual_signin():
 @app.route("/report")
 def report_page():
     return send_from_directory(TABLET_DIR, "report.html")
+
+
+# ---------- Excel 文件查看 ----------
+
+@app.route("/api/excel/view/<path:filename>")
+def api_excel_view(filename):
+    """在浏览器中查看 Excel 签到文件内容"""
+    if _excel_manager is None:
+        return "<h3>系统未就绪</h3>", 500
+
+    import os as _os
+    safe_name = _os.path.basename(filename)
+    filepath = _os.path.join(_os.path.abspath(_excel_manager.excel_dir), safe_name)
+
+    if not _os.path.exists(filepath):
+        return "<h3>文件不存在</h3>", 404
+
+    try:
+        from openpyxl import load_workbook as _lw
+        wb = _lw(filepath)
+        ws = wb.active
+
+        rows = list(ws.iter_rows(values_only=True))
+        if not rows:
+            return "<h3>文件为空</h3>"
+
+        html = ['<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8">'
+                '<meta name="viewport" content="width=device-width,initial-scale=1">'
+                '<title>' + safe_name + '</title>'
+                '<style>'
+                '*{margin:0;padding:0;box-sizing:border-box}'
+                'body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;'
+                'background:#0a0e14;color:#e2e6ec;padding:1rem}'
+                'h2{color:#4f8fff;margin-bottom:1rem}'
+                '.info{font-size:0.8rem;color:#8b95a5;margin-bottom:0.5rem}'
+                'table{width:100%;border-collapse:collapse;background:#131820;border-radius:10px;overflow:hidden;font-size:0.85rem}'
+                'th{background:#1a1f2b;color:#8b95a5;padding:0.6rem 0.4rem;text-align:center;font-weight:600;font-size:0.78rem;border-bottom:1px solid #1e2633}'
+                'td{padding:0.5rem 0.4rem;text-align:center;border-bottom:1px solid rgba(255,255,255,0.04)}'
+                'tr:nth-child(even){background:rgba(255,255,255,0.015)}'
+                'tr:hover{background:rgba(79,143,255,0.06)}'
+                '@media(max-width:600px){table{font-size:0.7rem}th,td{padding:0.35rem 0.15rem}}'
+                '</style></head><body>'
+                '<h2>📋 ' + safe_name + '</h2>'
+                '<p class="info">共 ' + str(len(rows)-1) + ' 条记录</p>'
+                '<table>']
+
+        # 表头
+        html.append('<thead><tr>')
+        for cell in rows[0]:
+            html.append('<th>' + (str(cell) if cell else '') + '</th>')
+        html.append('</tr></thead><tbody>')
+
+        # 数据行
+        for row in rows[1:]:
+            html.append('<tr>')
+            for cell in row:
+                html.append('<td>' + (str(cell) if cell is not None else '') + '</td>')
+            html.append('</tr>')
+
+        html.append('</tbody></table></body></html>')
+        return '\n'.join(html)
+
+    except Exception as e:
+        return "<h3>读取失败: " + str(e) + "</h3>", 500
 
 
 # ---------- 数据统计 API ----------
@@ -559,7 +674,7 @@ def delete_records():
 
 @app.route("/api/update_record", methods=["POST"])
 def update_record():
-    """编辑签到记录"""
+    """编辑签到记录（状态/重叫次数等）"""
     if _excel_manager is None:
         return jsonify({"ok": False, "error": "系统未就绪"}), 500
     data = request.get_json() or {}
@@ -573,40 +688,122 @@ def update_record():
     if not seq:
         return jsonify({"ok": False, "error": "缺少必要参数"}), 400
 
-    # 修改内存缓存
+    # 更新缓存（_recalled 等不存 Excel 的字段）
     for r in _excel_manager._records_cache:
-        if r.get("seq") == seq and r.get("location", "") == location:
+        if str(r.get("seq")) == str(seq) and r.get("location", "") == location:
             if new_name: r["name"] = new_name
             if new_id: r["id_number"] = new_id
-            if new_status: r["status"] = new_status
             if recalled is not None: r["_recalled"] = recalled
             break
 
-    # 重建 Excel
+    # 更新 Excel（直接搜 Excel 单元格，不依赖缓存）
+    if new_status:
+        ok = _excel_manager.update_status(seq, location, new_status)
+        if not ok:
+            # 文件不存在或记录不匹配，fallback 重建
+            import glob
+            all_recs = _excel_manager._records_cache
+            excel_dir = _excel_manager.excel_dir
+            for f in glob.glob(os.path.join(excel_dir, "签到记录_*.xlsx")):
+                try: os.remove(f)
+                except Exception: pass
+            groups = {}
+            for r in all_recs:
+                groups.setdefault(r.get("location", "未知"), []).append(r)
+            orig_loc = _excel_manager.location
+            from datetime import datetime as dt
+            try:
+                for loc, recs in groups.items():
+                    _excel_manager.location = loc
+                    for r in recs:
+                        t = dt.strptime(r["sign_time"], "%Y-%m-%d %H:%M:%S")
+                        _excel_manager.add_record(r["name"], r["id_number"], t, r.get("status","等待中"), {"_recalled": r.get("_recalled",0)}, _rebuild=True)
+            finally:
+                _excel_manager.location = orig_loc
+            _excel_manager._load_cache_from_files()
+
+    return jsonify({"ok": True, "message": "记录已更新"})
+
+
+@app.route("/api/restore_record", methods=["POST"])
+def restore_record():
+    """恢复记录到等待队列：重置状态 + 签到时间（重排等候钟）"""
+    if _excel_manager is None:
+        return jsonify({"ok": False, "error": "系统未就绪"}), 500
+    data = request.get_json() or {}
+    seq = data.get("seq")
+    location = data.get("location", "")
+    if not seq:
+        return jsonify({"ok": False, "error": "缺少必要参数"}), 400
+
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    # 更新缓存
+    for r in _excel_manager._records_cache:
+        if str(r.get("seq")) == str(seq) and r.get("location", "") == location:
+            r["status"] = "等待中"
+            r["sign_time"] = now_str
+            break
+
+    # 精准更新 Excel 状态列 + 时间列
+    try:
+        _excel_manager.update_status(seq, location, "等待中")
+        # 同时更新签到时间
+        from openpyxl import load_workbook as _lw
+        filepath = _excel_manager._filepath(location)
+        if os.path.exists(filepath):
+            wb = _lw(filepath)
+            ws = wb.active
+            for row in ws.iter_rows(min_row=2):
+                if str(row[0].value) == str(seq):
+                    row[3].value = now_str  # 签到时间列
+                    wb.save(filepath)
+                    break
+            wb.close()
+    except Exception:
+        pass
+
+    return jsonify({"ok": True, "restored_at": now_str})
+
+
+@app.route("/api/swap_records", methods=["POST"])
+def swap_records():
+    """交换两条记录的签到时间（拖拽排序）"""
+    if _excel_manager is None:
+        return jsonify({"ok": False, "error": "系统未就绪"}), 500
+    data = request.get_json() or {}
+    a = data.get("a", {}); b = data.get("b", {})
+    if not a or not b:
+        return jsonify({"ok": False, "error": "缺少参数"}), 400
+    rec_a = rec_b = None
+    for r in _excel_manager._records_cache:
+        if str(r.get("seq")) == str(a.get("seq")) and r.get("location", "") == a.get("loc", ""):
+            rec_a = r
+        if str(r.get("seq")) == str(b.get("seq")) and r.get("location", "") == b.get("loc", ""):
+            rec_b = r
+    if rec_a and rec_b:
+        rec_a["sign_time"], rec_b["sign_time"] = rec_b["sign_time"], rec_a["sign_time"]
     import glob
     excel_dir = _excel_manager.excel_dir
     all_recs = _excel_manager._records_cache
-
     for f in glob.glob(os.path.join(excel_dir, "签到记录_*.xlsx")):
         try: os.remove(f)
         except Exception: pass
-
     groups = {}
     for r in all_recs:
         groups.setdefault(r.get("location", "未知"), []).append(r)
-
     orig_loc = _excel_manager.location
-    from datetime import datetime
+    from datetime import datetime as _dt
     try:
         for loc, recs in groups.items():
             _excel_manager.location = loc
             for r in recs:
-                t = datetime.strptime(r["sign_time"], "%Y-%m-%d %H:%M:%S")
+                t = _dt.strptime(r["sign_time"], "%Y-%m-%d %H:%M:%S")
                 _excel_manager.add_record(r["name"], r["id_number"], t, r.get("status","等待中"), {"_recalled": r.get("_recalled",0)}, _rebuild=True)
     finally:
         _excel_manager.location = orig_loc
-
-    return jsonify({"ok": True, "message": "记录已更新"})
+    _excel_manager._load_cache_from_files()
+    return jsonify({"ok": True})
 
 
 @app.route("/uploads/<filename>")

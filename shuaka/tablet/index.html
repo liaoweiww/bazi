@@ -39,6 +39,11 @@
         </div>
       </div>
       <button class="btn-signin-hero" onclick="showSigninDialog()">＋ 签到登记</button>
+      <div class="monitor-panel" id="monitor-panel" onclick="toggleMonitor()">
+        <span class="monitor-item"><span class="monitor-dot idle" id="mon-card-dot"></span><span>读卡器</span><span class="monitor-val" id="mon-card-status">--</span></span>
+        <span class="monitor-item">📂 <span class="monitor-val" id="mon-excel-count">--</span></span>
+        <div class="monitor-files" id="monitor-files"><details><summary>📁 同步文件</summary><ul id="mon-file-list"></ul></details></div>
+      </div>
       <div class="stats-mini">
         <div class="stat-mini"><div class="stat-mini-icon">👥</div><div class="stat-mini-info"><div class="stat-mini-val" id="stat-today">0</div><div class="stat-mini-lbl">今日</div></div></div>
         <div class="stat-mini"><div class="stat-mini-icon">⏳</div><div class="stat-mini-info"><div class="stat-mini-val" id="stat-waiting">0</div><div class="stat-mini-lbl">等待</div></div></div>
@@ -53,7 +58,7 @@
           <span class="queue-count" id="queue-wait-count">0人</span>
           <div class="marquee-wrap marquee-inline" id="marquee-2" style="display:none;flex:1;margin:0 1rem;min-width:0;"><div class="marquee-inner" id="marquee-2-text"></div></div>
         </div>
-        <div class="queue-table-wrap"><table class="queue-table"><thead><tr><th>#</th><th>姓名</th><th>签到</th><th>等待</th><th>倒计时</th><th>次数</th><th>地点</th><th>状态/操作</th></tr></thead><tbody id="table-waiting"></tbody></table></div>
+        <div class="queue-table-wrap"><table class="queue-table"><thead id="thead-waiting"><tr><th>#</th><th>姓名</th><th>签到</th><th>等待</th><th>倒计时</th><th>次数</th><th>地点</th><th>状态/操作</th></tr></thead><tbody id="table-waiting"></tbody></table></div>
       </div>
       <div class="queue-section queue-section-bottom">
         <div class="queue-header">
@@ -61,7 +66,7 @@
           <span class="queue-count" id="queue-done-count">0人</span>
           <div class="marquee-wrap marquee-inline" id="marquee-3" style="display:none;flex:1;margin:0 1rem;min-width:0;"><div class="marquee-inner" id="marquee-3-text"></div></div>
         </div>
-        <div class="queue-table-wrap"><table class="queue-table"><thead><tr><th>#</th><th>姓名</th><th>签到</th><th>等待</th><th>倒计时</th><th>次数</th><th>地点</th><th>操作</th></tr></thead><tbody id="table-history"></tbody></table></div>
+        <div class="queue-table-wrap"><table class="queue-table"><thead id="thead-history"><tr><th>#</th><th>姓名</th><th>签到</th><th>等待</th><th>次数</th><th>操作</th></tr></thead><tbody id="table-history"></tbody></table></div>
       </div>
     </main>
   </div>
@@ -78,6 +83,19 @@
       <button onclick="doSignin()" style="flex:2;padding:0.65rem;border:none;border-radius:8px;background:var(--accent,#3b82f6);color:#fff;font-size:0.95rem;font-weight:600;cursor:pointer;">确认签到</button>
     </div>
     <div id="signin-msg" style="text-align:center;margin-top:0.8rem;font-size:0.85rem;display:none;"></div>
+  </div>
+</div>
+
+<div id="edit-dialog" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:200;align-items:center;justify-content:center;">
+  <div style="background:var(--bg2,#1a2736);border:1px solid var(--border,#1e3044);border-radius:16px;padding:1.5rem;width:380px;max-width:90vw;color:var(--text);">
+    <h3 style="margin-bottom:1rem;text-align:center;">编辑人员信息</h3>
+    <input type="hidden" id="edit-seq"><input type="hidden" id="edit-loc">
+    <div style="margin-bottom:0.8rem;"><label style="display:block;font-size:0.78rem;color:var(--text2);margin-bottom:0.25rem;">姓名</label><input type="text" id="edit-name" style="width:100%;padding:0.55rem;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:0.95rem;outline:none;box-sizing:border-box;"></div>
+    <div style="margin-bottom:1rem;"><label style="display:block;font-size:0.78rem;color:var(--text2);margin-bottom:0.25rem;">身份证号</label><input type="text" id="edit-idnum" style="width:100%;padding:0.55rem;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:0.95rem;outline:none;box-sizing:border-box;"></div>
+    <div style="display:flex;gap:0.5rem;">
+      <button onclick="document.getElementById('edit-dialog').style.display='none'" style="flex:1;padding:0.55rem;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--text2);font-size:0.9rem;cursor:pointer;">取消</button>
+      <button onclick="doEditSave()" style="flex:2;padding:0.55rem;border:none;border-radius:8px;background:var(--accent);color:#fff;font-size:0.9rem;font-weight:600;cursor:pointer;">保存</button>
+    </div>
   </div>
 </div>
 

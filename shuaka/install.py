@@ -205,7 +205,12 @@ def verify():
 
     # 检查关键依赖
     deps_ok = True
-    for mod in ["pynput", "openpyxl", "flask", "yaml"]:
+    required = ["openpyxl", "flask", "yaml"]
+    if IS_WIN:
+        required.append("pyttsx3")
+    else:
+        required.append("pynput")
+    for mod in required:
         try:
             __import__(mod)
         except ImportError:

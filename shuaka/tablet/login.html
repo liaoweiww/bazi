@@ -3,62 +3,225 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>登录 - 签到系统管理</title>
+<title>登录 · 智能叫号管理系统</title>
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
-  background: #0f1923;
-  display: flex; align-items: center; justify-content: center;
-  min-height: 100vh; color: #e8edf2;
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg-deep:#070c14;--bg-card:rgba(18,25,40,0.85);--border:rgba(255,255,255,0.06);
+  --accent:#4f8fff;--accent2:#6c5ce7;--text:#e8edf2;--text2:#8899aa;--text3:#545d6b;
+  --green:#00d68f;--red:#ff3d57;
 }
-.login-box {
-  background: #1a2736; border: 1px solid #1e3044; border-radius: 16px;
-  padding: 2.5rem 2rem; width: 360px; max-width: 90vw;
+
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+  min-height:100vh;min-height:100dvh;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--bg-deep);
+  color:var(--text);
+  -webkit-font-smoothing:antialiased;
+  overflow:hidden;
 }
-.login-box h1 { text-align: center; font-size: 1.3rem; margin-bottom: 0.3rem; }
-.login-box .sub { text-align: center; font-size: 0.85rem; color: #8899aa; margin-bottom: 1.8rem; }
-.form-group { margin-bottom: 1rem; }
-.form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.3rem; color: #8899aa; }
-.form-group input {
-  width: 100%; padding: 0.6rem 0.75rem;
-  border: 1px solid #1e3044; border-radius: 8px;
-  background: #0d1520; color: #e8edf2; font-size: 0.95rem;
-  font-family: inherit; outline: none;
+
+/* 背景装饰 */
+.bg-grid{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(rgba(79,143,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(79,143,255,0.03) 1px,transparent 1px);
+  background-size:64px 64px;
 }
-.form-group input:focus { border-color: #3b82f6; }
-.btn {
-  width: 100%; padding: 0.65rem; border: none; border-radius: 8px;
-  font-size: 1rem; font-weight: 600; cursor: pointer; font-family: inherit;
-  background: #3b82f6; color: #fff; margin-top: 0.5rem;
+.bg-orb{position:fixed;z-index:0;pointer-events:none;border-radius:50%;filter:blur(120px)}
+.bg-orb:nth-child(2){width:500px;height:500px;background:rgba(79,143,255,0.06);top:-15%;right:-10%;animation:orbFloat1 12s ease-in-out infinite}
+.bg-orb:nth-child(3){width:350px;height:350px;background:rgba(108,92,231,0.05);bottom:-10%;left:-5%;animation:orbFloat2 10s ease-in-out infinite}
+@keyframes orbFloat1{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(-60px,40px) scale(1.1)}66%{transform:translate(30px,-30px) scale(0.95)}}
+@keyframes orbFloat2{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(50px,-40px) scale(1.15)}}
+
+/* 主容器 */
+.login-container{
+  position:relative;z-index:1;
+  display:flex;
+  width:820px;max-width:95vw;
+  min-height:480px;
+  border-radius:20px;
+  overflow:hidden;
+  box-shadow:0 25px 80px rgba(0,0,0,0.5),0 0 0 1px var(--border);
+  backdrop-filter:blur(20px);
 }
-.btn:hover { background: #2563eb; }
-.error { color: #ef4444; font-size: 0.85rem; text-align: center; margin-top: 0.8rem; display: none; }
-.error.show { display: block; }
+
+/* 左侧品牌区 */
+.brand-panel{
+  width:44%;background:linear-gradient(160deg,rgba(20,30,48,0.95),rgba(14,20,32,0.98));
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:3rem 2rem;position:relative;overflow:hidden;
+  border-right:1px solid var(--border);
+}
+.brand-panel::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(79,143,255,0.06) 0%,transparent 50%,rgba(108,92,231,0.04) 100%);
+  pointer-events:none;
+}
+.brand-panel::after{
+  content:'';position:absolute;top:20%;right:15%;
+  width:180px;height:180px;
+  border:2px solid rgba(79,143,255,0.08);
+  border-radius:50%;
+  animation:brandRing 8s linear infinite;
+}
+@keyframes brandRing{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+.brand-content{position:relative;z-index:1;text-align:center}
+.brand-icon{
+  width:64px;height:64px;margin:0 auto 1.2rem;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border-radius:18px;display:flex;align-items:center;justify-content:center;
+  font-size:1.8rem;box-shadow:0 12px 40px rgba(79,143,255,0.25);
+}
+.brand-title{
+  font-size:1.4rem;font-weight:800;letter-spacing:0.04em;
+  background:linear-gradient(135deg,var(--text),var(--accent));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.brand-desc{
+  margin-top:0.6rem;font-size:0.82rem;color:var(--text2);line-height:1.6;
+}
+.brand-features{
+  list-style:none;margin-top:2rem;text-align:left;
+}
+.brand-features li{
+  font-size:0.78rem;color:var(--text2);padding:0.35rem 0;
+  display:flex;align-items:center;gap:0.5rem;
+}
+.brand-features li::before{
+  content:'';width:6px;height:6px;border-radius:50%;
+  background:var(--accent);flex-shrink:0;
+}
+
+/* 右侧表单区 */
+.form-panel{
+  flex:1;background:var(--bg-card);
+  display:flex;flex-direction:column;justify-content:center;
+  padding:3rem 2.5rem;
+}
+.form-header{margin-bottom:2rem}
+.form-header h2{font-size:1.25rem;font-weight:700;margin-bottom:0.3rem}
+.form-header p{font-size:0.8rem;color:var(--text2)}
+
+.input-group{margin-bottom:1.2rem;position:relative}
+.input-group label{
+  display:block;font-size:0.75rem;font-weight:600;color:var(--text2);
+  margin-bottom:0.35rem;letter-spacing:0.03em;text-transform:uppercase;
+}
+.input-wrap{
+  position:relative;display:flex;align-items:center;
+}
+.input-wrap .icon{
+  position:absolute;left:0.85rem;font-size:1rem;color:var(--text3);
+  pointer-events:none;z-index:1;
+}
+.input-wrap input{
+  width:100%;padding:0.7rem 0.9rem 0.7rem 2.5rem;
+  border:1.5px solid var(--border);border-radius:10px;
+  background:rgba(255,255,255,0.03);color:var(--text);
+  font-size:0.92rem;font-family:inherit;outline:none;
+  transition:all 0.25s;
+}
+.input-wrap input:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(79,143,255,0.1);
+  background:rgba(79,143,255,0.04);
+}
+.input-wrap input::placeholder{color:var(--text3)}
+
+.btn-login{
+  width:100%;padding:0.75rem;border:none;border-radius:10px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#fff;font-size:0.95rem;font-weight:700;cursor:pointer;font-family:inherit;
+  letter-spacing:0.04em;
+  box-shadow:0 6px 24px rgba(79,143,255,0.25);
+  transition:all 0.25s;margin-top:0.3rem;
+}
+.btn-login:hover{
+  transform:translateY(-1px);
+  box-shadow:0 10px 32px rgba(79,143,255,0.35);
+}
+.btn-login:active{transform:translateY(0)}
+
+.error-msg{
+  text-align:center;margin-top:1rem;font-size:0.82rem;
+  padding:0.5rem;border-radius:8px;
+  background:rgba(255,61,87,0.08);color:var(--red);
+  display:none;
+}
+.error-msg.show{display:block}
+
+.form-footer{
+  margin-top:1.5rem;text-align:center;
+  font-size:0.72rem;color:var(--text3);
+}
+
+/* 响应式 */
+@media(max-width:640px){
+  .login-container{flex-direction:column;min-height:auto;max-width:92vw}
+  .brand-panel{width:100%;padding:2rem 1.5rem;border-right:none;border-bottom:1px solid var(--border)}
+  .brand-features{display:none}
+  .brand-icon{width:48px;height:48px;font-size:1.3rem;margin-bottom:0.8rem;border-radius:14px}
+  .brand-title{font-size:1.15rem}
+  .form-panel{padding:2rem 1.5rem}
+}
 </style>
 </head>
 <body>
-<div class="login-box">
-  <h1>签到叫号系统</h1>
-  <div class="sub">后台管理登录 · 默认账号 admin / admin123</div>
-  <form id="login-form">
-    <div class="form-group">
-      <label>用户名</label>
-      <input type="text" id="username" placeholder="请输入用户名" required autofocus>
+<div class="bg-grid"></div>
+<div class="bg-orb"></div>
+<div class="bg-orb"></div>
+
+<div class="login-container">
+  <div class="brand-panel">
+    <div class="brand-content">
+      <div class="brand-icon">☰</div>
+      <div class="brand-title">智能叫号管理系统</div>
+      <p class="brand-desc">身份证签到 · 语音播报 · 大屏叫号 · 百度网盘同步</p>
+      <ul class="brand-features">
+        <li>多地点协同签到</li>
+        <li>实时大屏叫号展示</li>
+        <li>Excel 自动归档备份</li>
+        <li>超时智能提醒</li>
+      </ul>
     </div>
-    <div class="form-group">
-      <label>密码</label>
-      <input type="password" id="password" placeholder="请输入密码" required>
+  </div>
+  <div class="form-panel">
+    <div class="form-header">
+      <h2>后台管理登录</h2>
+      <p>请输入管理员账号进入后台</p>
     </div>
-    <button type="submit" class="btn">登 录</button>
-  </form>
-  <div class="error" id="error-msg">用户名或密码错误</div>
+    <form id="login-form">
+      <div class="input-group">
+        <label>用户名</label>
+        <div class="input-wrap">
+          <span class="icon">👤</span>
+          <input type="text" id="username" placeholder="请输入用户名" required autofocus>
+        </div>
+      </div>
+      <div class="input-group">
+        <label>密码</label>
+        <div class="input-wrap">
+          <span class="icon">🔒</span>
+          <input type="password" id="password" placeholder="请输入密码" required>
+        </div>
+      </div>
+      <button type="submit" class="btn-login">登 录 系 统</button>
+    </form>
+    <div class="error-msg" id="error-msg">用户名或密码错误</div>
+    <div class="form-footer">默认账号 admin / admin123 · 请在后台管理中修改密码</div>
+  </div>
 </div>
+
 <script>
 document.getElementById('login-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const username = document.getElementById('username').value.trim();
   const password = document.getElementById('password').value.trim();
+  const btn = e.target.querySelector('button');
+  const origText = btn.textContent;
+  btn.textContent = '验证中...';
+  btn.disabled = true;
   try {
     const resp = await fetch('/api/login', {
       method: 'POST',
@@ -71,11 +234,17 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
       localStorage.setItem('signin_user', JSON.stringify(data.user));
       window.location.href = '/admin';
     } else {
-      document.getElementById('error-msg').classList.add('show');
+      const err = document.getElementById('error-msg');
+      err.textContent = data.error || '用户名或密码错误';
+      err.classList.add('show');
     }
   } catch (err) {
-    document.getElementById('error-msg').textContent = '连接失败，请检查服务器';
-    document.getElementById('error-msg').classList.add('show');
+    const el = document.getElementById('error-msg');
+    el.textContent = '连接失败，请检查服务器';
+    el.classList.add('show');
+  } finally {
+    btn.textContent = origText;
+    btn.disabled = false;
   }
 });
 </script>

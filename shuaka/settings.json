@@ -2,17 +2,17 @@
   "display": {
     "title": "中国人寿收展健康体检专用签到系统",
     "location": "",
-    "subtitle": "123",
+    "subtitle": "深耕收展渠道，打造体检专属签到平台，国寿专属智签，助力健康体检落地",
     "logo_url": "/uploads/logo.png",
-    "theme": "dark",
+    "theme": "blue",
     "font_scale": "xlarge",
     "refresh_interval": 5,
     "mask_names": true,
     "show_location": true,
     "show_id_number": false,
     "show_status": true,
-    "bg_primary": "#0f1923",
-    "accent": "#08fd39",
+    "bg_primary": "#0a1628",
+    "accent": "#64ffda",
     "glow_enabled": true,
     "glow_intensity": 2
   },
@@ -83,7 +83,18 @@
     "welcome_template": "{name}，欢迎签到！",
     "remind_template": "{name}，您的等待时间已到40分钟，请留意叫号。",
     "macos_voice": "Tingting",
-    "windows_voice": ""
+    "windows_voice": "",
+    "templates": {
+      "call": "有请{name}嘉宾到检测室",
+      "recall": "再次叫号，请{name}嘉宾到检测室",
+      "recall_nth": "第{n}次叫号，请{name}嘉宾到检测室",
+      "done": "{name}嘉宾检测完毕",
+      "pass": "过号，请{name}稍后重叫",
+      "welcome": "{name}，欢迎签到！",
+      "remind": "{name}，您的等待时间已到{minutes}分钟，请留意叫号。",
+      "startup": "签到系统已启动",
+      "shutdown": "签到系统已关闭"
+    }
   },
   "timer": {
     "remind_minutes": 50,
@@ -107,7 +118,7 @@
       "enabled": true,
       "gradient": false,
       "size": "0.75rem",
-      "speed": 88,
+      "speed": 120,
       "text": "温馨提示：请妥善保管好您的叫号单及个人证件。过号未到者需重新排队取号，敬请谅解。办理过程中如遇任何问题，可随时向工作人员寻求帮助。"
     },
     {
@@ -116,7 +127,7 @@
       "enabled": true,
       "gradient": false,
       "size": "0.75rem",
-      "speed": 96,
+      "speed": 120,
       "text": "业务办理完毕后请及时离柜，检查并收好您的证件、单据及个人物品，谨防遗漏。感谢您的信任与支持！期待再次为您服务，祝您生活愉快！"
     }
   ]

@@ -13,12 +13,17 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-try:
-    from pynput import keyboard
-    HAS_PYNPUT = True
-except ImportError:
+# 仅在 macOS / Linux 使用 pynput（Windows 用 win_card_listener.py）
+import sys as _sys
+if _sys.platform == "win32":
     HAS_PYNPUT = False
-    logger.warning("pynput 未安装，读卡器监听功能不可用")
+else:
+    try:
+        from pynput import keyboard
+        HAS_PYNPUT = True
+    except ImportError:
+        HAS_PYNPUT = False
+        logger.warning("pynput 未安装，读卡器监听功能不可用。安装: pip install pynput")
 
 
 class CardListener:
