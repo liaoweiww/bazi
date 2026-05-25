@@ -27,6 +27,8 @@ SETTINGS_FILE = os.path.join(BASE_DIR, "settings.json")
 USERS_FILE = os.path.join(BASE_DIR, "users.json")
 
 os.makedirs(UPLOADS_DIR, exist_ok=True)
+RECYCLE_DIR = os.path.join(BASE_DIR, "回收站")
+os.makedirs(RECYCLE_DIR, exist_ok=True)
 
 # Flask app
 app = Flask(__name__, static_folder=TABLET_DIR, static_url_path="")
@@ -428,6 +430,8 @@ def report_page():
     return send_from_directory(TABLET_DIR, "report.html")
 
 
+
+
 # ---------- Excel 文件查看 ----------
 
 @app.route("/api/excel/view/<path:filename>")
@@ -577,37 +581,50 @@ def api_stats():
 @app.route("/api/clear_records", methods=["POST"])
 @require_admin
 def clear_records():
-    """清除签到记录"""
+    """清除签到记录（先备份到回收站）"""
     if _excel_manager is None:
         return jsonify({"ok": False, "error": "系统未就绪"}), 500
 
     data = request.get_json() or {}
     mode = data.get("mode", "today")
 
-    import glob
+    import glob, shutil
+    from datetime import datetime
     excel_dir = _excel_manager.excel_dir
+    now_str = datetime.now().strftime("%Y%m%d_%H%M%S")
 
     if mode == "all":
+        # 备份全部文件到回收站
         for f in glob.glob(os.path.join(excel_dir, "签到记录_*.xlsx")):
-            try: os.remove(f)
+            try:
+                bak_name = f"{now_str}_全部_{os.path.basename(f)}"
+                shutil.copy2(f, os.path.join(RECYCLE_DIR, bak_name))
+                os.remove(f)
             except: pass
-        # 清内存缓存
         _excel_manager._records_cache = []
-        return jsonify({"ok": True, "message": "已清除全部签到记录"})
+        return jsonify({"ok": True, "message": "已清除全部签到记录（已备份到回收站）"})
 
-    # 只清今天
-    from datetime import datetime
+    # 只清今天：备份后重建
     today = datetime.now().strftime("%Y-%m-%d")
     all_recs = _excel_manager.get_all_records()
+    removed_recs = [r for r in all_recs if r["sign_time"].startswith(today)]
     keep = [r for r in all_recs if not r["sign_time"].startswith(today)]
-    removed = len(all_recs) - len(keep)
+    removed = len(removed_recs)
 
-    # 重建所有 Excel 文件
+    if removed == 0:
+        return jsonify({"ok": True, "message": "今日无记录需要清除"})
+
+    # 备份今日被删除的记录到回收站 JSON
+    import json as _json
+    bak_path = os.path.join(RECYCLE_DIR, f"{now_str}_今日删除_{removed}条.json")
+    with open(bak_path, "w", encoding="utf-8") as bf:
+        _json.dump(removed_recs, bf, ensure_ascii=False, indent=2)
+
+    # 重建所有 Excel 文件（不含今日记录）
     for f in glob.glob(os.path.join(excel_dir, "签到记录_*.xlsx")):
         try: os.remove(f)
         except: pass
 
-    # 按原地点分组写回
     groups = {}
     for r in keep:
         groups.setdefault(r.get("location", "未知"), []).append(r)
@@ -623,26 +640,36 @@ def clear_records():
         _excel_manager.location = orig_loc
 
     _excel_manager._records_cache = keep
-    return jsonify({"ok": True, "message": f"已清除今日 {removed} 条记录"})
+    return jsonify({"ok": True, "message": f"已清除今日 {removed} 条记录（已备份到回收站）"})
 
 
 # ---------- 删除/编辑记录 ----------
 
 @app.route("/api/delete_records", methods=["POST"])
 def delete_records():
-    """删除指定签到记录"""
+    """删除指定签到记录（备份到回收站）"""
     if _excel_manager is None:
         return jsonify({"ok": False, "error": "系统未就绪"}), 500
     data = request.get_json() or {}
-    targets = data.get("targets", [])  # [{seq, location}, ...]
+    targets = data.get("targets", [])
     if not targets:
         return jsonify({"ok": False, "error": "请指定要删除的记录"}), 400
 
-    import glob
+    import glob, json as _json
+    from datetime import datetime
     all_recs = _excel_manager.get_all_records()
     target_set = set()
     for t in targets:
         target_set.add((t.get("seq"), t.get("location", "")))
+
+    # 找出被删除的记录并备份
+    deleted_recs = [r for r in all_recs if (r.get("seq"), r.get("location", "")) in target_set]
+    if deleted_recs:
+        now_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+        names = ','.join([r.get('name','?') for r in deleted_recs[:5]])
+        bak_path = os.path.join(RECYCLE_DIR, f"{now_str}_删除_{names}.json")
+        with open(bak_path, "w", encoding="utf-8") as bf:
+            _json.dump(deleted_recs, bf, ensure_ascii=False, indent=2)
 
     keep = [r for r in all_recs if (r.get("seq"), r.get("location", "")) not in target_set]
     removed = len(all_recs) - len(keep)
@@ -658,7 +685,6 @@ def delete_records():
         groups.setdefault(r.get("location", "未知"), []).append(r)
 
     orig_loc = _excel_manager.location
-    from datetime import datetime
     try:
         for loc, recs in groups.items():
             _excel_manager.location = loc
@@ -669,7 +695,7 @@ def delete_records():
         _excel_manager.location = orig_loc
 
     _excel_manager._records_cache = keep
-    return jsonify({"ok": True, "message": f"已删除 {removed} 条记录", "removed": removed})
+    return jsonify({"ok": True, "message": f"已删除 {removed} 条记录（已备份到回收站）", "removed": removed})
 
 
 @app.route("/api/update_record", methods=["POST"])
@@ -836,6 +862,141 @@ def get_all_ips():
         pass
     ips.add(get_local_ip())
     return sorted(ips)
+
+
+
+# ---------- 备份管理 ----------
+
+@app.route("/api/backup", methods=["GET"])
+def api_backup_list():
+    """列出所有备份文件"""
+    import glob
+    files = []
+    for f in sorted(glob.glob(os.path.join(RECYCLE_DIR, "*")), reverse=True):
+        st = os.stat(f)
+        files.append({
+            "name": os.path.basename(f),
+            "size_kb": round(st.st_size / 1024, 1),
+            "modified": datetime.fromtimestamp(st.st_mtime).strftime("%Y-%m-%d %H:%M:%S")
+        })
+    return jsonify({"ok": True, "files": files})
+
+
+@app.route("/api/backup", methods=["POST"])
+@require_admin
+def api_backup_create():
+    """手动备份：把当前所有签到记录打包备份"""
+    import shutil, glob
+    now_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+    excel_dir = _excel_manager.excel_dir if _excel_manager else "./签到记录"
+    count = 0
+    for f in glob.glob(os.path.join(excel_dir, "签到记录_*.xlsx")):
+        try:
+            bak_name = f"{now_str}_手动备份_{os.path.basename(f)}"
+            shutil.copy2(f, os.path.join(RECYCLE_DIR, bak_name))
+            count += 1
+        except: pass
+    return jsonify({"ok": True, "message": f"已备份 {count} 个文件"})
+
+
+# ---------- 回收站管理 ----------
+
+@app.route("/api/recycle", methods=["GET"])
+def api_recycle_list():
+    """列出回收站文件"""
+    import glob
+    files = []
+    for f in sorted(glob.glob(os.path.join(RECYCLE_DIR, "*")), reverse=True):
+        st = os.stat(f)
+        files.append({
+            "name": os.path.basename(f),
+            "size_kb": round(st.st_size / 1024, 1),
+            "modified": datetime.fromtimestamp(st.st_mtime).strftime("%Y-%m-%d %H:%M:%S")
+        })
+    return jsonify({"ok": True, "files": files})
+
+
+@app.route("/api/recycle/restore", methods=["POST"])
+@require_admin
+def api_recycle_restore():
+    """从回收站恢复文件"""
+    data = request.get_json() or {}
+    filename = data.get("filename", "")
+    if not filename:
+        return jsonify({"ok": False, "error": "请指定文件名"}), 400
+    src = os.path.join(RECYCLE_DIR, os.path.basename(filename))
+    if not os.path.exists(src):
+        return jsonify({"ok": False, "error": "文件不存在"}), 404
+    import shutil
+    excel_dir = _excel_manager.excel_dir if _excel_manager else "./签到记录"
+    os.makedirs(excel_dir, exist_ok=True)
+    # 如果是 JSON 文件（记录备份），还原到 Excel
+    if src.endswith('.json'):
+        import json as _json
+        with open(src, "r", encoding="utf-8") as bf:
+            recs = _json.load(bf)
+        # 重建缓存
+        if _excel_manager:
+            existing = _excel_manager.get_all_records()
+            for r in recs:
+                _excel_manager.add_record(r["name"], r["id_number"],
+                    datetime.strptime(r["sign_time"], "%Y-%m-%d %H:%M:%S"),
+                    r.get("status", "等待中"),
+                    {"_recalled": r.get("_recalled", 0)})
+        try: os.remove(src)
+        except: pass
+    else:
+        # Excel 备份文件直接恢复
+        dst = os.path.join(excel_dir, filename.split("_手动备份_")[-1] if "_手动备份_" in filename else filename.split("_全部_")[-1] if "_全部_" in filename else filename)
+        # 提取原始文件名
+        parts = filename.split("_", 2)
+        orig_name = parts[-1] if len(parts) > 2 else filename
+        for prefix in ["手动备份_", "全部_"]:
+            if orig_name.startswith(prefix):
+                orig_name = orig_name[len(prefix):]
+        dst = os.path.join(excel_dir, orig_name)
+        shutil.copy2(src, dst)
+        try: os.remove(src)
+        except: pass
+        if _excel_manager:
+            _excel_manager._load_cache_from_files()
+    return jsonify({"ok": True, "message": "已恢复"})
+
+
+@app.route("/api/recycle/delete", methods=["POST"])
+@require_admin
+def api_recycle_delete():
+    """永久删除回收站文件"""
+    data = request.get_json() or {}
+    filename = data.get("filename", "")
+    mode = data.get("mode", "one")  # one or all
+    if mode == "all":
+        import glob
+        for f in glob.glob(os.path.join(RECYCLE_DIR, "*")):
+            try: os.remove(f)
+            except: pass
+        return jsonify({"ok": True, "message": "已清空回收站"})
+    if not filename:
+        return jsonify({"ok": False, "error": "请指定文件名"}), 400
+    fp = os.path.join(RECYCLE_DIR, os.path.basename(filename))
+    if os.path.exists(fp):
+        os.remove(fp)
+    return jsonify({"ok": True, "message": "已永久删除"})
+
+
+# ---------- 密码验证 ----------
+
+@app.route("/api/verify_password", methods=["POST"])
+def api_verify_password():
+    """验证管理员密码"""
+    data = request.get_json() or {}
+    pwd = data.get("password", "")
+    users = load_users()
+    admin = users.get("admin", {})
+    if admin.get("password") == pwd:
+        return jsonify({"ok": True})
+    return jsonify({"ok": False, "error": "密码错误"}), 403
+
 
 
 def start_server(host="0.0.0.0", port=5002):

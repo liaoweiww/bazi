@@ -4,6 +4,16 @@
 (function () {
   'use strict';
 
+  // 自定义确认弹窗（不退出全屏）
+  var _cfResolve=null;
+  window.cfDlg=function(ok){var el=document.getElementById('confirm-dialog');if(el)el.style.display='none';if(_cfResolve)_cfResolve(ok);};
+  window.cfConfirm=function(msg){return new Promise(function(resolve){_cfResolve=resolve;var el=document.getElementById('confirm-msg');if(el)el.textContent=msg;var d=document.getElementById('confirm-dialog');if(d)d.style.display='flex';});};
+  // 密码验证弹窗
+  var _pwResolve=null;
+  window.pwDlg=function(ok){var el=document.getElementById('pw-dialog');if(el)el.style.display='none';if(_pwResolve)_pwResolve(ok?document.getElementById('pw-input').value:null);var inp=document.getElementById('pw-input');if(inp)inp.value='';};
+  window.verifyAdmin=function(msg){return new Promise(function(resolve){_pwResolve=resolve;var el=document.getElementById('pw-msg');if(el)el.textContent=msg||'请输入管理员密码';var d=document.getElementById('pw-dialog');if(d)d.style.display='flex';var inp=document.getElementById('pw-input');if(inp)inp.focus();});};
+  document.addEventListener('keydown',function(e){if(e.key==='Enter'){var pwD=document.getElementById('pw-dialog');if(pwD&&pwD.style.display==='flex')pwDlg(true);}});
+
   const BUILTIN_THEMES = [
     { id: 'dark', name: '暗夜黑', preview: 'linear-gradient(135deg, #0f1923 0%, #1a2736 50%, #3b82f6 100%)' },
     { id: 'blue', name: '深海蓝', preview: 'linear-gradient(135deg, #0a1628 0%, #112240 50%, #64ffda 100%)' },
@@ -99,7 +109,12 @@
 
     fetch('/api/settings')
       .then(r => r.json())
-      .then(d => loadSettingsToForm(d))
+      .then(d => {
+        loadSettingsToForm(d);
+        // 备份路径
+        var bp = document.getElementById('cfg-backup-path');
+        if (bp && d.backup && d.backup.path) bp.value = d.backup.path;
+      })
       .catch(() => {});
 
     const dataTab = document.querySelector('[data-tab="data"]');
@@ -430,8 +445,21 @@
       if (cards) cards.innerHTML = `
         <div class="stat-card"><div class="stat-num">${data.today_count || 0}</div><div class="stat-label">今日签到</div></div>
         <div class="stat-card"><div class="stat-num">${data.record_count || 0}</div><div class="stat-label">总记录数</div></div>
-        <div class="stat-card"><div class="stat-num">${data.ngrok_url ? '已连接' : '仅内网'}</div><div class="stat-label">外网状态</div></div>`;
+        <div class="stat-card"><div class="stat-num">${data.ngrok_url ? '外网已通' : '仅内网'}</div><div class="stat-label">外网连接</div></div>
+        <div class="stat-card"><div class="stat-num">${data.status||'--'}</div><div class="stat-label">系统状态</div></div>`;
+      // 填充路径信息
+      var dirEl = document.getElementById('cfg-excel-dir');
+      var locEl = document.getElementById('cfg-location');
+      if (!dirEl.value && !locEl.value) {
+        try {
+          var mr = await fetch('/api/monitor');
+          var md = await mr.json();
+          if (dirEl) dirEl.value = md.excel_dir ? md.excel_dir.path : '请在 config.yaml 中配置';
+        } catch(e) {}
+      }
     } catch (e) { /* ignore */ }
+    // 同时加载回收站
+    if (typeof window._loadRecycle === 'function') window._loadRecycle();
   }
 
   // ========== 用户管理 ==========
@@ -449,6 +477,8 @@
           ${u !== 'admin' ? `<button class="btn btn-danger-outline" onclick="window._deleteUser('${u}')" style="font-size:0.8rem;padding:0.3rem 0.7rem;">删除</button>` : '<span style="color:#6b7280;font-size:0.8rem;">系统管理员</span>'}
         </div>`).join('');
     } catch (e) { /* ignore */ }
+    // 同时加载回收站
+    if (typeof window._loadRecycle === 'function') window._loadRecycle();
   }
 
   async function _addUser() {
@@ -466,7 +496,7 @@
   }
 
   async function _deleteUser(username) {
-    if (!confirm('确定删除用户 ' + username + '？')) return;
+    if (!(await cfConfirm('确定删除用户 ' + username + '？'))) return;
     try {
       const resp = await fetch('/api/users/' + username, { method: 'DELETE', headers: authHeaders() });
       const data = await resp.json();
@@ -600,7 +630,18 @@
   };
 
   async function _clearRecords(mode) {
+    var label = mode === 'all' ? '全部' : '今日';
+    if (!(await cfConfirm('⚠️ 即将清除' + label + '签到记录，请输入管理员密码确认'))) return;
+    var pwd = await verifyAdmin('清除' + label + '记录需要验证管理员身份');
+    if (!pwd) return;
     try {
+      var check = await fetch('/api/verify_password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pwd })
+      });
+      var checkData = await check.json();
+      if (!checkData.ok) { alert('密码错误，操作取消'); return; }
       const resp = await fetch('/api/clear_records', {
         method: 'POST',
         headers: authHeaders(),
@@ -690,7 +731,7 @@
   window._deleteSelected = async function() {
     const cbs = document.querySelectorAll('.people-cb:checked');
     if (!cbs.length) { alert('请先选择要删除的记录'); return; }
-    if (!confirm(`确定删除选中的 ${cbs.length} 条记录？`)) return;
+    if (!(await cfConfirm('确定删除选中的 ' + cbs.length + ' 条记录？'))) return;
     const targets = Array.from(cbs).map(cb => ({
       seq: parseInt(cb.dataset.seq),
       location: cb.dataset.loc
@@ -707,7 +748,7 @@
   };
 
   window._delOne = async function(seq, location) {
-    if (!confirm('确定删除该记录？')) return;
+    if (!(await cfConfirm('确定删除该记录？'))) return;
     try {
       const resp = await fetch('/api/delete_records', {
         method: 'POST', headers: authHeaders(),
@@ -744,6 +785,93 @@
         loadPeople();
       } else { alert('保存失败: ' + (data.error||'')); }
     } catch(e) { alert('请求失败'); }
+  };
+
+  // ===== 备份与回收站 =====
+  window._manualBackup = async function() {
+    try {
+      var resp = await fetch('/api/backup', { method: 'POST', headers: authHeaders() });
+      var data = await resp.json();
+      alert(data.message || '备份完成');
+      window._loadRecycle();
+    } catch(e) { alert('备份失败'); }
+  };
+
+  window._loadRecycle = async function() {
+    var el = document.getElementById('recycle-list');
+    if (!el) return;
+    try {
+      var resp = await fetch('/api/recycle');
+      var data = await resp.json();
+      if (!data.files || !data.files.length) {
+        el.innerHTML = '<span style="color:#9ca3af;font-size:0.85rem;">回收站为空</span>';
+        return;
+      }
+      var rows = [];
+      for (var i = 0; i < data.files.length; i++) {
+        var f = data.files[i];
+        var safeName = f.name.replace(/'/g, "\\'");
+        rows.push('<div style="display:flex;justify-content:space-between;align-items:center;padding:0.35rem 0.5rem;border-bottom:1px solid #f0f0f0;font-size:0.82rem;">'
+          + '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + safeName + '">' + safeName + '</span>'
+          + '<span style="color:#9ca3af;margin:0 0.5rem;white-space:nowrap;">' + f.size_kb + 'KB</span>'
+          + '<button class="btn btn-secondary" onclick="window._restoreRecycle(\'' + safeName + '\')" style="font-size:0.7rem;padding:0.15rem 0.4rem;margin-right:0.2rem;">恢复</button>'
+          + '<button class="btn btn-danger-outline" onclick="window._delRecycle(\'' + safeName + '\')" style="font-size:0.7rem;padding:0.15rem 0.4rem;">删除</button>'
+          + '</div>');
+      }
+      el.innerHTML = rows.join('');
+    } catch(e) { el.innerHTML = '<span style="color:#ef4444;">加载失败</span>'; }
+  };
+
+  window._restoreRecycle = async function(filename) {
+    if (!(await cfConfirm('确定恢复 ' + filename + ' ？'))) return;
+    try {
+      var resp = await fetch('/api/recycle/restore', { method:'POST', headers:authHeaders(), body:JSON.stringify({filename}) });
+      var data = await resp.json();
+      alert(data.message || '已恢复');
+      window._loadRecycle();
+    } catch(e) { alert('恢复失败'); }
+  };
+
+  window._delRecycle = async function(filename) {
+    if (!(await cfConfirm('永久删除 ' + filename + ' ？'))) return;
+    try {
+      var resp = await fetch('/api/recycle/delete', { method:'POST', headers:authHeaders(), body:JSON.stringify({filename}) });
+      var data = await resp.json();
+      alert(data.message || '已删除');
+      window._loadRecycle();
+    } catch(e) { alert('删除失败'); }
+  };
+
+  window._clearRecycle = async function() {
+    var pwd = await verifyAdmin('清空回收站需要验证管理员身份');
+    if (!pwd) return;
+    var check = await fetch('/api/verify_password', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({password:pwd}) });
+    var cd = await check.json();
+    if (!cd.ok) { alert('密码错误'); return; }
+    try {
+      await fetch('/api/recycle/delete', { method:'POST', headers:authHeaders(), body:JSON.stringify({mode:'all'}) });
+      alert('回收站已清空');
+      window._loadRecycle();
+    } catch(e) { alert('清空失败'); }
+  };
+
+  window._saveBackupPath = async function() {
+    var p = document.getElementById('cfg-backup-path');
+    if (!p) return;
+    var path = p.value.trim();
+    if (!path) { alert('请输入备份路径'); return; }
+    try {
+      var resp = await fetch('/api/settings', {
+        method: 'POST', headers: authHeaders(),
+        body: JSON.stringify({ backup: { path: path } })
+      });
+      var data = await resp.json();
+      if (data.ok) {
+        alert('备份路径已保存，重启服务后生效');
+      } else {
+        alert('保存失败: ' + (data.error || ''));
+      }
+    } catch(e) { alert('保存失败'); }
   };
 
   document.addEventListener('DOMContentLoaded', init);

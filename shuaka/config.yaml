@@ -50,3 +50,9 @@ web_server:
 ngrok:
   enabled: false
   auth_token: ""
+
+# ---- 自动备份 ----
+backup:
+  enabled: true
+  interval_minutes: 30
+  path: "./备份"

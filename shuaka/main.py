@@ -194,12 +194,17 @@ def main():
         set_monitor_card_read(name, id_number)
 
     # 读卡器监听（跨平台适配：Windows 底层钩子 / macOS pynput）
+    card_listener = None
     if CardListener is None:
         logger.warning("读卡器监听模块不可用，仅支持手动签到")
     else:
-        card_listener = CardListener(card_cfg, on_signin)
-        card_listener.start()
-        set_monitor_card_online(True)
+        try:
+            card_listener = CardListener(card_cfg, on_signin)
+            card_listener.start()
+            set_monitor_card_online(True)
+        except OSError as e:
+            logger.warning(f"读卡器启动失败: {e}")
+            logger.warning("已降级为手动签到模式，Web 服务正常运行")
 
     # ---- Web 服务器 ----
     set_excel_manager(excel_mgr)
@@ -215,17 +220,49 @@ def main():
             daemon=True
         ).start()
 
+    # ---- 关闭标志 ----
+    shutdown_flag = [False]
+
+    # ---- 自动备份 ----
+    backup_interval = config.get("backup", {}).get("interval_minutes", 30)
+    backup_enabled = config.get("backup", {}).get("enabled", True)
+
+    def auto_backup_loop():
+        import shutil, glob as _glob
+        while not shutdown_flag[0]:
+            time.sleep(backup_interval * 60)
+            if shutdown_flag[0]:
+                break
+            try:
+                now_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+                backup_dir = config.get("backup", {}).get("path") or os.path.join(script_dir, "备份")
+                os.makedirs(backup_dir, exist_ok=True)
+                excel_dir = excel_mgr.excel_dir
+                for f in _glob.glob(os.path.join(excel_dir, "签到记录_*.xlsx")):
+                    bn = os.path.basename(f)
+                    shutil.copy2(f, os.path.join(backup_dir, f"{now_str}_自动_{bn}"))
+                # 清理旧备份（保留最近50份）
+                all_baks = sorted(_glob.glob(os.path.join(backup_dir, "*_自动_*")))
+                while len(all_baks) > 50:
+                    try: os.remove(all_baks.pop(0))
+                    except: pass
+                logger.info(f"自动备份完成 ({backup_interval}分钟)")
+            except Exception as e:
+                logger.warning(f"自动备份失败: {e}")
+
+    if backup_enabled:
+        threading.Thread(target=auto_backup_loop, daemon=True).start()
+        logger.info(f"自动备份已启用，间隔: {backup_interval} 分钟")
+
     # ---- 主循环 ----
     print("\n系统运行中... 按 Ctrl+C 退出\n")
-
-    shutdown_flag = [False]
 
     def handle_shutdown(signum, frame):
         if shutdown_flag[0]:
             return
         shutdown_flag[0] = True
         print("\n正在关闭系统...")
-        card_listener.stop()
+        if card_listener: card_listener.stop()
         sd_tpl = voice_cfg.get("templates", {}).get("shutdown", "签到系统已关闭")
         voice.speak(sd_tpl)
         voice.stop()

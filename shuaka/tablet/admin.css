@@ -454,3 +454,72 @@ select {
   #panel-people table { font-size: 0.7rem; }
   #panel-people table th, #panel-people table td { padding: 0.3rem 0.25rem; }
 }
+
+/* ========== 数据管理面板 ========== */
+.section-card {
+  background: var(--card-bg, #fff);
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 12px;
+  padding: 1.2rem 1.4rem;
+  margin-bottom: 1rem;
+}
+.section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+  color: var(--text, #1f2937);
+}
+.section-desc {
+  font-size: 0.8rem;
+  color: var(--text-secondary, #6b7280);
+  margin-bottom: 0.8rem;
+  line-height: 1.5;
+}
+.input-readonly {
+  background: #f9fafb !important;
+  color: #6b7280 !important;
+  cursor: default;
+}
+.btn-sm {
+  font-size: 0.8rem !important;
+  padding: 0.35rem 0.8rem !important;
+}
+.btn-warning {
+  background: #f59e0b;
+  color: #fff;
+  border: none;
+  padding: 0.55rem 1.2rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+.btn-warning:hover { background: #d97706; }
+.btn-danger {
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  padding: 0.55rem 1.2rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+.btn-danger:hover { background: #dc2626; }
+.recycle-list {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 8px;
+  padding: 0.5rem;
+  background: #fafbfc;
+}
+.recycle-list:empty::after {
+  content: '回收站为空';
+  color: #9ca3af;
+  font-size: 0.85rem;
+}
+.flex-1 { flex: 1; }
+.flex-2 { flex: 2; }

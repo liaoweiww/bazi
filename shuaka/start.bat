@@ -1,10 +1,17 @@
 @echo off
+chcp 65001 >nul
 REM ============================================================
 REM 签到系统启动脚本 (Windows)
-REM 用法：双击 start.bat
-REM 注意：读卡器监听需要管理员权限，右键 → 以管理员身份运行
+REM 用法：右键 → 以管理员身份运行
+REM 读卡器监听需管理员 + 网络盘需先设 EnableLinkedConnections
 REM ============================================================
 cd /d "%~dp0"
+
+if not exist "main.py" (
+    echo [错误] 找不到 main.py，请确保在 shuaka 目录下运行
+    pause
+    exit /b 1
+)
 
 REM 检查依赖，缺失则自动安装
 python -c "import openpyxl,flask,yaml" >nul 2>nul

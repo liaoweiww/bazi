@@ -16,6 +16,11 @@
         <div class="topbar-sub" id="header-subtitle"></div>
       </div>
     </div>
+    <div class="topbar-modes" id="topbar-modes">
+      <button class="mode-icon mode-icon-full active" data-mode="full" title="大屏模式">🖥</button>
+      <button class="mode-icon mode-icon-ipad" data-mode="ipad" title="iPad叫号">📋</button>
+      <button class="mode-icon mode-icon-mobile" data-mode="mobile" title="手机模式">📱</button>
+    </div>
     <div class="topbar-right">
       <div class="topbar-date" id="clock-date">--</div>
       <div class="topbar-time" id="clock-time">--</div>
@@ -95,6 +100,31 @@
     <div style="display:flex;gap:0.5rem;">
       <button onclick="document.getElementById('edit-dialog').style.display='none'" style="flex:1;padding:0.55rem;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--text2);font-size:0.9rem;cursor:pointer;">取消</button>
       <button onclick="doEditSave()" style="flex:2;padding:0.55rem;border:none;border-radius:8px;background:var(--accent);color:#fff;font-size:0.9rem;font-weight:600;cursor:pointer;">保存</button>
+    </div>
+  </div>
+</div>
+
+
+
+<div id="pw-dialog" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:260;align-items:center;justify-content:center;">
+  <div style="background:var(--bg2,#1a2736);border:1px solid var(--border,#1e3044);border-radius:16px;padding:1.5rem;width:360px;max-width:90vw;text-align:center;color:var(--text);">
+    <h3 style="margin-bottom:0.5rem;">🔐 验证身份</h3>
+    <div id="pw-msg" style="margin-bottom:1rem;font-size:0.85rem;color:var(--text2);"></div>
+    <input type="password" id="pw-input" placeholder="管理员密码" style="width:100%;padding:0.6rem;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:1rem;outline:none;box-sizing:border-box;margin-bottom:0.8rem;">
+    <div style="display:flex;gap:0.5rem;">
+      <button onclick="pwDlg(false)" style="flex:1;padding:0.55rem;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--text2);font-size:0.9rem;cursor:pointer;">取消</button>
+      <button onclick="pwDlg(true)" style="flex:2;padding:0.55rem;border:none;border-radius:8px;background:var(--accent);color:#fff;font-size:0.9rem;font-weight:600;cursor:pointer;">确认</button>
+    </div>
+    <div id="pw-error" style="margin-top:0.5rem;font-size:0.78rem;color:#ef4444;display:none;"></div>
+  </div>
+</div>
+
+<div id="confirm-dialog" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:250;align-items:center;justify-content:center;">
+  <div style="background:var(--bg2,#1a2736);border:1px solid var(--border,#1e3044);border-radius:16px;padding:1.5rem;width:360px;max-width:90vw;text-align:center;color:var(--text);">
+    <div id="confirm-msg" style="margin-bottom:1.2rem;font-size:0.95rem;line-height:1.5;"></div>
+    <div style="display:flex;gap:0.5rem;">
+      <button onclick="cfDlg(false)" style="flex:1;padding:0.55rem;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--text2);font-size:0.9rem;cursor:pointer;">取消</button>
+      <button onclick="cfDlg(true)" style="flex:2;padding:0.55rem;border:none;border-radius:8px;background:var(--accent);color:#fff;font-size:0.9rem;font-weight:600;cursor:pointer;">确定</button>
     </div>
   </div>
 </div>

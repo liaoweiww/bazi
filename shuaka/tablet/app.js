@@ -3,6 +3,31 @@
 let R=5,W=35,O=40,CE=true,CM=40,recs=[],cd=5,cur=null,justCleared=false,vTpl={},cfg={display:{},timer:{}};
 const $=id=>document.getElementById(id);
 
+// ===== 模式管理 =====
+let currentMode=(function(){
+  let p=new URLSearchParams(location.search),m=p.get('mode');
+  if(m==='ipad'||m==='mobile') return m;
+  return localStorage.getItem('signin_mode')||'full';
+})();
+function applyMode(m){
+  currentMode=m;
+  localStorage.setItem('signin_mode',m);
+  document.documentElement.classList.remove('mode-ipad','mode-mobile');
+  if(m==='ipad') document.documentElement.classList.add('mode-ipad');
+  else if(m==='mobile') document.documentElement.classList.add('mode-mobile');
+  // 更新顶部图标激活状态
+  document.querySelectorAll('.mode-icon').forEach(function(el){
+    el.classList.toggle('active', el.dataset.mode===m);
+  });
+}
+window.setMode=function(m){applyMode(m);};
+applyMode(currentMode);
+// 顶部模式图标点击
+document.addEventListener('click',function(e){
+  var btn=e.target.closest('.mode-icon');
+  if(btn){applyMode(btn.dataset.mode);}
+});
+
 async function ls(){
   try{let r=await fetch('/api/settings');cfg=await r.json();let d=cfg.display||{},t=cfg.timer||{};
   R=d.refresh_interval||5;W=t.warning_minutes||35;O=t.remind_minutes||40;CE=t.countdown_enabled!==false;CM=t.countdown_minutes||40;
@@ -84,7 +109,7 @@ window.markDone=async function(){
 window.markPass=async function(){
   if(!cur){alert('没有正在叫号的人员');return;}
   cur.status='已过号'; await us(cur.seq,cur.location,'已过号');
-  spk(tpl(vTpl.pass||'过号，请{name}稍后重叫',{name:cur.name}));
+  spk(tpl(vTpl.pass||'过号，请{name}稍后重新叫号',{name:cur.name}));
   cur=null; justCleared=true; rcd(); rd(recs);
 };
 
@@ -162,12 +187,14 @@ function rr(tid,rows,dd,sb){
 	        rcl='can-call';
 	      }
 	      // 历史表列: # 姓名 签到 等待 次数 操作
-	      return '<tr class="'+rcl+'" style="'+rs+'" '+ch+'><td>'+(i+1)+'</td><td><strong>'+eh(nm)+'</strong></td><td class="q-col-time" title="'+r.sign_time+'">'+r.sign_time.slice(11,19)+'</td><td>'+fw(m)+'</td><td>'+rct+'</td><td>'+ah+'</td></tr>';
+	      var hi='';if(id)hi='<span style="font-size:1.3rem;margin-right:0.2rem;vertical-align:middle;">💪</span><span style="display:inline-block;background:rgba(16,185,129,0.12);color:#10b981;border-radius:10px;padding:0.1rem 0.4rem;font-size:0.65rem;font-weight:700;vertical-align:middle;">已检</span>';else if(ip)hi='<span style="font-size:1.3rem;margin-right:0.2rem;vertical-align:middle;">⏭</span><span style="display:inline-block;background:rgba(255,170,0,0.12);color:#ffaa00;border-radius:10px;padding:0.1rem 0.4rem;font-size:0.65rem;font-weight:700;vertical-align:middle;">过号</span>';
+	      return '<tr class="'+rcl+'" style="'+rs+'" '+ch+'><td>'+(i+1)+'</td><td>'+hi+'<strong>'+eh(nm)+'</strong></td><td class="q-col-time" title="'+r.sign_time+'">'+r.sign_time.slice(11,19)+'</td><td>'+fw(m)+'</td><td>'+rct+'</td><td>'+ah+'</td></tr>';
 	    }else{
 	      ah='<div class="row-actions"><span class="tag tag-'+cls+'">'+txt+'</span><button class="btn-row-icon" onclick="event.stopPropagation();openQuickEdit('+r.seq+',\''+ea(r.location)+'\',\''+ea(r.name)+'\',\''+ea(r.id_number||'')+'\')">✎</button><button class="btn-row-icon btn-row-del" onclick="event.stopPropagation();delQ('+r.seq+',\''+ea(r.location)+'\')">✕</button><span class="drag-handle" draggable="true" data-seq="'+r.seq+'" data-loc="'+ea(r.location)+'">⠿</span></div>';
 	      rcl='waiting-row';
 	      // 等待表列: # 姓名 签到 等待 倒计时 次数 地点 操作
-	      return '<tr class="'+rcl+'" style="'+rs+'" '+ch+'><td>'+(i+1)+'</td><td><strong>'+eh(nm)+'</strong></td><td class="q-col-time" title="'+r.sign_time+'">'+r.sign_time.slice(11,19)+'</td><td>'+fw(m)+'</td><td>'+(CE?cdH:'')+'</td><td>'+rct+'</td><td>'+eh(r.location)+'</td><td>'+ah+'</td></tr>';
+	      var hi='';if(id)hi='<span style="font-size:1.3rem;margin-right:0.2rem;vertical-align:middle;">💪</span><span style="display:inline-block;background:rgba(16,185,129,0.12);color:#10b981;border-radius:10px;padding:0.1rem 0.4rem;font-size:0.65rem;font-weight:700;vertical-align:middle;">已检</span>';else if(ip)hi='<span style="font-size:1.3rem;margin-right:0.2rem;vertical-align:middle;">⏭</span><span style="display:inline-block;background:rgba(255,170,0,0.12);color:#ffaa00;border-radius:10px;padding:0.1rem 0.4rem;font-size:0.65rem;font-weight:700;vertical-align:middle;">过号</span>';
+	      return '<tr class="'+rcl+'" style="'+rs+'" '+ch+'><td>'+(i+1)+'</td><td>'+hi+'<strong>'+eh(nm)+'</strong></td><td class="q-col-time" title="'+r.sign_time+'">'+r.sign_time.slice(11,19)+'</td><td>'+fw(m)+'</td><td>'+(CE?cdH:'')+'</td><td>'+rct+'</td><td>'+eh(r.location)+'</td><td>'+ah+'</td></tr>';
 	    }
 	  }).join('');
 	}
@@ -175,15 +202,18 @@ function rr(tid,rows,dd,sb){
 	// ===== 恢复至等待队列 =====
 	window.restoreToWait=async function(seq,loc,isCompleted){
 	  if(isCompleted){
-	    if(!confirm('确定将该已完成人员恢复到等待队列？')) return;
+	    if(!(await cfConfirm('确定将该已完成人员恢复到等待队列？'))) return;
 	  }
 	  let now=new Date().toISOString().replace('T',' ').slice(0,19);
 	  try{
-	    await fetch('/api/restore_record',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({seq,location:loc})});
+	    await fetch('/api/restore_record',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({seq:seq,location:loc||''})});
 	  }catch(e){}
 	  // 本地同步：重置状态+时间，等钟从0开始
-	  for(let r of recs){if(r.seq===seq&&r.location===loc){r.status='等待中';r.sign_time=now;break;}}
+	  var rn='';
+	  for(let r of recs){if(String(r.seq)===String(seq)&&(r.location||'')===(loc||'')){r.status='等待中';r.sign_time=now;rn=r.name;break;}}
 	  rd(recs);
+	  if(rn)spk(tpl(vTpl.restore||'{name}已恢复到等待队列',{name:rn}));
+	  var wt=$('table-waiting'); if(wt)wt.scrollIntoView({behavior:'smooth',block:'start'});
 	};
 
 function mk(n){if(!n||n==='未知')return n;return n[0]+'*'.repeat(n.length-1);}
@@ -207,8 +237,8 @@ window.doSignin=async function(){
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&$('signin-dialog').style.display==='flex')window.doSignin();});
 
 window.delQ=async function(seq,loc){
-  if(!confirm('确定移出等待队列？'))return;
-  try{await fetch('/api/delete_records',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({targets:[{seq,location:loc}]})});fd();}catch(e){alert('删除失败');}
+  if(!(await cfConfirm('确定移出等待队列？')))return;
+  try{await fetch('/api/delete_records',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({targets:[{seq:seq,location:loc||''}]})});fd();}catch(e){alert('删除失败');}
 };
 
 // ===== 编辑人员 =====
@@ -261,7 +291,13 @@ function dtAttach(tbodyId){
 function lp(){fd();cd=R;}
 setInterval(()=>{cd--;if(cd<0)cd=R;$('countdown').textContent=cd;},1000);
 
-	// ===== 系统监控面板 =====
+	// ===== 管理员密码验证弹窗 =====
+window._pwResolve=null;
+window.pwDlg=function(ok){$('pw-dialog').style.display='none';if(window._pwResolve)window._pwResolve(ok ? $('pw-input').value : null);$('pw-input').value='';};
+window.verifyAdmin=function(msg){return new Promise(function(resolve){window._pwResolve=resolve;$('pw-msg').textContent=msg||'请输入管理员密码';$('pw-dialog').style.display='flex';$('pw-input').focus();});};
+document.addEventListener('keydown',function(e){if(e.key==='Enter'&&$('pw-dialog').style.display==='flex')pwDlg(true);});
+
+// ===== 系统监控面板 =====
 	let monitorExpanded = false;
 	window.toggleMonitor = function(){
 		monitorExpanded = !monitorExpanded;
@@ -293,6 +329,11 @@ setInterval(()=>{cd--;if(cd<0)cd=R;$('countdown').textContent=cd;},1000);
 		}catch(e){}
 	}
 	function eh2(s){let d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+
+// ===== 自定义确认弹窗（不退出全屏） =====
+window._cfResolve=null;
+window.cfDlg=function(ok){$('confirm-dialog').style.display='none';if(window._cfResolve)window._cfResolve(ok);};
+window.cfConfirm=function(msg){return new Promise(function(resolve){window._cfResolve=resolve;$('confirm-msg').textContent=msg;$('confirm-dialog').style.display='flex';});};
 
 	(async()=>{await ls();fd();fetchMonitor();dtAttach('table-waiting');setInterval(lp,R*1000);setInterval(async()=>{await ls();},30000);setInterval(fetchMonitor,15000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)lp();});})();
 })();

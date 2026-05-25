@@ -329,26 +329,69 @@
     <section class="tab-panel" id="panel-data">
       <h2 class="panel-title">数据管理</h2>
 
-      <div class="form-group">
-        <label>签到记录目录</label>
-        <input type="text" id="cfg-excel-dir" readonly>
-        <span class="form-hint">在 config.yaml 中修改</span>
+      <!-- 数据概览 -->
+      <div class="section-card">
+        <h3 class="section-title">📊 签到概览</h3>
+        <div class="stat-cards" id="stat-cards"></div>
+        <div class="form-row" style="margin-top:0.8rem;">
+          <div class="form-group flex-1">
+            <label>数据存储路径</label>
+            <input type="text" id="cfg-excel-dir" readonly class="input-readonly">
+            <span class="form-hint">修改请编辑 config.yaml → excel_dir</span>
+          </div>
+          <div class="form-group flex-1">
+            <label>当前签到地点</label>
+            <input type="text" id="cfg-location" readonly class="input-readonly">
+            <span class="form-hint">修改请编辑 config.yaml → location</span>
+          </div>
+        </div>
+        <div style="margin-top:0.8rem;">
+          <button class="btn btn-secondary btn-sm" onclick="window.open('/')">🔗 打开叫号大屏</button>
+          <button class="btn btn-secondary btn-sm" onclick="window.open('/report')" style="margin-left:0.4rem;">📊 查看报表</button>
+          <button class="btn btn-secondary btn-sm" onclick="window.open('/export')" style="margin-left:0.4rem;">📥 数据导出</button>
+        </div>
       </div>
 
-      <div class="form-group">
-        <label>签到地点标识</label>
-        <input type="text" id="cfg-location" readonly>
-        <span class="form-hint">在 config.yaml 中修改</span>
+      <!-- 备份管理 -->
+      <div class="section-card">
+        <h3 class="section-title">💾 数据备份</h3>
+        <p class="section-desc">系统每30分钟自动备份签到记录，也可手动触发立即备份。备份文件保存在下方目录中。</p>
+        <div class="form-row">
+          <div class="form-group flex-2">
+            <label>备份存储路径</label>
+            <input type="text" id="cfg-backup-path" placeholder="./备份">
+            <span class="form-hint">支持相对路径（如 ./备份）或绝对路径（如 C:\备份）</span>
+          </div>
+        </div>
+        <div style="margin-top:0.6rem;">
+          <button class="btn btn-primary" onclick="window._manualBackup()">📦 立即备份</button>
+          <span class="form-hint" style="margin-left:0.5rem;">点击后将当前所有签到数据打包备份</span>
+        </div>
       </div>
 
-      <div class="stat-cards" id="stat-cards">
-        <!-- JS 动态填充 -->
+      <!-- 数据清除 -->
+      <div class="section-card">
+        <h3 class="section-title">🧹 数据清除</h3>
+        <p class="section-desc" style="color:#ef4444;">⚠ 清除操作会先自动备份到回收站，确认后执行。清除全部需验证管理员密码。</p>
+        <div style="display:flex;gap:0.5rem;">
+          <button class="btn btn-warning" onclick="window._clearToday()">清除今日记录</button>
+          <button class="btn btn-danger" onclick="window._clearAll()">清除全部记录</button>
+        </div>
+        <span class="form-hint" style="display:block;margin-top:0.4rem;">"清除今日"仅删除当天签到数据；"清除全部"删除所有历史记录</span>
       </div>
 
-      <div style="margin-top:1.2rem;display:flex;gap:0.5rem;">
-        <button class="btn btn-secondary" onclick="window.open('/')">打开叫号大屏</button>
-        <button class="btn btn-danger-outline" onclick="window._clearToday()">清除今日记录</button>
-        <button class="btn btn-danger-outline" onclick="window._clearAll()">清除全部记录</button>
+      <!-- 回收站 -->
+      <div class="section-card">
+        <h3 class="section-title">🗑️ 回收站</h3>
+        <p class="section-desc">被清除的记录会暂存此处，可恢复或永久删除。恢复后记录将回到签到列表中。</p>
+        <div id="recycle-list" class="recycle-list">
+          <span style="color:#9ca3af;font-size:0.85rem;">加载中...</span>
+        </div>
+        <div style="margin-top:0.6rem;display:flex;gap:0.4rem;">
+          <button class="btn btn-secondary btn-sm" onclick="window._loadRecycle()">🔄 刷新列表</button>
+          <button class="btn btn-danger-outline btn-sm" onclick="window._clearRecycle()">🗑️ 清空回收站</button>
+        </div>
+        <span class="form-hint" style="display:block;margin-top:0.3rem;">清空回收站需验证管理员密码，清空后不可恢复</span>
       </div>
     </section>
 
@@ -395,5 +438,27 @@ document.addEventListener('click',function(e){
 });
 </script>
 <script src="admin.js?v=1.8"></script>
+
+<div id="confirm-dialog" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:999;align-items:center;justify-content:center;">
+  <div style="background:var(--bg2,#1a2736);border:1px solid var(--border,#1e3044);border-radius:16px;padding:1.5rem;width:360px;max-width:90vw;text-align:center;color:#fff;">
+    <div id="confirm-msg" style="margin-bottom:1.2rem;font-size:0.95rem;line-height:1.5;"></div>
+    <div style="display:flex;gap:0.5rem;">
+      <button onclick="cfDlg(false)" style="flex:1;padding:0.55rem;border:1px solid #555;border-radius:8px;background:transparent;color:#aaa;font-size:0.9rem;cursor:pointer;">取消</button>
+      <button onclick="cfDlg(true)" style="flex:2;padding:0.55rem;border:none;border-radius:8px;background:#3b82f6;color:#fff;font-size:0.9rem;font-weight:600;cursor:pointer;">确定</button>
+    </div>
+  </div>
+</div>
+<div id="pw-dialog" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center;">
+  <div style="background:var(--bg2,#1a2736);border:1px solid var(--border,#1e3044);border-radius:16px;padding:1.5rem;width:360px;max-width:90vw;text-align:center;color:#fff;">
+    <h3 style="margin-bottom:0.5rem;">验证身份</h3>
+    <div id="pw-msg" style="margin-bottom:1rem;font-size:0.85rem;color:#aaa;"></div>
+    <input type="password" id="pw-input" placeholder="管理员密码" style="width:100%;padding:0.6rem;border:1px solid #555;border-radius:8px;background:#1a1a2e;color:#fff;font-size:1rem;outline:none;box-sizing:border-box;margin-bottom:0.8rem;">
+    <div style="display:flex;gap:0.5rem;">
+      <button onclick="pwDlg(false)" style="flex:1;padding:0.55rem;border:1px solid #555;border-radius:8px;background:transparent;color:#aaa;font-size:0.9rem;cursor:pointer;">取消</button>
+      <button onclick="pwDlg(true)" style="flex:2;padding:0.55rem;border:none;border-radius:8px;background:#3b82f6;color:#fff;font-size:0.9rem;font-weight:600;cursor:pointer;">确认</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>

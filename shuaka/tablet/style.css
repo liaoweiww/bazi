@@ -293,3 +293,81 @@ html.theme-light .calling-num{background:linear-gradient(135deg,var(--accent),va
   .cd-ring-wrap{width:28px;height:28px}
   .cd-ring-text{font-size:0.5rem}
 }
+
+/* ========== 顶部模式切换图标 ========== */
+.topbar-modes{display:flex;align-items:center;gap:0.25rem}
+.mode-icon{width:36px;height:36px;border-radius:10px;border:1px solid transparent;background:rgba(255,255,255,0.04);color:var(--text2);font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;font-family:inherit;padding:0}
+.mode-icon:hover{background:rgba(79,143,255,0.1);border-color:rgba(79,143,255,0.25)}
+.mode-icon.active{background:rgba(79,143,255,0.15);border-color:var(--accent);color:var(--accent);box-shadow:0 0 10px rgba(79,143,255,0.15)}
+/* 响应式：小屏时缩小图标 */
+@media(max-width:640px){
+  .mode-icon{width:30px;height:30px;font-size:0.85rem;border-radius:8px}
+}
+@media(max-width:480px){
+  .topbar-modes{gap:0.15rem}
+  .mode-icon{width:26px;height:26px;font-size:0.75rem;border-radius:6px}
+}
+
+/* ========== iPad 叫号模式 ========== */
+html.mode-ipad .queue-panel{display:none}
+html.mode-ipad .bottombar{display:none}
+html.mode-ipad .monitor-panel{display:none}
+html.mode-ipad .float-btn{display:none}
+html.mode-ipad .hero-panel{width:100%;max-width:500px;margin:0 auto}
+html.mode-ipad .calling-card{min-height:35vh}
+html.mode-ipad .calling-num{font-size:clamp(3.5rem,10vw,7rem)}
+html.mode-ipad .calling-name{font-size:clamp(1.5rem,4vw,2.2rem)}
+html.mode-ipad .calling-label{font-size:0.9rem;margin-bottom:0.5rem}
+html.mode-ipad .calling-window{font-size:0.9rem;padding:0.4rem 1.2rem;margin-top:0.6rem}
+html.mode-ipad .btn-call-next{font-size:1rem;padding:0.9rem;border-radius:16px;min-height:50px}
+html.mode-ipad .btn-action{font-size:0.8rem;padding:0.55rem 0.2rem;border-radius:10px;min-height:44px}
+html.mode-ipad .btn-signin-hero{font-size:0.85rem;padding:0.6rem;min-height:42px}
+html.mode-ipad .stats-mini{gap:0.4rem}
+html.mode-ipad .stat-mini{padding:0.5rem 0.6rem}
+html.mode-ipad .stat-mini-icon{font-size:0.9rem}
+html.mode-ipad .stat-mini-val{font-size:1rem}
+html.mode-ipad .stat-mini-lbl{font-size:0.65rem}
+html.mode-ipad .topbar{padding:0.8rem 1.5rem}
+html.mode-ipad .topbar-title{font-size:clamp(1.2rem,3.5vw,1.8rem)}
+html.mode-ipad .topbar-time{font-size:clamp(1.5rem,4vw,2rem)}
+html.mode-ipad .screen{justify-content:center}
+html.mode-ipad .main-area{justify-content:center;align-items:center}
+html.mode-ipad .calling-card.active{box-shadow:0 0 60px rgba(79,143,255,0.3),0 0 120px rgba(108,92,231,0.15)}
+html.mode-ipad .call-actions{max-width:400px;margin:0 auto;width:100%}
+html.mode-ipad .call-actions-row{gap:0.5rem}
+
+/* ========== 手机精简模式 ========== */
+html.mode-mobile .screen{padding:0.2rem;gap:0.2rem}
+html.mode-mobile .main-area{flex-direction:column}
+html.mode-mobile .hero-panel{width:100%;flex-direction:row;flex-wrap:wrap;gap:0.3rem}
+html.mode-mobile .calling-card{flex:1 1 100%;min-height:auto;padding:0.7rem 0.8rem}
+html.mode-mobile .calling-num{font-size:2.2rem}
+html.mode-mobile .calling-name{font-size:1.1rem}
+html.mode-mobile .calling-label{font-size:0.6rem;margin-bottom:0.2rem}
+html.mode-mobile .calling-window{font-size:0.7rem;margin-top:0.2rem;padding:0.2rem 0.8rem}
+html.mode-mobile .call-actions{flex:1 1 100%}
+html.mode-mobile .btn-call-next{font-size:0.85rem;padding:0.65rem;min-height:44px;border-radius:10px}
+html.mode-mobile .btn-action{font-size:0.68rem;padding:0.45rem 0.25rem;min-height:38px;border-radius:8px}
+html.mode-mobile .btn-signin-hero{font-size:0.68rem;padding:0.45rem;min-height:38px}
+html.mode-mobile .stats-mini{flex:1 1 100%;display:grid;grid-template-columns:1fr 1fr;gap:0.2rem}
+html.mode-mobile .stat-mini{padding:0.3rem 0.5rem}
+html.mode-mobile .stat-mini-val{font-size:0.7rem}
+html.mode-mobile .queue-panel{flex:1}
+html.mode-mobile .queue-table th,html.mode-mobile .queue-table td{font-size:0.58rem;padding:0.3rem 0.08rem}
+html.mode-mobile .queue-table th:nth-child(4),html.mode-mobile .queue-table td:nth-child(4),
+html.mode-mobile .queue-table th:nth-child(5),html.mode-mobile .queue-table td:nth-child(5),
+html.mode-mobile .queue-table th:nth-child(7),html.mode-mobile .queue-table td:nth-child(7){display:none}
+html.mode-mobile .topbar{padding:0.35rem 0.6rem;border-radius:10px}
+html.mode-mobile .topbar-title{font-size:0.8rem}
+html.mode-mobile .topbar-time{font-size:1rem}
+html.mode-mobile .topbar-sub{font-size:0.6rem}
+html.mode-mobile .topbar-date{font-size:0.55rem}
+html.mode-mobile .monitor-panel{padding:0.25rem 0.5rem;font-size:0.58rem}
+html.mode-mobile .float-btn{width:26px;height:26px;font-size:0.7rem;right:3px}
+html.mode-mobile .float-fs{bottom:3px}
+html.mode-mobile .float-admin{bottom:33px}
+html.mode-mobile .float-report{bottom:63px}
+html.mode-mobile .queue-section-bottom{flex:1}
+html.mode-mobile .queue-section-top{flex:2}
+html.mode-mobile .cd-ring-wrap{width:28px;height:28px}
+html.mode-mobile .cd-ring-text{font-size:0.5rem}
