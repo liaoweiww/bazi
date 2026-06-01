@@ -441,6 +441,7 @@ except: pass
         _sp2.Popen([sys.executable, _script], creationflags=0x00000008 if sys.platform == 'win32' else 0)
         sys.exit(0)
 
+    os.makedirs(LOCAL_DIR, exist_ok=True)
     os.chdir(LOCAL_DIR)
     if LOCAL_DIR not in sys.path: sys.path.insert(0, LOCAL_DIR)
 
