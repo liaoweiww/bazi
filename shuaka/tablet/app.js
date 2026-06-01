@@ -164,6 +164,7 @@ function rd(data){
     else cur=f;
   }
   if(!cur&&!justCleared&&hy.length){let lt=hy.filter(r=>r.status==='已叫号').sort((a,b)=>b.sign_time.localeCompare(a.sign_time))[0];if(lt){cur=lt;ucd(cur);}}
+  justCleared=false;
   let td=new Date().toISOString().slice(0,10);
   $('stat-today').textContent=data.filter(r=>r.sign_time.startsWith(td)).length;
   $('stat-waiting').textContent=wt.length;$('stat-done').textContent=data.filter(r=>r.status==='已完成').length;
