@@ -1,15 +1,12 @@
-# 核心依赖（全平台）
+# Core
 openpyxl>=3.1.0
 flask>=2.3.0
 pyyaml>=6.0
 
-# macOS 读卡器监听
+# macOS
 pynput>=1.7.6; sys_platform == "darwin"
 
-# Windows 语音播报 (macOS 用系统 say 命令)
+# Windows
 pyttsx3>=2.90; sys_platform == "win32"
-
-# Windows COM口读卡器
 pyserial>=3.5; sys_platform == "win32"
-
-# Windows 读卡器监听（键盘模式）使用 ctypes 调用系统 API，无需额外 pip 依赖
+customtkinter>=5.2.0
