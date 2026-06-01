@@ -1,0 +1,418 @@
+<scroll-view class="wrap theme-root theme-{{currentTheme}}" style="{{themeStyle}}" scroll-y scroll-x="{{false}}" enhanced show-scrollbar="{{false}}" wx:if="{{loaded}}">
+  <!-- ====== 八字命盘 — 钻石布局 ====== -->
+  <view class="card">
+    <view class="ct">
+      <text class="ct-icon">{{icons.bagua}}</text>八 字 命 盘
+    </view>
+    <view class="chart-diamond">
+      <!-- 年柱（上） -->
+      <view class="cd-p cd-year">
+        <view class="cd-gz">{{pillars.year.ganzhi}}</view>
+        <view class="cd-ss">{{pillars.year.shishen}}</view>
+        <view class="cd-ny">{{pillars.year.nayin}}</view>
+        <view class="cd-label">年柱</view>
+      </view>
+      <view class="cd-row">
+        <!-- 月柱（左） -->
+        <view class="cd-p cd-month">
+          <view class="cd-gz">{{pillars.month.ganzhi}}</view>
+          <view class="cd-ss">{{pillars.month.shishen}}</view>
+          <view class="cd-ny">{{pillars.month.nayin}}</view>
+          <view class="cd-label">月柱</view>
+        </view>
+        <!-- 日柱（中·日主高亮） -->
+        <view class="cd-p cd-day">
+          <view class="cd-dm-badge">日主</view>
+          <view class="cd-gz cd-gz-dm">{{pillars.day.ganzhi}}</view>
+          <view class="cd-dm-info">{{dm}} · {{dmWx}}</view>
+          <view class="cd-ny">{{pillars.day.nayin}}</view>
+          <view class="cd-label">日柱</view>
+        </view>
+        <!-- 时柱（右） -->
+        <view class="cd-p cd-hour">
+          <view class="cd-gz">{{pillars.hour.ganzhi}}</view>
+          <view class="cd-ss">{{pillars.hour.shishen}}</view>
+          <view class="cd-ny">{{pillars.hour.nayin}}</view>
+          <view class="cd-label">时柱</view>
+        </view>
+      </view>
+    </view>
+    <!-- 藏干信息 -->
+    <view class="cd-canggan">
+      <block wx:for="{{['year','month','day','hour']}}" wx:for-item="pk" wx:key="pk">
+        <text class="cd-cg-item">{{pillars[pk].canggan}}</text>
+      </block>
+    </view>
+  </view>
+
+  <!-- ====== 五行生克关系图 ====== -->
+  <view class="card">
+    <view class="ct"><text class="ct-icon">{{icons.geju}}</text>五行生克关系</view>
+    <view class="rel-diagram">
+      <view class="rd-center">
+        <text class="rd-dm">{{dm}}</text>
+        <text class="rd-dm-wx">{{dmWx}}</text>
+      </view>
+      <view class="rd-ring">
+        <block wx:for="{{['year','month','hour']}}" wx:for-item="pk" wx:key="pk">
+          <view class="rd-item rd-item-{{pk}}">
+            <text class="rd-name">{{pk==='year'?'年':pk==='month'?'月':'时'}}</text>
+            <text class="rd-wx">{{pillars[pk].ganzhi[0]}}</text>
+          </view>
+        </block>
+      </view>
+    </view>
+  </view>
+
+  <!-- ====== 出生信息（折叠） ====== -->
+  <view class="card">
+    <view class="ct ct-tap" data-key="showBirth" bindtap="toggleSection">
+      <text class="ct-icon">{{icons.birth_info}}</text>出 生 信 息
+      <text class="ct-arrow">{{showBirth?icons.section_expand:icons.section_collapse}}</text>
+    </view>
+    <view wx:if="{{showBirth}}">
+      <view class="ir"><text class="dim">公历</text><text>{{birth.solar_date}} {{birth.solar_time}}</text></view>
+      <view class="ir"><text class="dim">农历</text><text>{{birth.lunar_date||'-'}}</text></view>
+      <view class="ir"><text class="dim">真太阳时</text><text>{{birth.true_solar_time}}</text></view>
+      <view class="ir"><text class="dim">性别</text><text>{{birth.gender==='男'?'☰ 乾造':'☷ 坤造'}}</text></view>
+    </view>
+  </view>
+
+  <!-- ====== 付费解锁墙 ====== -->
+  <view wx:if="{{!purchased}}" class="card paywall-card">
+    <view class="pw-icon">🔒</view>
+    <view class="pw-title">解锁完整命盘解读</view>
+    <view class="pw-desc">格局分析 · 大运流年 · 年运时运 · 白话解读 · 破解补益 · 运势总结</view>
+    <view class="pw-price">¥0.88</view>
+    <view class="pw-btn {{unlocking?'pw-btn-loading':''}}" bindtap="doUnlock">
+      <text wx:if="{{!unlocking}}">立即解锁</text>
+      <text wx:else>支付中...</text>
+    </view>
+    <view class="pw-note">一次购买，永久使用 · 测试阶段特惠价</view>
+  </view>
+
+  <!-- ====== 以下为付费内容 ====== -->
+  <block wx:if="{{purchased}}">
+
+  <!-- ====== 格局喜用 ====== -->
+  <view class="card">
+    <view class="ct"><text class="ct-icon">{{icons.geju}}</text>格 局 与 喜 用 神</view>
+    <view class="gold" style="font-size:17px">{{geju.type}} · {{geju.name}}</view>
+    <view class="dim" style="font-size:13px;margin:6px 0">{{geju.analysis}}</view>
+    <view class="mb8"><view class="dim" style="font-size:11px">喜用神</view>
+      <view class="tags"><block wx:for="{{yongji.yong_shen}}" wx:key="wuxing"><view class="tag tag-y"><view class="dot"></view>{{item.wuxing}} {{item.shishen}}</view></block></view>
+    </view>
+    <view><view class="dim" style="font-size:11px">忌神</view>
+      <view class="tags"><block wx:for="{{yongji.ji_shen}}" wx:key="wuxing"><view class="tag tag-j"><view class="dot"></view>{{item.wuxing}} {{item.shishen}}</view></block></view>
+    </view>
+    <view wx:if="{{yongji.tiao_hou}}" class="gold mt8" style="font-size:12px">{{yongji.tiao_hou}}</view>
+  </view>
+
+  <!-- ====== 五行力量 — 柱状图 ====== -->
+  <view class="card">
+    <view class="ct"><text class="ct-icon">{{icons.wuxing}}</text>五 行 力 量</view>
+    <view class="wx-chart">
+      <block wx:for="{{['金','木','水','火','土']}}" wx:key="*this">
+        <view class="wx-bar-wrap">
+          <view class="wx-bar-pct">{{wxCount[item].score}}<text class="wx-bar-unit">分</text></view>
+          <view class="wx-bar-track">
+            <view class="wx-bar-fill {{item==='金'?'wx-jin':item==='木'?'wx-mu':item==='水'?'wx-shui':item==='火'?'wx-huo':'wx-tu'}}" style="height:{{wxCount[item].score/3*100}}%"></view>
+          </view>
+          <text class="wx-bar-label {{item==='金'?'wx-jin':item==='木'?'wx-mu':item==='水'?'wx-shui':item==='火'?'wx-huo':'wx-tu'}}">{{item}}</text>
+        </view>
+      </block>
+    </view>
+    <view class="tc mt8"><view class="st-badge {{strength.level.indexOf('强')>=0?'st-s':strength.level.indexOf('弱')>=0?'st-w':'st-n'}}">{{strength.level}}</view></view>
+    <view class="dim tc" style="font-size:11px">{{strength.details}}</view>
+  </view>
+
+  <!-- ====== 年运分析 ====== -->
+  <view class="card" wx:if="{{yearFortune}}">
+    <view class="ct ct-tap" data-key="showYearFortune" bindtap="toggleSection">
+      <text class="ct-icon">{{icons.year_fortune}}</text>年 运 分 析
+      <text class="ct-arrow">{{showYearFortune?icons.section_expand:icons.section_collapse}}</text>
+    </view>
+    <view wx:if="{{showYearFortune}}">
+      <view class="year-nav">
+        <view class="year-btn" bindtap="prevYear">◀</view>
+        <view class="year-num">{{fortuneYear}}</view>
+        <view class="year-btn" bindtap="nextYear">▶</view>
+      </view>
+      <view class="fn-gz">{{yearFortune.ganzhi}}年 · {{yearFortune.wuxing}} · {{yearFortune.shishen}}</view>
+      <view class="fn-rating {{yearFortune.rating==='大吉'?'rt-great':yearFortune.rating==='小吉'?'rt-good':yearFortune.rating==='欠佳'?'rt-warn':'rt-mid'}}">{{yearFortune.rating}}</view>
+      <view class="fn-text">{{yearFortune.overall}}</view>
+      <view wx:if="{{yearFortune.dayun_background}}" class="fn-dy">{{yearFortune.dayun_background}}</view>
+      <view wx:if="{{yearFortune.relations.length}}" class="mt8">
+        <view class="dim" style="font-size:10px;margin-bottom:4px">流年关系</view>
+        <view wx:for="{{yearFortune.relations}}" wx:key="*this" class="fn-rel">{{item}}</view>
+      </view>
+      <view class="fn-advice mt8">{{yearFortune.advice}}</view>
+    </view>
+  </view>
+
+  <!-- ====== 时运分析 ====== -->
+  <view class="card" wx:if="{{currentFortune}}">
+    <view class="ct ct-tap" data-key="showCurrentFortune" bindtap="toggleSection">
+      <text class="ct-icon">{{icons.current_fortune}}</text>时 运 分 析
+      <text class="ct-arrow">{{showCurrentFortune?icons.section_expand:icons.section_collapse}}</text>
+    </view>
+    <view wx:if="{{showCurrentFortune}}">
+      <view class="fn-gz">当前 {{currentFortune.current_age}} 岁 · {{currentFortune.dayun.ganzhi}}大运</view>
+      <view class="fn-rating {{currentFortune.dayun.tag==='好运'?'rt-great':currentFortune.dayun.tag==='考验期'?'rt-warn':'rt-mid'}}">{{currentFortune.dayun.tag}}</view>
+      <view class="fn-text">{{currentFortune.dayun.evaluation}}</view>
+      <view class="dim" style="font-size:11px">距下一步大运还有 {{currentFortune.dayun.remaining_years}} 年</view>
+      <view class="fn-text mt8">{{currentFortune.stage_analysis}}</view>
+      <view class="fn-advice mt8">{{currentFortune.overall_advice}}</view>
+    </view>
+  </view>
+
+  <!-- ====== 大运时间轴 ====== -->
+  <view class="card">
+    <view class="ct ct-tap" data-key="showDayunDetail" bindtap="toggleSection">
+      <text class="ct-icon">{{icons.dayun}}</text>大 运 时 间 轴
+      <text class="ct-arrow">{{showDayunDetail?icons.section_expand:icons.section_collapse}}</text>
+    </view>
+    <view wx:if="{{showDayunDetail}}">
+      <view class="dim" style="font-size:12px;margin-bottom:8px">起运 <text class="gold">{{dayun.start_age}}</text> 岁 · {{dayun.direction}}</view>
+      <!-- 时间轴 -->
+      <view class="tl-track">
+        <view class="tl-line"></view>
+        <scroll-view class="tl-scroll" scroll-x enhanced show-scrollbar="{{false}}">
+          <view class="tl-nodes">
+            <block wx:for="{{dayun.dayun_list}}" wx:key="start_age">
+              <view class="tl-node {{item.start_age<=currentAge&&currentAge<item.start_age+10?'tl-cur':''}} {{selectedDayunIndex===index?'tl-sel':''}}" data-index="{{index}}" bindtap="selectDayun">
+                <view class="tl-dot"></view>
+                <view class="tl-gz">{{item.ganzhi}}</view>
+                <view class="tl-ages">{{item.age_range}}岁</view>
+              </view>
+            </block>
+          </view>
+        </scroll-view>
+      </view>
+      <view wx:if="{{selectedDayunIndex>=0 && dayun.dayun_list[selectedDayunIndex].analysis}}" class="dy-analysis mt8">
+        <view class="gold" style="font-size:15px;margin-bottom:6px">{{dayun.dayun_list[selectedDayunIndex].ganzhi}}大运 · {{dayun.dayun_list[selectedDayunIndex].age_range}}岁</view>
+        <view class="fn-text">{{dayun.dayun_list[selectedDayunIndex].analysis}}</view>
+      </view>
+      <view wx:if="{{dayun.liunian_current.ganzhi}}" class="ln-box mt8">
+        <view class="ln-gz">{{dayun.liunian_current.ganzhi}}</view>
+        <view class="dim" style="font-size:10px">{{dayun.liunian_current.wuxing}} · {{dayun.liunian_current.shishen}} · {{dayun.liunian_current.nayin}}</view>
+        <view class="muted" style="font-size:11px">{{dayun.liunian_current.analysis}}</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- ====== 破解法 ====== -->
+  <view class="card" wx:if="{{remedy}}">
+    <view class="ct ct-tap" data-key="showRemedy" bindtap="toggleSection">
+      <text class="ct-icon">{{icons.remedy}}</text>破 解 与 补 益
+      <text class="ct-arrow">{{showRemedy?icons.section_expand:icons.section_collapse}}</text>
+    </view>
+    <view wx:if="{{showRemedy}}">
+      <view wx:if="{{remedy.missing_elements.length}}">
+        <view class="dim" style="font-size:11px;margin-bottom:4px">命局偏弱五行</view>
+        <view class="tags mb8">
+          <view wx:for="{{remedy.missing_elements}}" wx:key="*this" class="tag tag-j">{{item}}</view>
+        </view>
+      </view>
+      <block wx:for="{{remedy.remedies}}" wx:key="target">
+        <view class="rem-block">
+          <view class="rem-title">{{item.type}}：{{item.target}}</view>
+          <view class="dim" style="font-size:11px;margin-bottom:6px">{{item.description}}</view>
+          <view wx:for="{{item.methods}}" wx:for-item="m" wx:key="method" class="rem-method">
+            <text class="rem-badge">{{m.level}}</text>
+            <text class="rem-mname">{{m.method}}</text>
+            <text wx:if="{{m.detail}}">：{{m.detail}}</text>
+          </view>
+        </view>
+      </block>
+      <view class="mt8">
+        <view class="dim" style="font-size:11px;margin-bottom:6px">通用化解法</view>
+        <block wx:for="{{remedy.general_remedies}}" wx:key="title">
+          <view class="rem-method">
+            <text class="rem-badge rem-badge-gen">{{item.title}}</text>
+            <text class="dim" style="font-size:11px">{{item.content}}</text>
+          </view>
+        </block>
+      </view>
+      <view class="gold mt8 dim" style="font-size:11px;text-align:center">{{remedy.summary}}</view>
+    </view>
+  </view>
+
+  <!-- ====== 胎元命宫身宫 ====== -->
+  <view class="card">
+    <view class="ct"><text class="ct-icon">{{icons.taiyuan}}</text>胎 元 · 命 宫 · 身 宫</view>
+    <view style="display:flex;gap:20px;justify-content:center;text-align:center">
+      <view><view class="dim" style="font-size:10px">胎元</view><view class="gold" style="font-size:18px">{{taiyuan}}</view></view>
+      <view><view class="dim" style="font-size:10px">命宫</view><view class="gold" style="font-size:18px">{{minggong}}</view></view>
+      <view><view class="dim" style="font-size:10px">身宫</view><view class="gold" style="font-size:18px">{{shengong}}</view></view>
+    </view>
+    <view wx:if="{{kongwang}}" class="tc mt8" style="font-size:12px"><text class="dim">空亡：</text><text class="red">{{kongwang}}</text></view>
+  </view>
+
+  <!-- ====== 神煞（折叠） ====== -->
+  <view class="card" wx:if="{{shensha}}">
+    <view class="ct ct-tap" data-key="showShensha" bindtap="toggleSection">
+      <text class="ct-icon">{{icons.shensha}}</text>神 煞
+      <text class="ct-arrow">{{showShensha?icons.section_expand:icons.section_collapse}}</text>
+    </view>
+    <view class="tags" wx:if="{{showShensha}}">
+      <block wx:for="{{shensha}}" wx:for-item="items" wx:for-index="name" wx:key="name">
+        <block wx:for="{{items}}" wx:for-item="it" wx:key="pillar">
+          <view class="tag tag-y">{{name}}({{it.pillar==='year'?'年':it.pillar==='month'?'月':it.pillar==='day'?'日':'时'}})</view>
+        </block>
+      </block>
+    </view>
+  </view>
+
+  <!-- ====== 十二长生 ====== -->
+  <view class="card">
+    <view class="ct"><text class="ct-icon">{{icons.changsheng}}</text>十 二 长 生</view>
+    <view style="display:flex;gap:8px;text-align:center;font-size:11px">
+      <block wx:for="{{['year','month','day','hour']}}" wx:for-item="pk" wx:key="pk">
+        <view wx:if="{{changsheng[pk]}}" style="flex:1">
+          <view class="dim">{{pk==='year'?'年':pk==='month'?'月':pk==='day'?'日':'时'}}</view>
+          <view class="gold" style="font-size:14px">{{changsheng[pk].zhi}}</view>
+          <view class="dim" style="font-size:10px">{{changsheng[pk].state}}</view>
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <!-- ====== 白话解读 ====== -->
+  <view class="card" wx:if="{{vernacular}}">
+    <view class="ct ct-tap" data-key="showVernacular" bindtap="toggleSection">
+      <text class="ct-icon">{{icons.vernacular}}</text>白 话 解 读
+      <text class="ct-arrow">{{showVernacular?icons.section_expand:icons.section_collapse}}</text>
+    </view>
+    <view wx:if="{{showVernacular}}">
+      <view wx:if="{{vernacular['日主概述']}}" class="vd">{{vernacular['日主概述']}}</view>
+      <view wx:if="{{vernacular['格局解读']}}" class="vd">{{vernacular['格局解读']}}</view>
+      <view wx:if="{{vernacular['喜用神建议']}}" class="vd">{{vernacular['喜用神建议']}}</view>
+      <view wx:if="{{vernacular['综合建议']}}" class="vd">{{vernacular['综合建议']}}</view>
+      <view wx:if="{{vernacular['四柱解读']}}" class="vd">
+        <block wx:for="{{['年柱','月柱','日柱','时柱']}}" wx:for-item="label" wx:key="label">
+          <view wx:if="{{vernacular['四柱解读'][label]}}" style="margin-bottom:8px"><text class="gold">{{label}}</text>：{{vernacular['四柱解读'][label]}}</view>
+        </block>
+      </view>
+    </view>
+  </view>
+
+  <!-- ====== 如何把控（折叠） ====== -->
+  <view class="card" wx:if="{{controlGuide}}">
+    <view class="ct ct-tap" data-key="showControl" bindtap="toggleSection">
+      <text class="ct-icon">{{icons.control}}</text>如 何 把 控 人 生
+      <text class="ct-arrow">{{showControl?icons.section_expand:icons.section_collapse}}</text>
+    </view>
+    <view wx:if="{{showControl}}">
+      <view class="dim fn-text">{{controlGuide.overview}}</view>
+      <block wx:for="{{controlGuide.sections}}" wx:key="title">
+        <view class="ctrl-block">
+          <view class="ctrl-title">
+            <view class="ctrl-icon-wrap">{{item.icon}}</view>
+            <text class="gold">{{item.title}}</text>
+          </view>
+          <view class="dim fn-text">{{item.content}}</view>
+          <view class="ctrl-tips">
+            <block wx:for="{{item.tips}}" wx:for-item="tip" wx:key="*this">
+              <view class="ctrl-tip">✦ {{tip}}</view>
+            </block>
+          </view>
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <!-- ====== 参考书籍（折叠） ====== -->
+  <view class="card" wx:if="{{books}}">
+    <view class="ct ct-tap" data-key="showBooks" bindtap="toggleSection">
+      <text class="ct-icon">{{icons.books}}</text>参 考 书 籍
+      <text class="ct-arrow">{{showBooks?icons.section_expand:icons.section_collapse}}</text>
+    </view>
+    <view wx:if="{{showBooks}}">
+      <block wx:for="{{books}}" wx:key="id">
+        <view class="book-card">
+          <view class="book-cover">{{item.cover}}</view>
+          <view class="book-info">
+            <view class="gold" style="font-size:16px">{{item.title}}</view>
+            <view class="dim" style="font-size:10px">{{item.author}} · {{item.dynasty}}</view>
+            <view class="book-cat">{{item.category}}</view>
+            <view class="fn-text" style="font-size:12px;margin-top:6px">{{item.intro}}</view>
+          </view>
+        </view>
+        <view class="book-detail">
+          <view class="fn-text">{{item.content}}</view>
+          <view wx:if="{{item.chapters.length}}" class="mt8">
+            <view class="dim" style="font-size:10px;margin-bottom:4px">主要篇章</view>
+            <block wx:for="{{item.chapters}}" wx:key="name">
+              <view class="book-chapter">▸ <text class="gold">{{item.name}}</text>：{{item.desc}}</view>
+            </block>
+          </view>
+          <view wx:if="{{item.quotes.length}}" class="mt8">
+            <view class="dim" style="font-size:10px;margin-bottom:4px">经典名句</view>
+            <block wx:for="{{item.quotes}}" wx:key="*this">
+              <view class="book-quote">"{{item}}"</view>
+            </block>
+          </view>
+          <view class="book-reading mt8">
+            <view class="dim" style="font-size:10px">阅读建议</view>
+            <view class="fn-text">{{item.reading_guide}}</view>
+          </view>
+        </view>
+        <view class="book-divider" wx:if="{{index < books.length - 1}}"></view>
+      </block>
+    </view>
+  </view>
+
+  <!-- ====== 四大运势总结 ====== -->
+  <view class="card" wx:if="{{lifeSummary}}">
+    <view class="ct ct-tap" data-key="showLifeSummary" bindtap="toggleSection">
+      <text class="ct-icon">{{icons.life_summary}}</text>四 大 运 势 总 结
+      <text class="ct-arrow">{{showLifeSummary?icons.section_expand:icons.section_collapse}}</text>
+    </view>
+    <view wx:if="{{showLifeSummary}}">
+      <view class="dim fn-text" style="margin-bottom:12px">{{lifeSummary.overview}}</view>
+      <view class="life-tags">
+        <text class="life-tag tag-yl">格局：{{lifeSummary.tags.geju}}</text>
+        <text class="life-tag tag-yg">喜用：{{lifeSummary.tags.yong_shen}}</text>
+        <text class="life-tag tag-yr">忌神：{{lifeSummary.tags.ji_shen}}</text>
+        <text class="life-tag tag-yb">日主：{{lifeSummary.tags.level}}</text>
+      </view>
+
+      <view class="life-block">
+        <view class="life-title">💼 事业运势</view>
+        <view class="fn-text">{{lifeSummary.career}}</view>
+      </view>
+
+      <view class="life-block">
+        <view class="life-title">💕 爱情运势</view>
+        <view class="fn-text">{{lifeSummary.love}}</view>
+      </view>
+
+      <view class="life-block">
+        <view class="life-title">💰 财运分析</view>
+        <view class="fn-text">{{lifeSummary.wealth}}</view>
+      </view>
+
+      <view class="life-block">
+        <view class="life-title">🏥 身体健康</view>
+        <view class="fn-text">{{lifeSummary.health}}</view>
+      </view>
+    </view>
+  </view>
+
+  </block>
+  <!-- ====== 以上为付费内容 ====== -->
+
+  <view class="btn btn-back" bindtap="goBack">
+    <text class="btn-icon">{{icons.back}}</text> 重 新 排 盘
+  </view>
+  <!-- 分享海报 -->
+  <view class="btn btn-share" bindtap="generateSharePoster">
+    <text class="btn-icon">📤</text> 生成分享海报
+  </view>
+  <view style="height:20px"></view>
+  <!-- 隐藏canvas用于生成海报 -->
+  <canvas canvas-id="shareCanvas" class="share-canvas" wx:if="{{showCanvas}}"></canvas>
+  <view class="foot-disclaimer">基于传统命理学算法，分析结果仅供文化研究参考，不构成任何人生决策依据</view>
+  <view style="height:40px"></view>
+</scroll-view>

@@ -1,0 +1,68 @@
+<scroll-view class="page" scroll-y>
+  <view style="padding: 0 28rpx;">
+
+    <view class="section-title">新增自定义食材</view>
+
+    <view class="card">
+      <view class="field">
+        <text class="label">食材名称 *</text>
+        <input class="input" placeholder="输入任意食材名" value="{{materialName}}" bindinput="onInput" data-field="materialName"/>
+      </view>
+
+      <view class="field">
+        <text class="label">分类</text>
+        <scroll-view class="seg-wrap" scroll-x>
+          <text class="seg {{categoryId === item.id ? 'active' : ''}}"
+                wx:for="{{categories}}" wx:key="id"
+                data-field="categoryId" data-val="{{item.id}}" bindtap="onSelectTap">{{item.name}}</text>
+        </scroll-view>
+      </view>
+
+      <view class="field">
+        <text class="label">默认单位</text>
+        <view class="unit-wrap">
+          <text wx:for="{{units}}" wx:key="*this"
+                data-field="defaultUnit" data-val="{{item}}" bindtap="onSelectTap"
+                class="unit {{defaultUnit === item ? 'on' : ''}}">{{item}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="section-title">价格信息</view>
+
+    <view class="card">
+      <view class="field-row">
+        <view class="field half">
+          <text class="label">市场最低价</text>
+          <input class="input num" type="digit" placeholder="0" value="{{marketMinPrice}}" bindinput="onInput" data-field="marketMinPrice"/>
+        </view>
+        <view class="field half">
+          <text class="label">市场最高价</text>
+          <input class="input num" type="digit" placeholder="0" value="{{marketMaxPrice}}" bindinput="onInput" data-field="marketMaxPrice"/>
+        </view>
+      </view>
+      <view class="field">
+        <text class="label">本次购买价（元/{{defaultUnit}}）</text>
+        <input class="input num" type="digit" placeholder="0" value="{{lastUserPrice}}" bindinput="onInput" data-field="lastUserPrice"/>
+      </view>
+    </view>
+
+    <view class="section-title">购买信息</view>
+    <view class="card">
+      <view class="field">
+        <text class="label">购买地点</text>
+        <input class="input" placeholder="如：盒马、菜市场" value="{{place}}" bindinput="onInput" data-field="place"/>
+      </view>
+      <view class="field">
+        <text class="label">备注</text>
+        <input class="input" placeholder="如：品质好、特价" value="{{remark}}" bindinput="onInput" data-field="remark"/>
+      </view>
+    </view>
+
+    <view style="height:200rpx"></view>
+  </view>
+</scroll-view>
+
+<view class="bottom-bar">
+  <button class="btn-primary" style="flex:1;margin:0;" bindtap="save">保存食材</button>
+</view>

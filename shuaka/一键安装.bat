@@ -15,7 +15,7 @@ set "INSTALL_DIR=%~dp0"
 echo.
 echo   ╔══════════════════════════════════════════╗
 echo   ║    身份证签到叫号系统 — 一键安装         ║
-echo   ║    Windows 版 v1.0                        ║
+echo   ║    Windows 版 v2.0                        ║
 echo   ╚══════════════════════════════════════════╝
 echo.
 
@@ -30,7 +30,6 @@ if %ERRORLEVEL% equ 0 (
     goto :check_pip
 )
 
-REM Python 未安装，尝试自动安装
 echo   ! 未检测到 Python，尝试自动安装...
 winget install Python.Python.3.12 --silent --accept-package-agreements >nul 2>nul
 if %ERRORLEVEL% equ 0 (
@@ -39,13 +38,12 @@ if %ERRORLEVEL% equ 0 (
     exit /b 0
 )
 
-REM winget 不可用，指引手动安装
 echo.
 echo   ✗ 自动安装失败
 echo   ─────────────────────────────────────
 echo   请手动安装 Python:
 echo   1. 打开浏览器访问 https://python.org
-echo   2. 下载 Python 3.12 Windows installer
+echo   2. 下载 Python 3.9+ Windows installer
 echo   3. 安装时务必勾选 "Add Python to PATH"
 echo   4. 安装完成后重新运行本脚本
 echo   ─────────────────────────────────────
@@ -64,7 +62,6 @@ REM ====== 2. 安装依赖 ======
 echo.
 echo [2/5] 安装 Python 依赖包...
 
-REM 优先使用清华镜像（国内更快）
 python -m pip install -r requirements.txt -q -i https://pypi.tuna.tsinghua.edu.cn/simple 2>nul
 if %ERRORLEVEL% neq 0 (
     python -m pip install -r requirements.txt -q
@@ -80,10 +77,6 @@ echo   ✓ 依赖安装完成
 REM ====== 3. 初始配置 ======
 echo.
 echo [3/5] 配置系统参数...
-
-if not exist config.yaml (
-    copy config.yaml.example config.yaml >nul 2>nul
-)
 
 REM 检查 Python 模块是否正常
 python -c "import openpyxl,flask,yaml; print('OK')" >nul 2>nul
@@ -101,7 +94,6 @@ echo [4/5] 创建桌面快捷方式...
 set "DESKTOP=%USERPROFILE%\Desktop"
 set "STARTUP_DIR=%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup"
 
-REM 创建 VBS 脚本生成快捷方式
 set "VBS=%TEMP%\create_shortcut.vbs"
 (
 echo Set ws = CreateObject("WScript.Shell"^)
@@ -110,10 +102,8 @@ echo Set shortcut = ws.CreateShortcut(desktop ^& "\签到叫号系统.lnk"^)
 echo shortcut.TargetPath = "%INSTALL_DIR%start.bat"
 echo shortcut.WorkingDirectory = "%INSTALL_DIR%"
 echo shortcut.Description = "身份证签到叫号系统"
-echo shortcut.IconLocation = "shell32.dll,21"
+echo shortcut.IconLocation = "%INSTALL_DIR%tablet\icon.ico,0"
 echo shortcut.Save
-echo.
-echo REM 开机自启动
 echo Set startupShortcut = ws.CreateShortcut("%STARTUP_DIR%\签到叫号系统.lnk"^)
 echo startupShortcut.TargetPath = "%INSTALL_DIR%start.bat"
 echo startupShortcut.WorkingDirectory = "%INSTALL_DIR%"
@@ -139,11 +129,8 @@ echo   ║  关闭窗口或按 Ctrl+C 停止服务             ║
 echo   ╚══════════════════════════════════════════╝
 echo.
 
-REM 自动打开浏览器
 start http://localhost:5002
-
-REM 启动主程序
-python main.py
+python desktop_app.py
 
 echo.
 echo 系统已停止。

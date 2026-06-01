@@ -14,13 +14,24 @@ location: "1楼大厅"
 excel_dir: "./签到记录"
 
 # ---- 读卡器设置 ----
+# enabled: 这台电脑是否连接了身份证读卡器
+#   true  → 刷卡主机（启动读卡器监听）
+#   false → 同步终端（只做大屏显示/手动签到，不监听读卡器）
 card_reader:
-  # 快速输入检测阈值（秒），低于此间隔的击键判定为读卡器输出
-  rapid_threshold: 0.03
-  # 数据结束停顿阈值（秒），超过此间隔认为一次刷卡数据已输出完毕
+  enabled: false            # 有读卡器的电脑设为 true
+  # reader_mode: "keyboard" 键盘模拟模式 / "com" 串口模式
+  reader_mode: "keyboard"
+  # 键盘模拟模式参数
+  rapid_threshold: 0.1
   pause_threshold: 0.8
-  # 调试模式：开启后会将每次捕获的原始数据打印到控制台
-  debug: false
+  # COM 口模式参数（reader_mode=com 时生效）
+  com_port: ""              # 串口号，如 COM3，留空自动扫描
+  com_baudrate: 115200      # 波特率，常用 115200/9600
+  # 鱼住 YNR201 读卡器（WebSocket 服务模式，多客户端共享）
+  # 需要 Windows 服务 yzwlReadCard 正在运行
+  ws_url: "ws://127.0.0.1:30004/ws"   # yzwlReadCardServer WebSocket 地址
+  # 调试模式
+  debug: true
 
 # ---- 语音播报设置 ----
 # 注意：语音播报的欢迎语/提醒语模板也可在后台管理页面 /admin 中修改
@@ -28,7 +39,7 @@ voice:
   enabled: true
   welcome_template: "{name}，欢迎签到！"
   remind_template: "{name}，您的等待时间已到40分钟，请留意叫号。"
-  macos_voice: "Tingting"
+  macos_voice: "Eddy"
   windows_voice: ""
 
 # ---- 计时提醒 ----
@@ -48,11 +59,11 @@ web_server:
 #   3. 安装 ngrok: brew install ngrok (Mac) 或下载 exe (Win)
 #   4. 将 enabled 设为 true，填入 auth_token
 ngrok:
-  enabled: false
+  enabled: false   # 已通过 nohup 独立运行，无需 main.py 管理
   auth_token: ""
 
 # ---- 自动备份 ----
 backup:
   enabled: true
-  interval_minutes: 30
-  path: "./备份"
+  interval_minutes: 15
+  path: "./数据备份"

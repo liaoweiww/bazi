@@ -12,4 +12,8 @@ python3 -c "import pynput" 2>/dev/null || {
 }
 
 echo "[启动] 签到叫号系统..."
+
+# 将 Python 字节码缓存重定向到本机目录，避免百度云跨平台同步冲突
+export PYTHONPYCACHEPREFIX="$HOME/.shuaka/pycache"
+
 python3 main.py "$@"

@@ -1,6 +1,33 @@
+# Python
 __pycache__/
 *.pyc
-.DS_Store
-签到记录/
-uploads/
+*.pyo
+*.spec
+
+# 构建产物
+dist/
+build/
+
+# 运行时数据（由程序自动生成，不纳入版本控制）
+settings.json
+users.json
+machine.json
 *.xlsx
+.syncing
+
+# 同步数据目录
+BaiduSyncdisk/
+
+# 本地安全镜像
+local_backup/
+
+# 数据目录
+签到记录/
+备份/
+回收站/
+uploads/
+
+# 系统文件
+.DS_Store
+Thumbs.db
+*.log

@@ -35,5 +35,8 @@ echo   语音: SAPI5 TTS 引擎
 echo ============================================
 echo.
 
+REM 将 Python 字节码缓存重定向到本机目录，避免百度云跨平台同步冲突
+set PYTHONPYCACHEPREFIX=%LOCALAPPDATA%\shuaka\pycache
+
 python main.py %*
 pause

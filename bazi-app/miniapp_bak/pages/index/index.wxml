@@ -1,0 +1,167 @@
+<scroll-view class="wrap theme-root theme-{{currentTheme}}" style="{{themeStyle}}" scroll-y scroll-x="{{false}}" enhanced show-scrollbar="{{false}}">
+
+  <!-- ====== HERO：主题各不同 ====== -->
+  <view class="hero hero-{{currentTheme}}">
+    <block wx:if="{{currentTheme === 'classic'}}">
+      <view class="hero-bg hero-bg-classic">
+        <view class="hero-ring r1"></view><view class="hero-ring r2"></view><view class="hero-ring r3"></view>
+      </view>
+    </block>
+    <block wx:elif="{{currentTheme === 'ink-wash'}}">
+      <view class="hero-bg hero-bg-ink">
+        <view class="ink-splash"></view><view class="ink-stroke"></view>
+      </view>
+    </block>
+    <block wx:elif="{{currentTheme === 'imperial'}}">
+      <view class="hero-bg hero-bg-imperial">
+        <view class="imp-frame">
+          <view class="imp-corner imp-c-tl"></view><view class="imp-corner imp-c-tr"></view>
+          <view class="imp-corner imp-c-bl"></view><view class="imp-corner imp-c-br"></view>
+        </view>
+        <view class="imp-banner"></view>
+      </view>
+    </block>
+    <block wx:elif="{{currentTheme === 'celadon'}}">
+      <view class="hero-bg hero-bg-celadon">
+        <view class="ce-crackle"></view><view class="ce-wave"></view>
+      </view>
+    </block>
+    <view class="settings-btn" bindtap="goSettings"><text class="settings-icon">{{icons.settings}}</text></view>
+    <view class="hero-title">易 经 八 字</view>
+    <view class="hero-sub">探寻命理玄机 · 洞悉人生轨迹</view>
+  </view>
+
+  <!-- ====== 今日信息栏 ====== -->
+  <view class="today-bar" wx:if="{{todayInfo}}">
+    <view class="today-item">
+      <text class="today-icon">📅</text>
+      <view class="today-text">
+        <text class="today-date">{{todayInfo.solar_date}} 周{{todayInfo.weekday}}</text>
+        <text class="today-lunar">农历{{todayInfo.lunar_month}}月{{todayInfo.lunar_day}}日 · {{todayInfo.ganzhi_day}}日</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- ====== 太极图（墨韵不显示） ====== -->
+  <view class="bagua" wx:if="{{currentTheme !== 'ink-wash'}}">
+    <view class="bline"></view>
+    <view class="yy-wrap"><view class="yy-left"></view><view class="yy-right"></view></view>
+    <view class="bline"></view>
+  </view>
+
+  <!-- ====== 历史档案 ====== -->
+  <view class="section-header" wx:if="{{profiles.length > 0}}">
+    <text class="sh-title">{{icons.birth_info}} 历史档案</text>
+    <text class="sh-count">{{profiles.length}}人</text>
+  </view>
+  <scroll-view class="profile-scroll" scroll-x enhanced show-scrollbar="{{false}}" wx:if="{{profiles.length > 0}}">
+    <view class="profile-list">
+      <block wx:for="{{profiles}}" wx:key="id">
+        <view class="profile-card {{activeProfileId === item.id ? 'pf-active' : ''}}" data-id="{{item.id}}" bindtap="loadFromProfile">
+          <view class="pf-avatar">{{item.gender === '男' ? '☰' : '☷'}}</view>
+          <view class="pf-name">{{item.name}}</view>
+          <view class="pf-date">{{item.solar_year || item.lunar_year}}年</view>
+          <view class="pf-del" data-id="{{item.id}}" catchtap="deleteProfile">×</view>
+        </view>
+      </block>
+    </view>
+  </scroll-view>
+
+  <!-- ====== 添加排盘按钮 ====== -->
+  <view class="add-btn-wrap">
+    <view class="add-btn" bindtap="toggleForm">
+      <text class="add-icon">{{showForm ? '−' : '+'}}</text>
+      <text>{{showForm ? '收起表单' : '新 建 排 盘'}}</text>
+    </view>
+  </view>
+
+  <!-- ====== 排盘表单 ====== -->
+  <view class="card" wx:if="{{showForm}}">
+    <view class="fg">
+      <view class="fl"><text class="fl-icon">{{icons.name}}</text>姓 名</view>
+      <input class="fi" placeholder="请输入姓名" value="{{name}}" bindinput="onName" maxlength="20"/>
+    </view>
+    <view class="fg">
+      <view class="fl"><text class="fl-icon">{{icons.gender}}</text>性 别</view>
+      <view class="tog">
+        <view class="{{gender==='男'?'on':''}}" data-v="男" bindtap="onGender">{{icons.gender_male}} 乾 造（男）</view>
+        <view class="{{gender==='女'?'on':''}}" data-v="女" bindtap="onGender">{{icons.gender_female}} 坤 造（女）</view>
+      </view>
+    </view>
+    <view class="fg">
+      <view class="fl"><text class="fl-icon">{{icons.calendar}}</text>历 法</view>
+      <view class="tog">
+        <view class="{{calType==='solar'?'on':''}}" data-v="solar" bindtap="onCal">{{icons.calendar_solar}} 公 历</view>
+        <view class="{{calType==='lunar'?'on':''}}" data-v="lunar" bindtap="onCal">{{icons.calendar_lunar}} 农 历</view>
+      </view>
+    </view>
+    <view class="fg" wx:if="{{calType==='solar'}}">
+      <view class="fl"><text class="fl-icon">{{icons.birth}}</text>出生日期（公历）</view>
+      <view class="dr">
+        <input class="fi" type="number" placeholder="年" value="{{sy}}" bindinput="onSy"/>
+        <input class="fi" type="number" placeholder="月" value="{{sm}}" bindinput="onSm"/>
+        <input class="fi" type="number" placeholder="日" value="{{sd}}" bindinput="onSd"/>
+      </view>
+    </view>
+    <view class="fg" wx:else>
+      <view class="fl"><text class="fl-icon">{{icons.birth}}</text>出生日期（农历）</view>
+      <view class="dr">
+        <input class="fi" type="number" placeholder="年" value="{{ly}}" bindinput="onLy"/>
+        <input class="fi" type="number" placeholder="月" value="{{lm}}" bindinput="onLm"/>
+        <input class="fi" type="number" placeholder="日" value="{{ld}}" bindinput="onLd"/>
+      </view>
+      <view class="tog" style="margin-top:8px">
+        <view class="{{!leap?'on':''}}" data-v="0" bindtap="onLeap">正常月</view>
+        <view class="{{leap?'on':''}}" data-v="1" bindtap="onLeap">闰 月</view>
+      </view>
+    </view>
+    <view class="fg">
+      <view class="fl"><text class="fl-icon">{{icons.time}}</text>出生时间</view>
+      <view class="dr">
+        <input class="fi" type="number" placeholder="时" value="{{fh}}" bindinput="onFh"/>
+        <input class="fi" type="number" placeholder="分" value="{{fm}}" bindinput="onFm"/>
+      </view>
+    </view>
+    <view class="btn-go" bindtap="doPaipan">
+      <text class="btn-go-main">开 始 排 盘</text>
+      <text class="btn-go-sub">一窥命理玄机</text>
+    </view>
+  </view>
+
+  <!-- ====== 今日运势卡片 ====== -->
+  <view class="card fortune-card" wx:if="{{dailyFortune}}">
+    <view class="fn-header">
+      <text class="fn-icon">{{icons.year_fortune}}</text>
+      <text class="fn-title">今日运势</text>
+      <text class="fn-date">{{dailyFortune.date}}</text>
+    </view>
+    <view class="fn-body">
+      <view class="fn-score-wrap">
+        <view class="fn-score-ring fn-s-{{dailyFortune.rating==='大吉'?'great':dailyFortune.rating==='小吉'?'good':dailyFortune.rating==='平平'?'ok':'warn'}}">
+          <text class="fn-score-num">{{dailyFortune.score}}</text>
+          <text class="fn-score-label">分</text>
+        </view>
+        <text class="fn-rating-text fn-r-{{dailyFortune.rating==='大吉'?'great':dailyFortune.rating==='小吉'?'good':dailyFortune.rating==='平平'?'ok':'warn'}}">{{dailyFortune.rating}}</text>
+      </view>
+      <view class="fn-info">
+        <view class="fn-row"><text class="fn-label">日柱</text><text class="fn-val">{{dailyFortune.day_ganzhi}}（{{dailyFortune.day_wuxing}}）</text></view>
+        <view class="fn-row"><text class="fn-label">关系</text><text class="fn-val gold">{{dailyFortune.relation_to_dm}}</text></view>
+      </view>
+      <view class="fn-tips">
+        <block wx:for="{{dailyFortune.tips}}" wx:key="*this">
+          <view class="fn-tip">💬 {{item}}</view>
+        </block>
+      </view>
+      <view class="fn-yiji">
+        <view class="fn-yi"><text class="fn-yi-label">宜</text>{{dailyFortune.yi.join(' · ')}}
+        </view>
+        <view class="fn-ji"><text class="fn-ji-label">忌</text>{{dailyFortune.ji.join(' · ')}}
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="foot">— 古籍级 · 纯正子平术 · 本地离线 —</view>
+  <view class="foot-disclaimer">基于传统命理学算法，仅供文化研究参考，不构成任何人生决策依据</view>
+  <view class="foot-ver">版本 1.1 · 档案 · 日运 · 命盘</view>
+</scroll-view>

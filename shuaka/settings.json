@@ -1,18 +1,18 @@
 {
   "display": {
-    "title": "中国人寿收展健康体检专用签到系统",
-    "location": "",
+    "title": "中国人寿收展616客户服务节鑫认证专用签到系统",
+    "location": "1楼大厅",
     "subtitle": "深耕收展渠道，打造体检专属签到平台，国寿专属智签，助力健康体检落地",
     "logo_url": "/uploads/logo.png",
-    "theme": "purple",
+    "theme": "light",
     "font_scale": "normal",
     "refresh_interval": 5,
     "mask_names": false,
     "show_location": true,
     "show_id_number": false,
     "show_status": true,
-    "bg_primary": "#120c1e",
-    "accent": "#a78bfa",
+    "bg_primary": "#f0f2f5",
+    "accent": "#2563eb",
     "glow_enabled": true,
     "glow_intensity": 2
   },
@@ -85,9 +85,9 @@
     "macos_voice": "Tingting",
     "windows_voice": "",
     "templates": {
-      "call": "有请{name}嘉宾到检测室",
-      "recall": "重新叫号，请{name}嘉宾到检测室",
-      "recall_nth": "第{n}次叫号，请{name}嘉宾到检测室",
+      "call": "有请{name}嘉宾到贵宾室",
+      "recall": "重新叫号，请{name}嘉宾到贵宾室",
+      "recall_nth": "第{n}次叫号，请{name}嘉宾到贵宾室",
       "done": "{name}嘉宾检测完毕",
       "pass": "过号，请{name}稍后重新叫号",
       "welcome": "{name}，欢迎签到！",
@@ -130,5 +130,14 @@
       "speed": 120,
       "text": "业务办理完毕后请及时离柜，检查并收好您的证件、单据及个人物品，谨防遗漏。感谢您的信任与支持！期待再次为您服务，祝您生活愉快！"
     }
-  ]
+  ],
+  "card_reader": {
+    "enabled": true,
+    "reader_mode": "keyboard",
+    "com_port": ""
+  },
+  "machine_id": "aa84b150",
+  "license": "C15C-66F1-5949-FF6F",
+  "expiry": "20260627",
+  "sync_server_url": "https://worrisome-fraternal-scared.ngrok-free.dev"
 }

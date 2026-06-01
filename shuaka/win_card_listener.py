@@ -330,13 +330,12 @@ class WinCardListener:
         # 保存回调引用防 GC
         self._hook_proc = HOOKPROC(self._keyboard_proc)
 
-        # 安装底层键盘钩子
-        self._hook_id = SetWindowsHookExW(
-            WH_KEYBOARD_LL,
-            self._hook_proc,
-            kernel32.GetModuleHandleW(None),
-            0
-        )
+        # 安装底层键盘钩子（PyInstaller 下 hMod=None 更可靠）
+        hmod = kernel32.GetModuleHandleW(None)
+        self._hook_id = SetWindowsHookExW(WH_KEYBOARD_LL, self._hook_proc, hmod, 0)
+        if not self._hook_id:
+            # 重试：部分环境需 hMod=NULL
+            self._hook_id = SetWindowsHookExW(WH_KEYBOARD_LL, self._hook_proc, 0, 0)
 
         if not self._hook_id:
             raise OSError("无法安装键盘钩子（需要管理员权限或 Python 以管理员身份运行）")

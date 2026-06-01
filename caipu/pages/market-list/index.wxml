@@ -1,0 +1,53 @@
+<scroll-view class="page" scroll-y>
+
+  <!-- 大标题 -->
+  <view class="page-header">
+    <text class="title">我的菜库</text>
+  </view>
+
+  <!-- 搜索 -->
+  <view class="search-bar">
+    <text>🔍</text>
+    <input placeholder="搜索食材" value="{{keyword}}" bindinput="onSearchInput" bindconfirm="onSearch"/>
+  </view>
+
+  <!-- 分类标签 -->
+  <scroll-view class="segment-wrap" scroll-x>
+    <text class="seg {{activeCategoryId === item.id ? 'active' : ''}}"
+          wx:for="{{categories}}" wx:key="id"
+          data-id="{{item.id}}" bindtap="onCategoryTap">{{item.name}}</text>
+  </scroll-view>
+
+  <!-- 食材列表 -->
+  <view class="material-list">
+    <block wx:for="{{materials}}" wx:key="id">
+      <view class="card material-card" data-id="{{item.id}}" bindtap="onMaterialTap">
+        <view class="mat-row">
+          <image class="mat-icon" src="/images/mat-{{item.material_name}}.png" mode="aspectFill"/>
+          <view class="mat-info">
+            <view class="mat-header">
+              <text class="mat-name">{{item.material_name}}</text>
+              <text class="mat-cate">{{item.category_name}}</text>
+            </view>
+            <view class="mat-body">
+              <view class="mat-price">
+                <text class="mat-label">市场价</text>
+                <text class="mat-val">¥{{item.market_min_price}}~¥{{item.market_max_price}}/{{item.default_unit}}</text>
+              </view>
+              <view class="mat-price" wx:if="{{item.last_user_price > 0}}">
+                <text class="mat-label">我的买入</text>
+                <text class="mat-val blue">¥{{item.last_user_price}}/{{item.default_unit}}</text>
+                <text class="mat-date">{{item.last_price_date}}</text>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </block>
+  </view>
+
+  <view style="height:160rpx"></view>
+</scroll-view>
+
+<!-- FAB -->
+<view class="fab" bindtap="onAddTap">+</view>

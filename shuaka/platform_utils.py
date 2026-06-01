@@ -18,8 +18,32 @@ MACHINE = platform.machine()  # "arm64" / "x86_64" / "AMD64"
 
 # ========== 路径工具 ==========
 
+def _get_machine_config():
+    """读取本机专属配置 machine.json"""
+    try:
+        import json
+        if IS_WIN:
+            local_dir = os.path.join(os.environ.get('LOCALAPPDATA', os.path.expanduser('~')), 'shuaka')
+        else:
+            local_dir = os.path.join(os.path.expanduser('~'), '.shuaka')
+        path = os.path.join(local_dir, 'machine.json')
+        if os.path.isfile(path):
+            with open(path, 'r', encoding='utf-8') as f:
+                return json.load(f)
+    except Exception:
+        pass
+    return {}
+
+
 def get_baidu_sync_dir():
-    """获取百度网盘同步目录"""
+    """获取百度网盘同步目录（优先使用本机配置）"""
+    # 1. 优先检查本机配置中手动设置的路径
+    machine = _get_machine_config()
+    custom = machine.get("baidu_sync_dir", "")
+    if custom and os.path.isdir(custom):
+        return custom
+
+    # 2. 自动检测常见路径
     if IS_WIN:
         candidates = [
             os.path.expanduser(r"~\BaiduSyncDisk"),
@@ -41,6 +65,23 @@ def get_baidu_sync_dir():
     return candidates[0]  # 返回第一个作为默认
 
 
+def get_sync_data_dir(base_dir=None):
+    """
+    获取多机同步数据根目录
+    固定使用项目下的 BaiduSyncdisk/ 目录，用户将百度云同步文件夹指向此目录即可
+    """
+    if base_dir is None:
+        import __main__
+        base_dir = os.path.dirname(os.path.abspath(__main__.__file__)) if hasattr(__main__, '__file__') else os.getcwd()
+    sync_root = os.path.join(base_dir, "BaiduSyncdisk")
+    os.makedirs(sync_root, exist_ok=True)
+    placeholder = os.path.join(sync_root, ".syncing")
+    if not os.path.exists(placeholder):
+        with open(placeholder, "w", encoding="utf-8") as f:
+            f.write("签到系统数据同步目录\n")
+    return sync_root
+
+
 def get_desktop_dir():
     """获取桌面目录"""
     if IS_WIN:
@@ -49,10 +90,10 @@ def get_desktop_dir():
 
 
 def get_data_dir(default="./签到记录"):
-    """获取签到数据存储目录（优先百度网盘）"""
-    baidu = get_baidu_sync_dir()
-    if os.path.isdir(baidu):
-        data_dir = os.path.join(baidu, "签到记录")
+    """获取签到数据存储目录（优先百度网盘同步目录）"""
+    sync = get_sync_data_dir()
+    if sync:
+        data_dir = os.path.join(sync, "签到记录")
         os.makedirs(data_dir, exist_ok=True)
         return data_dir
     return default

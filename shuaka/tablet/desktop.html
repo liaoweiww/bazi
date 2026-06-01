@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>签到系统 — 控制面板</title>
+<style>
+:root {
+  --bg: #0f1419;
+  --card-bg: #1a1f2e;
+  --card-border: #2a3040;
+  --text: #e2e8f0;
+  --text-secondary: #8892a4;
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --radius: 12px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Microsoft YaHei", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 2rem 1rem;
+  background-image: radial-gradient(ellipse at 50% -20%, #1a2940 0%, transparent 60%),
+                    radial-gradient(ellipse at 80% 80%, #1a2535 0%, transparent 40%);
+}
+.container { width: 100%; max-width: 620px; }
+
+/* 头部 */
+.header {
+  text-align: center; padding: 1.5rem 0 2rem;
+}
+.header h1 {
+  font-size: 1.6rem; font-weight: 700;
+  background: linear-gradient(135deg, #60a5fa, #a78bfa);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.header .subtitle { color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.3rem; }
+.header .version { color: #4a5568; font-size: 0.75rem; }
+
+/* 卡片 */
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  margin-bottom: 1rem;
+  overflow: hidden;
+}
+.card-hd {
+  padding: 0.8rem 1rem;
+  display: flex; align-items: center; gap: 0.5rem;
+  border-bottom: 1px solid var(--card-border);
+  font-weight: 600; font-size: 0.9rem;
+}
+.card-hd .icon { font-size: 1.1rem; }
+.card-bd { padding: 1rem; }
+
+/* 状态网格 */
+.status-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;
+}
+.status-item {
+  background: #141a24; border-radius: 8px; padding: 0.75rem;
+  display: flex; align-items: center; gap: 0.6rem;
+}
+.status-dot {
+  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+}
+.status-dot.on { background: var(--success); box-shadow: 0 0 8px rgba(34,197,94,0.5); }
+.status-dot.off { background: #4a5568; }
+.status-dot.warn { background: var(--warning); box-shadow: 0 0 8px rgba(245,158,11,0.5); }
+.status-info { flex: 1; min-width: 0; }
+.status-label { font-size: 0.72rem; color: var(--text-secondary); text-transform: uppercase; }
+.status-val { font-size: 0.85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* 按钮 */
+.btn-row { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+.btn {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  padding: 0.55rem 1rem; border-radius: 8px; border: none;
+  font-size: 0.85rem; font-weight: 600; cursor: pointer;
+  transition: all 0.15s; white-space: nowrap;
+  text-decoration: none; color: inherit;
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-hover); }
+.btn-outline { background: transparent; border: 1px solid var(--card-border); color: var(--text); }
+.btn-outline:hover { background: #1e293b; border-color: #4a5568; }
+.btn-danger { background: transparent; border: 1px solid #4a2020; color: #f87171; }
+.btn-danger:hover { background: #3b1515; }
+.btn-success { background: #166534; color: #86efac; }
+.btn-success:hover { background: #1a7640; }
+.btn .btn-icon { font-size: 1.1rem; }
+
+/* 同步信息 */
+.sync-info { font-size: 0.82rem; color: var(--text-secondary); line-height: 1.6; }
+.sync-info strong { color: var(--text); }
+
+/* 日志 */
+.log-area {
+  background: #111620; border-radius: 8px;
+  padding: 0.6rem 0.8rem; max-height: 200px; overflow-y: auto;
+  font-family: "SF Mono", "Consolas", monospace;
+  font-size: 0.78rem; color: #94a3b8; line-height: 1.7;
+}
+.log-area .log-time { color: #4a5568; }
+.log-area .log-ok { color: #86efac; }
+.log-area .log-err { color: #f87171; }
+.log-area .log-action { color: #60a5fa; }
+
+/* 底部 */
+.footer {
+  text-align: center; padding: 1.5rem 0; color: #4a5568; font-size: 0.75rem;
+}
+
+/* 响应式 */
+@media (max-width: 480px) {
+  .status-grid { grid-template-columns: 1fr; }
+  .btn-row { flex-direction: column; }
+  .btn { justify-content: center; }
+}
+
+/* 确认弹窗 */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+  display: flex; align-items: center; justify-content: center; z-index: 100;
+}
+.modal-overlay.hidden { display: none; }
+.modal-box {
+  background: var(--card-bg); border: 1px solid var(--card-border);
+  border-radius: var(--radius); padding: 1.5rem; text-align: center;
+  max-width: 320px; width: 90%;
+}
+.modal-box h3 { margin-bottom: 0.8rem; font-size: 1rem; }
+.modal-box p { color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1.2rem; }
+.modal-box .btn-row { justify-content: center; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- 头部 -->
+  <div class="header">
+    <h1>身份证签到系统</h1>
+    <div class="subtitle">桌面控制面板</div>
+    <div class="version" id="ver">v1.0.0</div>
+  </div>
+
+  <!-- 系统状态 -->
+  <div class="card">
+    <div class="card-hd"><span class="icon">📡</span> 系统状态</div>
+    <div class="card-bd">
+      <div class="status-grid">
+        <div class="status-item">
+          <div class="status-dot" id="dot-service"></div>
+          <div class="status-info">
+            <div class="status-label">服务状态</div>
+            <div class="status-val" id="st-service">--</div>
+          </div>
+        </div>
+        <div class="status-item">
+          <div class="status-dot" id="dot-reader"></div>
+          <div class="status-info">
+            <div class="status-label">读卡器</div>
+            <div class="status-val" id="st-reader">--</div>
+          </div>
+        </div>
+        <div class="status-item">
+          <div class="status-dot" id="dot-sync"></div>
+          <div class="status-info">
+            <div class="status-label">数据同步</div>
+            <div class="status-val" id="st-sync">--</div>
+          </div>
+        </div>
+        <div class="status-item">
+          <div class="status-dot" id="dot-data"></div>
+          <div class="status-info">
+            <div class="status-label">今日签到</div>
+            <div class="status-val" id="st-data">--</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 快捷操作 -->
+  <div class="card">
+    <div class="card-hd"><span class="icon">⚡</span> 快捷操作</div>
+    <div class="card-bd">
+      <div class="btn-row">
+        <button class="btn btn-success" onclick="doSync()"><span class="btn-icon">🔄</span> 同步升级</button>
+        <button class="btn btn-outline" onclick="doRestart()"><span class="btn-icon">🔌</span> 重启服务</button>
+        <button class="btn btn-outline" onclick="openPage('/admin')"><span class="btn-icon">⚙</span> 管理后台</button>
+        <button class="btn btn-outline" onclick="openPage('/')"><span class="btn-icon">📺</span> 大屏展示</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 同步详情 -->
+  <div class="card">
+    <div class="card-hd"><span class="icon">💾</span> 同步详情</div>
+    <div class="card-bd sync-info" id="sync-info">加载中...</div>
+  </div>
+
+  <!-- 操作日志 -->
+  <div class="card">
+    <div class="card-hd"><span class="icon">📋</span> 操作日志</div>
+    <div class="card-bd">
+      <div class="log-area" id="log-area">
+        <div><span class="log-time">--:--:--</span> 控制面板已启动</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 退出 -->
+  <div style="text-align:center; padding: 1rem 0 2rem;">
+    <button class="btn btn-danger" onclick="showExit()"><span class="btn-icon">⏻</span> 退出系统</button>
+  </div>
+
+  <div class="footer">签到系统桌面控制面板 · 最小化此窗口即可后台运行</div>
+</div>
+
+<!-- 确认弹窗 -->
+<div class="modal-overlay hidden" id="exit-modal">
+  <div class="modal-box">
+    <h3>退出系统</h3>
+    <p>确定要关闭签到系统吗？关闭后读卡、语音和数据同步将停止。</p>
+    <div class="btn-row">
+      <button class="btn btn-outline" onclick="hideExit()">取消</button>
+      <button class="btn btn-danger" onclick="doExit()">确认退出</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const MONITOR_URL = '/api/monitor';
+let pollTimer = null;
+
+// ====== 工具函数 ======
+function now() {
+  const d = new Date();
+  return d.toTimeString().slice(0,8);
+}
+function log(msg, cls) {
+  const el = document.getElementById('log-area');
+  const div = document.createElement('div');
+  div.innerHTML = `<span class="log-time">${now()}</span> <span class="${cls||''}">${msg}</span>`;
+  el.prepend(div);
+  if (el.children.length > 50) el.lastChild.remove();
+}
+
+// ====== 轮询状态 ======
+async function pollStatus() {
+  try {
+    const r = await fetch(MONITOR_URL);
+    const d = await r.json();
+    updateUI(d);
+  } catch(e) {
+    // 服务器可能正在重启
+  }
+}
+
+function updateUI(d) {
+  document.getElementById('ver').textContent = d.version || 'v1.0.0';
+
+  // 服务状态
+  const svc = d.started_at ? true : false;
+  setDot('dot-service', svc);
+  document.getElementById('st-service').textContent = svc ? '运行中' : '未运行';
+
+  // 读卡器
+  const cr = d.card_reader || {};
+  const crOn = cr.online;
+  setDot('dot-reader', crOn ? 'on' : (cr.enabled ? 'warn' : 'off'));
+  let crText = cr.enabled ? (crOn ? '在线' : '未连接') : '未启用';
+  if (cr.total_reads) crText += ` · 已读${cr.total_reads}张`;
+  document.getElementById('st-reader').textContent = crText;
+
+  // 数据同步
+  const sync = d.sync || {};
+  setDot('dot-sync', sync.enabled ? 'on' : 'off');
+  document.getElementById('st-sync').textContent = sync.enabled ? (sync.provider || '已启用') : '未启用';
+
+  // 同步详情
+  const si = document.getElementById('sync-info');
+  let syncHTML = '';
+  syncHTML += `<div>🔄 代码同步: <strong>HTTP → Mac 服务器</strong> (${sync.last_sync || '尚未同步'})</div>`;
+  if (sync.sync_result) {
+    syncHTML += `<div>📋 最近结果: <strong>${sync.sync_result}</strong></div>`;
+  }
+  if (sync.data_dir) {
+    syncHTML += `<div>📁 数据目录: <strong>${sync.data_dir}</strong></div>`;
+  }
+  if (sync.shared_items) {
+    syncHTML += `<div>📦 同步内容: ${sync.shared_items.map(s=>'<strong>'+s+'</strong>').join(' · ')}</div>`;
+  }
+  // Excel 文件
+  const ed = d.excel_dir || {};
+  if (ed.path) {
+    syncHTML += `<div>📊 数据目录: <strong>${ed.path}</strong></div>`;
+  }
+  if (ed.files && ed.files.length) {
+    syncHTML += `<div>📄 签到文件: ${ed.files.map(f=>`<strong>${f.name}</strong> (${f.size_kb}KB)`).join(', ')}</div>`;
+  }
+  si.innerHTML = syncHTML || '暂无同步信息';
+
+  // 今日统计
+  let todayCount = '--';
+  if (ed.files && ed.files.length) {
+    // 从 monitor 中推断（实际应通过 /api/stats 获取）
+    todayCount = '--';
+  }
+  setDot('dot-data', 'on');
+  document.getElementById('st-data').textContent = todayCount;
+
+  // 如果有新签到事件，自动记录
+  if (cr.last_name && cr.last_name !== window._lastName) {
+    window._lastName = cr.last_name;
+    if (cr.last_name !== '') {
+      log(`新签到: ${cr.last_name}`, 'log-ok');
+    }
+  }
+}
+
+function setDot(id, state) {
+  const el = document.getElementById(id);
+  el.className = 'status-dot';
+  if (state === true || state === 'on') el.classList.add('on');
+  else if (state === 'warn') el.classList.add('warn');
+  else el.classList.add('off');
+}
+
+// ====== 操作 ======
+async function doSync() {
+  log('正在从服务器拉取最新代码...', 'log-action');
+  try {
+    const r = await fetch('/api/sync_trigger', { method: 'POST' });
+    const d = await r.json();
+    if (d.ok) {
+      log(`同步完成: ${d.message}`, 'log-ok');
+    } else {
+      log(`同步失败: ${d.error || '未知错误'}`, 'log-err');
+    }
+    // 同步后刷新状态
+    setTimeout(pollStatus, 1500);
+  } catch(e) {
+    log(`请求失败: ${e.message}`, 'log-err');
+  }
+}
+
+async function doRestart() {
+  log('正在重启服务...', 'log-action');
+  try {
+    await fetch('/api/restart', { method: 'POST' });
+    log('服务重启中，3秒后自动刷新...', 'log-action');
+    // 等待重启后刷新
+    for (let i = 0; i < 10; i++) {
+      await new Promise(r => setTimeout(r, 1000));
+      try {
+        await fetch(MONITOR_URL);
+        log('服务已恢复', 'log-ok');
+        pollStatus();
+        return;
+      } catch(e) {}
+    }
+    log('服务重启超时，请手动刷新页面', 'log-err');
+  } catch(e) {
+    log(`重启请求失败: ${e.message}`, 'log-err');
+  }
+}
+
+function openPage(path) {
+  window.open(path, '_blank');
+  log(`打开: ${path}`, 'log-action');
+}
+
+function showExit() {
+  document.getElementById('exit-modal').classList.remove('hidden');
+}
+function hideExit() {
+  document.getElementById('exit-modal').classList.add('hidden');
+}
+async function doExit() {
+  log('正在关闭系统...', 'log-action');
+  try {
+    await fetch('/api/shutdown', { method: 'POST' });
+  } catch(e) {}
+  // 关闭此窗口
+  window.close();
+  // 如果 window.close 不生效（浏览器安全限制），显示提示
+  setTimeout(() => {
+    document.body.innerHTML = '<div style="text-align:center;padding:4rem;color:#e2e8f0;font-family:sans-serif;"><h2>系统已关闭</h2><p style="color:#8892a4;margin-top:1rem;">请关闭此窗口。</p></div>';
+  }, 500);
+}
+
+// ====== 初始化 ======
+pollStatus();
+pollTimer = setInterval(pollStatus, 3000);
+log('控制面板已就绪', 'log-ok');
+</script>
+</body>
+</html>

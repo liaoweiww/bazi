@@ -1,0 +1,114 @@
+<scroll-view class="page" scroll-y wx:if="{{material}}">
+
+  <!-- 食材头部 -->
+  <view class="header-card">
+    <text class="mat-name">{{material.material_name}}</text>
+    <view class="mat-meta">
+      <text class="meta-tag">{{material.default_unit}}</text>
+      <text class="meta-tag" wx:if="{{material.market_min_price > 0}}">市场 ¥{{material.market_min_price}}~¥{{material.market_max_price}}</text>
+    </view>
+  </view>
+
+  <!-- 当前价格分析 -->
+  <view class="analysis-bar">
+    <text class="ana-text">{{priceAnalysis}}</text>
+  </view>
+
+  <!-- Tab切换 -->
+  <view class="tab-bar">
+    <view class="tab {{activeTab === 'chart' ? 'on' : ''}}" data-tab="chart" bindtap="onTabSwitch">
+      价格曲线
+    </view>
+    <view class="tab {{activeTab === 'records' ? 'on' : ''}}" data-tab="records" bindtap="onTabSwitch">
+      购买记录
+    </view>
+  </view>
+
+  <!-- ===== 曲线页 ===== -->
+  <block wx:if="{{activeTab === 'chart'}}">
+
+    <!-- 市场价曲线 -->
+    <view class="card chart-card">
+      <text class="chart-title">📊 30天市场行情曲线</text>
+      <view class="chart-container">
+        <block wx:for="{{marketCurve}}" wx:key="date">
+          <view class="bar-wrap" style="flex:1;">
+            <view class="bar" style="height: {{item.price / 1.5 * 20}}rpx; max-height:200rpx; background:#007AFF30; border-radius:4rpx 4rpx 0 0;">
+              <view class="bar-fill" style="height:{{item.price / 1.5 * 20}}rpx; background:#007AFF; border-radius:4rpx 4rpx 0 0;"></view>
+            </view>
+          </view>
+        </block>
+      </view>
+      <view class="chart-legend">
+        <text class="dot blue"></text><text>市场行情</text>
+      </view>
+    </view>
+
+    <!-- 个人价格曲线 -->
+    <view class="card chart-card">
+      <text class="chart-title">📈 个人购买历史曲线</text>
+      <view wx:if="{{personalCurve.length > 0}}">
+        <view class="chart-container">
+          <block wx:for="{{personalCurve}}" wx:key="record_date">
+            <view class="bar-wrap" style="flex:1;">
+              <view class="bar-fill" style="height: {{item.price / 1.5 * 25}}rpx; max-height:240rpx; background:#FF9500; border-radius:4rpx 4rpx 0 0;"></view>
+            </view>
+          </block>
+        </view>
+        <view class="chart-legend">
+          <text class="dot orange"></text><text>个人购买</text>
+        </view>
+      </view>
+      <view wx:else class="chart-empty muted">暂无个人购买记录</view>
+    </view>
+
+    <!-- 统计 -->
+    <view class="card stats-card">
+      <view class="stat-item">
+        <text class="stat-label">30天均价</text>
+        <text class="stat-val">{{changeVs30d >= 0 ? '↑' : '↓'}} {{changeVs30d >= 0 ? '+' : ''}}{{changeVs30d}}%</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-label">历史最低</text>
+        <text class="stat-val green">¥{{historyMin}}</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-label">历史最贵</text>
+        <text class="stat-val red">¥{{historyMax}}</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-label">均价</text>
+        <text class="stat-val">¥{{avg}}</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-label">走势</text>
+        <text class="stat-val">{{trend}}</text>
+      </view>
+    </view>
+  </block>
+
+  <!-- ===== 记录页 ===== -->
+  <block wx:if="{{activeTab === 'records'}}">
+    <block wx:for="{{personalCurve}}" wx:key="id">
+      <view class="card record-item">
+        <view class="rec-top">
+          <text class="rec-price">¥{{item.price}}</text>
+          <text class="rec-date">{{item.record_date}}</text>
+        </view>
+        <view class="rec-bottom" wx:if="{{item.place}}">
+          <text class="rec-place">📍 {{item.place}}</text>
+          <text class="rec-note" wx:if="{{item.remark}}">{{item.remark}}</text>
+        </view>
+      </view>
+    </block>
+    <view wx:if="{{personalCurve.length === 0}}" class="empty muted" style="padding:100rpx 0; text-align:center;">
+      暂无记录
+    </view>
+  </block>
+
+  <view style="height:160rpx"></view>
+</scroll-view>
+
+<view class="bottom-bar">
+  <button class="btn-primary" style="flex:1;margin:0;" bindtap="onQuickRecord">今日记价</button>
+</view>

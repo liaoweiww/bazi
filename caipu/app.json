@@ -1,0 +1,43 @@
+{
+  "pages": [
+    "pages/recipe-list/index",
+    "pages/recipe-create/index",
+    "pages/recipe-detail/index",
+    "pages/market-list/index",
+    "pages/market-create/index",
+    "pages/market-detail/index",
+    "pages/market-record/index"
+  ],
+  "tabBar": {
+    "color": "#8E8E93",
+    "selectedColor": "#007AFF",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/recipe-list/index",
+        "text": "做菜",
+        "iconPath": "images/tab-recipe.png",
+        "selectedIconPath": "images/tab-recipe-active.png"
+      },
+      {
+        "pagePath": "pages/market-list/index",
+        "text": "菜市",
+        "iconPath": "images/tab-market.png",
+        "selectedIconPath": "images/tab-market-active.png"
+      }
+    ]
+  },
+  "window": {
+    "navigationBarBackgroundColor": "#FFFFFF",
+    "navigationBarTitleText": "我的菜谱",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#F2F2F7",
+    "backgroundTextStyle": "light"
+  },
+  "networkTimeout": {
+    "request": 30000
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

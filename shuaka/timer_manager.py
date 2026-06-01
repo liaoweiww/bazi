@@ -28,6 +28,11 @@ class TimerManager:
     def stop(self):
         self._running = False
 
+    def update_remind_minutes(self, remind_minutes):
+        """动态更新提醒间隔（无需重启服务）"""
+        self.remind_seconds = remind_minutes * 60
+        print(f"[计时] 提醒间隔已更新: {remind_minutes} 分钟")
+
     def add_timer(self, name, id_number):
         """添加计时器，到期后提醒一遍"""
         trigger_time = time.time() + self.remind_seconds

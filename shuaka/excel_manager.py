@@ -11,6 +11,8 @@ import threading
 from datetime import datetime
 from openpyxl import Workbook, load_workbook
 
+from local_mirror import mirror_critical_data
+
 class ExcelManager:
     def __init__(self, excel_dir, location):
         self.excel_dir = os.path.abspath(excel_dir)
@@ -102,6 +104,7 @@ class ExcelManager:
 
             ws.append([seq, name, id_number, time_str, self.location, status])
             wb.save(filepath)
+            mirror_critical_data("excel")
 
             if extra:
                 record.update(extra)
@@ -171,6 +174,7 @@ class ExcelManager:
                     if str(row[0].value) == str(seq):
                         row[5].value = new_status
                         wb.save(filepath)
+                        mirror_critical_data("excel")
 
                         # 更新缓存
                         for r in self._records_cache:
