@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title id="page-title">叫号系统</title>
-<link rel="stylesheet" href="style.css?v=2.0">
+<link rel="stylesheet" href="style.css?v=3.1">
 </head>
 <body>
 <div class="screen">
@@ -15,11 +15,6 @@
         <div class="topbar-title" id="header-title">叫号系统</div>
         <div class="topbar-sub" id="header-subtitle"></div>
       </div>
-    </div>
-    <div class="topbar-modes" id="topbar-modes">
-      <button class="mode-icon mode-icon-full active" data-mode="full" title="大屏模式">🖥</button>
-      <button class="mode-icon mode-icon-ipad" data-mode="ipad" title="iPad叫号">📋</button>
-      <button class="mode-icon mode-icon-mobile" data-mode="mobile" title="手机模式">📱</button>
     </div>
     <div class="topbar-right">
       <div class="topbar-date" id="clock-date">--</div>
@@ -93,7 +88,7 @@
       </div>
     </main>
   </div>
-  <footer class="bottombar"><span class="bottombar-dot" id="status-dot"></span><span id="status-text">连接中...</span><span class="bottombar-refresh">刷新 · <span id="countdown">5</span>s</span><span class="bottombar-actions"><a href="/report" class="bottombar-btn" title="报表">📊</a><a href="/admin" class="bottombar-btn" title="后台">⚙</a><button class="bottombar-btn" title="全屏" onclick="document.documentElement.requestFullscreen().catch(()=>{})">⛶</button></span><span class="bottombar-version" id="version-text"></span></footer>
+  <footer class="bottombar"><span class="bottombar-dot" id="status-dot"></span><span id="status-text">连接中...</span><span class="bottombar-refresh">刷新 · <span id="countdown">5</span>s</span><span class="bottombar-actions"><button class="mode-icon mode-icon-full active" data-mode="full" title="大屏模式">🖥</button><button class="mode-icon mode-icon-ipad" data-mode="ipad" title="iPad叫号">📋</button><button class="mode-icon mode-icon-mobile" data-mode="mobile" title="手机模式">📱</button><a href="/report" class="bottombar-btn" title="报表">📊</a><a href="/admin" class="bottombar-btn" title="后台">⚙</a><button class="bottombar-btn" title="全屏" onclick="document.documentElement.requestFullscreen().catch(()=>{})">⛶</button></span><span class="bottombar-version" id="version-text"></span></footer>
 </div>
 
 <div id="signin-dialog" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:200;align-items:center;justify-content:center;">
@@ -148,6 +143,6 @@
 </div>
 
 
-<script src="app.js?v=2.0"></script>
+<script src="app.js?v=3.0"></script>
 </body>
 </html>
