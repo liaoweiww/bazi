@@ -75,8 +75,9 @@ function tpl(t,vars){let s=t||'';if(vars)for(let k in vars)s=s.replace(new RegEx
 async function fd(){try{let r=await fetch('/api/signins');if(!r.ok)throw new Error();rd(await r.json());ss(true);}catch(e){ss(false);}}
 function ss(ok){$('status-dot').className='bottombar-dot '+(ok?'online':'offline');$('status-text').textContent=ok?'实时连接':'连接断开';}
 
-async function us(seq,loc,status,recalled){
+async function us(seq,loc,status,recalled,voiceText){
   let b={seq,loc,_set_status:status,name:''};if(recalled!==undefined)b._recalled=recalled;
+  if(voiceText)b._peer_voice=voiceText;
   try{await fetch('/api/update_record',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});}catch(e){}
   for(let r of recs){if(r.seq===seq&&r.location===loc){r.status=status;if(recalled!==undefined)r._recalled=recalled;break;}}
 }
@@ -91,25 +92,28 @@ window.callNext=async function(){
   let w=[...recs].filter(r=>!['已叫号','已过号','已完成'].includes(r.status||'')).sort((a,b)=>a.sign_time.localeCompare(b.sign_time));
   if(!w.length){ cur=null; justCleared=true; rcd(); rd(recs); return; }
   let p=w[0], rc=(p._recalled||0)+1;
-  await us(p.seq,p.location,'已叫号',rc);
+  let vt=rc>1?tpl(vTpl.recall_nth||'第{n}次叫号，请{name}嘉宾到检测室',{n:rc,name:p.name}):tpl(vTpl.call||'有请{name}嘉宾到检测室',{name:p.name});
+  await us(p.seq,p.location,'已叫号',rc,vt);
   cur=p; justCleared=false; p._recalled=rc; p.status='已叫号'; ucd(p);
-  spk(rc>1?tpl(vTpl.recall_nth||'第{n}次叫号，请{name}嘉宾到检测室',{n:rc,name:p.name}):tpl(vTpl.call||'有请{name}嘉宾到检测室',{name:p.name}));
+  spk(vt);
   rd(recs);
 };
 
 // 已完成：立即清屏
 window.markDone=async function(){
   if(!cur){alert('没有正在叫号的人员');return;}
-  cur.status='已完成'; await us(cur.seq,cur.location,'已完成');
-  spk(tpl(vTpl.done||'{name}嘉宾检测完毕',{name:cur.name}));
+  let vt=tpl(vTpl.done||'{name}嘉宾检测完毕',{name:cur.name});
+  cur.status='已完成'; await us(cur.seq,cur.location,'已完成',undefined,vt);
+  spk(vt);
   cur=null; justCleared=true; rcd(); rd(recs);
 };
 
 // 过号：立即清屏
 window.markPass=async function(){
   if(!cur){alert('没有正在叫号的人员');return;}
-  cur.status='已过号'; await us(cur.seq,cur.location,'已过号');
-  spk(tpl(vTpl.pass||'过号，请{name}稍后重新叫号',{name:cur.name}));
+  let vt=tpl(vTpl.pass||'过号，请{name}稍后重新叫号',{name:cur.name});
+  cur.status='已过号'; await us(cur.seq,cur.location,'已过号',undefined,vt);
+  spk(vt);
   cur=null; justCleared=true; rcd(); rd(recs);
 };
 
@@ -119,13 +123,16 @@ window.reCall=async function(){
     let cs=recs.filter(r=>['已过号','已叫号'].includes(r.status||''));
     if(!cs.length){alert('没有可重叫的人员');return;}
     let p=cs.sort((a,b)=>b.sign_time.localeCompare(a.sign_time))[0], rc=(p._recalled||0)+1;
-    await us(p.seq,p.location,'已叫号',rc);
+    let vt=tpl(vTpl.call||'有请{name}嘉宾到检测室',{name:p.name});
+    await us(p.seq,p.location,'已叫号',rc,vt);
     cur=p; justCleared=false; p.status='已叫号'; p._recalled=rc; ucd(p);
-    spk(tpl(vTpl.call||'有请{name}嘉宾到检测室',{name:p.name})); rd(recs); return;
+    spk(vt); rd(recs); return;
   }
-  let rc=(cur._recalled||0)+1; await us(cur.seq,cur.location,'已叫号',rc);
+  let rc=(cur._recalled||0)+1;
+  let vt=tpl(vTpl.recall||'再次叫号，请{name}嘉宾到检测室',{name:cur.name});
+  await us(cur.seq,cur.location,'已叫号',rc,vt);
   cur._recalled=rc; ucd(cur);
-  spk(tpl(vTpl.recall||'再次叫号，请{name}嘉宾到检测室',{name:cur.name})); rd(recs);
+  spk(vt); rd(recs);
 };
 
 // 从历史列表指定叫号
@@ -135,9 +142,11 @@ window.callSpecific=async function(seq,loc){
     cur.status='已完成'; await us(cur.seq,cur.location,'已完成');
   }
   let p=recs.find(r=>r.seq===seq&&r.location===loc); if(!p) return;
-  let rc=(p._recalled||0)+1; await us(seq,loc,'已叫号',rc);
+  let rc=(p._recalled||0)+1;
+  let vt=rc>1?tpl(vTpl.recall_nth||'第{n}次叫号，请{name}嘉宾到检测室',{n:rc,name:p.name}):tpl(vTpl.call||'有请{name}嘉宾到检测室',{name:p.name});
+  await us(seq,loc,'已叫号',rc,vt);
   cur=p; justCleared=false; p.status='已叫号'; p._recalled=rc; ucd(p);
-  spk(rc>1?tpl(vTpl.recall_nth||'第{n}次叫号，请{name}嘉宾到检测室',{n:rc,name:p.name}):tpl(vTpl.call||'有请{name}嘉宾到检测室',{name:p.name})); rd(recs);
+  spk(vt); rd(recs);
 };
 
 function ucd(p){$('calling-num').textContent=String(p.seq).padStart(2,'0');$('calling-name').textContent=p.name;
@@ -148,7 +157,13 @@ function rd(data){
   recs=data;let dd=cfg.display||{},srt=[...data].sort((a,b)=>a.sign_time.localeCompare(b.sign_time));
   let wt=srt.filter(r=>!['已叫号','已过号','已完成'].includes(r.status||'')&&wm(r.sign_time)<O);
   let hy=srt.filter(r=>['已叫号','已过号','已完成'].includes(r.status||'')||wm(r.sign_time)>=O);
-  if(!cur&&!justCleared&&hy.length){let lt=hy.filter(r=>r.status==='已叫号').sort((a,b)=>b.sign_time.localeCompare(a.sign_time))[0];if(lt)cur=lt;}
+  // 同步当前叫号状态：如果对方已完成/过号则清屏，否则恢复叫号卡片
+  if(cur){
+    let f=recs.find(r=>r.seq===cur.seq&&r.location===cur.location);
+    if(!f||f.status!=='已叫号'){cur=null;rcd();}
+    else cur=f;
+  }
+  if(!cur&&!justCleared&&hy.length){let lt=hy.filter(r=>r.status==='已叫号').sort((a,b)=>b.sign_time.localeCompare(a.sign_time))[0];if(lt){cur=lt;ucd(cur);}}
   let td=new Date().toISOString().slice(0,10);
   $('stat-today').textContent=data.filter(r=>r.sign_time.startsWith(td)).length;
   $('stat-waiting').textContent=wt.length;$('stat-done').textContent=data.filter(r=>r.status==='已完成').length;
@@ -205,14 +220,16 @@ function rr(tid,rows,dd,sb){
 	    if(!(await cfConfirm('确定将该已完成人员恢复到等待队列？'))) return;
 	  }
 	  let now=new Date().toISOString().replace('T',' ').slice(0,19);
+	  var rn='';
+	  for(let r of recs){if(String(r.seq)===String(seq)&&(r.location||'')===(loc||'')){rn=r.name;break;}}
+	  let vt=rn?tpl(vTpl.restore||'{name}已恢复到等待队列',{name:rn}):'';
 	  try{
-	    await fetch('/api/restore_record',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({seq:seq,location:loc||''})});
+	    await fetch('/api/restore_record',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({seq:seq,location:loc||'',_peer_voice:vt})});
 	  }catch(e){}
 	  // 本地同步：重置状态+时间，等钟从0开始
-	  var rn='';
-	  for(let r of recs){if(String(r.seq)===String(seq)&&(r.location||'')===(loc||'')){r.status='等待中';r.sign_time=now;rn=r.name;break;}}
+	  for(let r of recs){if(String(r.seq)===String(seq)&&(r.location||'')===(loc||'')){r.status='等待中';r.sign_time=now;break;}}
 	  rd(recs);
-	  if(rn)spk(tpl(vTpl.restore||'{name}已恢复到等待队列',{name:rn}));
+	  if(vt)spk(vt);
 	  var wt=$('table-waiting'); if(wt)wt.scrollIntoView({behavior:'smooth',block:'start'});
 	};
 
@@ -298,33 +315,66 @@ window.verifyAdmin=function(msg){return new Promise(function(resolve){window._pw
 document.addEventListener('keydown',function(e){if(e.key==='Enter'&&$('pw-dialog').style.display==='flex')pwDlg(true);});
 
 // ===== 系统监控面板 =====
-	let monitorExpanded = false;
+	var monitorExpanded = false;
 	window.toggleMonitor = function(){
 		monitorExpanded = !monitorExpanded;
-		$('monitor-panel').classList.toggle('expanded', monitorExpanded);
+		var p = document.getElementById('monitor-panel'); if(p) p.classList.toggle('expanded', monitorExpanded);
+		var a = document.getElementById('mon-arrow'); if(a) a.textContent = monitorExpanded ? '▼' : '▶';
+		var b = document.getElementById('monitor-body'); if(b) b.style.display = monitorExpanded ? 'block' : 'none';
 	};
 	async function fetchMonitor(){
 		try{
-			let r = await fetch('/api/monitor');
+			var r = await fetch('/api/monitor');
 			if(!r.ok) return;
-			let d = await r.json();
-			let cr = d.card_reader || {};
-			let dot = $('mon-card-dot'), status = $('mon-card-status');
-			dot.className = 'monitor-dot ' + (cr.online ? 'online' : 'idle');
-			if(cr.online){
-				status.textContent = cr.total_reads + '次' + (cr.last_name ? ' · '+cr.last_name : '');
-			}else{
-				status.textContent = '离线';
+			var d = await r.json();
+				var ve = document.getElementById('version-text');
+				if(ve && d.version) ve.textContent = d.version;
+			var cr = d.card_reader || {};
+			// 读卡器状态
+			var dot = document.getElementById('mon-card-dot');
+			var st = document.getElementById('mon-card-status');
+			if(dot && st){
+				if(!cr.enabled){
+					dot.className = 'monitor-dot sync-local';
+					st.textContent = '未启用（同步终端）';
+				}else if(cr.online){
+					dot.className = 'monitor-dot online';
+					st.textContent = cr.total_reads+'次'+(cr.last_name?' · '+cr.last_name:'');
+				}else{
+					dot.className = 'monitor-dot offline';
+					st.textContent = '读卡器离线';
+				}
 			}
-			let xl = d.excel_dir || {};
-			$('mon-excel-count').textContent = (xl.files||[]).length + '文件';
-			let ul = $('mon-file-list');
-			if(xl.files && xl.files.length){
-				ul.innerHTML = xl.files.map(f =>
-					'<li><a href="/api/excel/view/'+encodeURIComponent(f.name)+'" target="_blank" style="color:var(--accent);text-decoration:none;cursor:pointer">'+eh2(f.name)+'</a><span>'+f.size_kb+'KB · '+f.modified+'</span></li>'
-				).join('');
-			}else{
-				ul.innerHTML = '<li>暂无文件</li>';
+			if(st) st.textContent = cr.online ? (cr.total_reads+'次'+(cr.last_name?' · '+cr.last_name:'')) : '离线';
+			// 同步状态
+			var sd = d.sync || {};
+			var sdot = document.getElementById('mon-sync-dot');
+			var sst = document.getElementById('mon-sync-status');
+			var sic = document.getElementById('mon-sync-icon');
+			if(sdot && sst){
+				if(sd.enabled){
+					sdot.className = 'monitor-dot online';
+					if(sic) sic.textContent = '☁️';
+					sst.textContent = sd.provider + ' · 多机同步';
+				}else{
+					sdot.className = 'monitor-dot sync-local';
+					if(sic) sic.textContent = '💻';
+					sst.textContent = '仅本机存储';
+				}
+			}
+			// 文件
+			var xl = d.excel_dir || {};
+			var cnt = document.getElementById('mon-excel-count');
+			if(cnt) cnt.textContent = (xl.files||[]).length + ' 个文件';
+			var ul = document.getElementById('mon-file-list');
+			if(ul){
+				if(xl.files && xl.files.length){
+					ul.innerHTML = xl.files.map(function(f){
+						return '<li><a href="/api/excel/view/'+encodeURIComponent(f.name)+'" target="_blank" class="mon-file-link">'+eh2(f.name)+'</a><span>'+f.size_kb+'KB · '+f.modified+'</span></li>';
+					}).join('');
+				}else{
+					ul.innerHTML = '<li class="mon-file-empty">暂无数据文件</li>';
+				}
 			}
 		}catch(e){}
 	}
@@ -335,5 +385,6 @@ window._cfResolve=null;
 window.cfDlg=function(ok){$('confirm-dialog').style.display='none';if(window._cfResolve)window._cfResolve(ok);};
 window.cfConfirm=function(msg){return new Promise(function(resolve){window._cfResolve=resolve;$('confirm-msg').textContent=msg;$('confirm-dialog').style.display='flex';});};
 
-	(async()=>{await ls();fd();fetchMonitor();dtAttach('table-waiting');setInterval(lp,R*1000);setInterval(async()=>{await ls();},30000);setInterval(fetchMonitor,15000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)lp();});})();
+	async function pv(){try{let r=await fetch('/api/pending-voice');let d=await r.json();if(d.ok&&d.text){spk(d.text);if(d.card&&d.card.name){cur=d.card;ucd(cur);justCleared=false;}}}catch(e){}}
+	(async()=>{await ls();fd();fetchMonitor();dtAttach('table-waiting');setInterval(lp,R*1000);setInterval(pv,2000);setInterval(async()=>{await ls();},30000);setInterval(fetchMonitor,15000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)lp();});})();
 })();

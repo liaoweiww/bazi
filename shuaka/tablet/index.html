@@ -45,9 +45,27 @@
       </div>
       <button class="btn-signin-hero" onclick="showSigninDialog()">＋ 签到登记</button>
       <div class="monitor-panel" id="monitor-panel" onclick="toggleMonitor()">
-        <span class="monitor-item"><span class="monitor-dot idle" id="mon-card-dot"></span><span>读卡器</span><span class="monitor-val" id="mon-card-status">--</span></span>
-        <span class="monitor-item">📂 <span class="monitor-val" id="mon-excel-count">--</span></span>
-        <div class="monitor-files" id="monitor-files"><details><summary>📁 同步文件</summary><ul id="mon-file-list"></ul></details></div>
+        <div class="monitor-header"><span class="monitor-title">📡 系统状态</span><span class="monitor-arrow" id="mon-arrow">▶</span></div>
+        <div class="monitor-body" id="monitor-body">
+          <div class="monitor-row">
+            <span class="monitor-dot idle" id="mon-card-dot"></span>
+            <span class="monitor-icon">🪪</span>
+            <span class="monitor-label">读卡器</span>
+            <span class="monitor-val" id="mon-card-status">--</span>
+          </div>
+          <div class="monitor-row">
+            <span class="monitor-dot sync-off" id="mon-sync-dot"></span>
+            <span class="monitor-icon" id="mon-sync-icon">💻</span>
+            <span class="monitor-label">数据同步</span>
+            <span class="monitor-val" id="mon-sync-status">--</span>
+          </div>
+          <div class="monitor-row monitor-file-row">
+            <span class="monitor-icon">📂</span>
+            <span class="monitor-label">数据文件</span>
+            <span class="monitor-val" id="mon-excel-count">--</span>
+          </div>
+          <div class="monitor-files" id="monitor-files"><ul id="mon-file-list"></ul></div>
+        </div>
       </div>
       <div class="stats-mini">
         <div class="stat-mini"><div class="stat-mini-icon">👥</div><div class="stat-mini-info"><div class="stat-mini-val" id="stat-today">0</div><div class="stat-mini-lbl">今日</div></div></div>
@@ -75,7 +93,7 @@
       </div>
     </main>
   </div>
-  <footer class="bottombar"><span class="bottombar-dot" id="status-dot"></span><span id="status-text">连接中...</span><span class="bottombar-refresh">刷新 · <span id="countdown">5</span>s</span></footer>
+  <footer class="bottombar"><span class="bottombar-dot" id="status-dot"></span><span id="status-text">连接中...</span><span class="bottombar-refresh">刷新 · <span id="countdown">5</span>s</span><span class="bottombar-actions"><a href="/report" class="bottombar-btn" title="报表">📊</a><a href="/admin" class="bottombar-btn" title="后台">⚙</a><button class="bottombar-btn" title="全屏" onclick="document.documentElement.requestFullscreen().catch(()=>{})">⛶</button></span><span class="bottombar-version" id="version-text"></span></footer>
 </div>
 
 <div id="signin-dialog" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:200;align-items:center;justify-content:center;">
@@ -129,9 +147,6 @@
   </div>
 </div>
 
-<a href="/report" class="float-btn float-report" title="报表">📊</a>
-<a href="/admin" class="float-btn float-admin" title="后台">⚙</a>
-<button class="float-btn float-fs" title="全屏" onclick="document.documentElement.requestFullscreen().catch(()=>{})">⛶</button>
 
 <script src="app.js?v=2.0"></script>
 </body>

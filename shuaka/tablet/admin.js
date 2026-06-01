@@ -126,6 +126,9 @@
     const marqueeTab = document.querySelector('[data-tab="marquee"]');
     if (marqueeTab) marqueeTab.addEventListener('click', loadMarquees);
 
+    const syncTab = document.querySelector('[data-tab="sync"]');
+    if (syncTab) syncTab.addEventListener('click', loadSyncSettings);
+
     // 光晕强度滑块标签
     const glowSlider = document.getElementById('cfg-glow-intensity');
     if (glowSlider) {
@@ -350,12 +353,15 @@
     if (locDP && d.location) locDP.value = d.location;
     const logoUrl = d.logo_url || '';
     document.getElementById('btn-crop-logo').style.display = logoUrl ? '' : 'none';
+    // 加载自定义数据路径
+    var dpEl = document.getElementById('cfg-data-path');
+    if (dpEl) dpEl.value = s.data_path || '';
   }
 
   function collectSettingsFromForm() {
     const d = currentSettings.display || {}, v = currentSettings.voice || {}, t = currentSettings.timer || {};
     d.title = getVal('cfg-title') || '签到叫号大屏';
-    d.location = getVal('cfg-location-input');
+    d.location = getVal('cfg-location-input') || getVal('cfg-location');
     d.subtitle = getVal('cfg-subtitle');
     d.font_scale = getVal('cfg-font-scale');
     d.refresh_interval = parseInt(getVal('cfg-refresh')) || 5;
@@ -410,6 +416,157 @@
   function getVal(id) { const el = document.getElementById(id); return el ? el.value.trim() : ''; }
   function setChecked(id, v) { const el = document.getElementById(id); if (el) el.checked = v; }
   function isChecked(id) { const el = document.getElementById(id); return el ? el.checked : false; }
+
+  // ========== 自定义数据路径 + 文件夹选择器 ==========
+
+  var _fpSelected = '';
+  window._loadDataPath = function(s) {
+    var el = document.getElementById('cfg-data-path');
+    if (el) el.value = s.data_path || '';
+  };
+
+  window.openFolderPicker = function() {
+    var existing = document.getElementById('folder-picker-overlay');
+    if (existing) { existing.remove(); return; }
+    var overlay = document.createElement('div');
+    overlay.id = 'folder-picker-overlay';
+    overlay.innerHTML =
+      '<div id="folder-picker">' +
+      '<div class="fp-hd">' +
+        '<input id="fp-path" readonly>' +
+        '<button onclick="navigateFolder(document.getElementById(\'fp-path\').value+\'/..\')" title="上级目录">⬆</button>' +
+        '<button onclick="document.getElementById(\'folder-picker-overlay\').remove()" title="关闭">✕</button>' +
+      '</div>' +
+      '<div class="fp-list" id="fp-list">加载中...</div>' +
+      '<div class="fp-ft">' +
+        '<button onclick="document.getElementById(\'folder-picker-overlay\').remove()" style="background:var(--admin-bg);color:var(--text);border:1px solid var(--border);">取消</button>' +
+        '<button id="fp-confirm" onclick="confirmFolder()" style="background:var(--primary);color:#fff;border:none;">选择此目录</button>' +
+      '</div>' +
+      '</div>';
+    overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
+    document.body.appendChild(overlay);
+    navigateFolder('');
+  };
+
+  window.navigateFolder = async function(path) {
+    var list = document.getElementById('fp-list');
+    var input = document.getElementById('fp-path');
+    if (!list || !input) return;
+    list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-secondary);">加载中...</div>';
+    try {
+      var resp = await fetch('/api/browse-dirs?path=' + encodeURIComponent(path || ''));
+      var data = await resp.json();
+      if (!data.ok) { list.innerHTML = '<div style="padding:20px;color:var(--danger);">' + (data.error || 'Error') + '</div>'; return; }
+      input.value = data.path;
+      _fpSelected = data.path;
+      list.innerHTML = '';
+      (data.items || []).forEach(function(item) {
+        var div = document.createElement('div');
+        div.className = 'fp-item';
+        div.textContent = (item.type === 'parent' ? '📁 ..' : '📁 ') + item.name;
+        div.addEventListener('click', function() { navigateFolder(item.path); });
+        list.appendChild(div);
+      });
+      var cfm = document.getElementById('fp-confirm');
+      if (cfm) cfm.textContent = '选择: ' + (data.path || '/');
+    } catch(e) {
+      list.innerHTML = '<div style="padding:20px;color:var(--danger);">网络错误</div>';
+    }
+  };
+
+  window.confirmFolder = function() {
+    var el = document.getElementById('cfg-data-path');
+    if (el) el.value = _fpSelected;
+    document.getElementById('folder-picker-overlay').remove();
+  };
+
+  window.saveDataPath = async function() {
+    var el = document.getElementById('cfg-data-path');
+    if (!el) return;
+    var path = el.value.trim();
+    var btn = document.querySelector('#panel-data button.btn-primary');
+    var origText = btn ? btn.textContent : '';
+
+    // Step 1: Validate path
+    try {
+      var vResp = await fetch('/api/validate-data-path?path=' + encodeURIComponent(path));
+      var vData = await vResp.json();
+      if (!vData.ok || vData.status === 'invalid') {
+        showToast(vData.message || '路径无效', 'error'); return;
+      }
+      if (vData.status === 'missing') {
+        var create = await showConfirm(
+          '目录不存在',
+          '是否在以下位置创建数据目录结构？\n\n' + path
+        );
+        if (!create) return;
+        var cResp = await fetch('/api/create-data-dirs', {
+          method: 'POST', headers: authHeaders(),
+          body: JSON.stringify({ path: path })
+        });
+        var cData = await cResp.json();
+        if (!cData.ok) { showToast(cData.error || '创建失败', 'error'); return; }
+        showToast('目录已创建', 'ok');
+      } else if (vData.status === 'empty') {
+        var createEmpty = await showConfirm(
+          '暂无签到数据',
+          '该目录下没有找到签到数据文件，是否创建初始数据文件？\n\n' + path
+        );
+        if (createEmpty) {
+          await fetch('/api/create-data-dirs', {
+            method: 'POST', headers: authHeaders(),
+            body: JSON.stringify({ path: path })
+          });
+          showToast('初始文件已创建', 'ok');
+        }
+      }
+      // Step 2: Save settings
+      var resp = await fetch('/api/settings', {
+        method: 'POST', headers: authHeaders(),
+        body: JSON.stringify({ data_path: path })
+      });
+      var data = await resp.json();
+      if (data.ok) {
+        if (btn) { btn.textContent = '✓ 已保存，5秒后刷新...'; btn.style.background = 'var(--success)'; }
+        try { await fetch('/api/restart', { method: 'POST', headers: authHeaders() }); } catch(e) {}
+        setTimeout(function() { if (btn) { btn.textContent = '💾 保存并重启'; btn.style.background = ''; } }, 5000);
+      } else {
+        if (btn) { btn.textContent = '✗ 失败'; btn.style.background = 'var(--danger)'; }
+        setTimeout(function() { if (btn) { btn.textContent = '💾 保存并重启'; btn.style.background = ''; } }, 2000);
+      }
+    } catch(e) {
+      if (btn) { btn.textContent = '✗ 网络错误'; btn.style.background = 'var(--danger)'; }
+      setTimeout(function() { if (btn) { btn.textContent = '💾 保存并重启'; btn.style.background = ''; } }, 2000);
+    }
+  };
+
+  // Simple confirm dialog
+  function showConfirm(title, msg) {
+    return new Promise(function(resolve) {
+      var ov = document.createElement('div');
+      ov.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.55);z-index:9999;display:flex;align-items:center;justify-content:center;';
+      var dlg = document.createElement('div');
+      dlg.style.cssText = 'background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);border-radius:12px;padding:24px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.4);';
+      dlg.innerHTML = '<h3 style="margin:0 0 8px;color:var(--text);font-size:1.05rem;">' + title + '</h3>' +
+        '<p style="margin:0 0 20px;color:var(--text-secondary,#6b7280);font-size:0.9rem;white-space:pre-wrap;word-break:break-all;">' + msg + '</p>' +
+        '<div style="display:flex;justify-content:flex-end;gap:8px;">' +
+        '<button id="_dlg-cancel" style="padding:6px 16px;border:1px solid var(--border);border-radius:6px;background:var(--admin-bg);color:var(--text);cursor:pointer;">取消</button>' +
+        '<button id="_dlg-ok" style="padding:6px 16px;border:none;border-radius:6px;background:var(--primary,#3b82f6);color:#fff;cursor:pointer;">确认创建</button>' +
+        '</div>';
+      ov.appendChild(dlg); document.body.appendChild(ov);
+      document.getElementById('_dlg-ok').onclick = function() { ov.remove(); resolve(true); };
+      document.getElementById('_dlg-cancel').onclick = function() { ov.remove(); resolve(false); };
+      ov.addEventListener('click', function(e) { if (e.target === ov) { ov.remove(); resolve(false); } });
+    });
+  }
+
+  function showToast(msg, type) {
+    var t = document.createElement('div');
+    t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:10px 24px;border-radius:8px;z-index:9999;font-size:0.9rem;color:#fff;' +
+      (type === 'ok' ? 'background:#22c55e;' : 'background:#ef4444;');
+    t.textContent = msg; document.body.appendChild(t);
+    setTimeout(function() { t.remove(); }, 2500);
+  }
 
   // ========== 保存设置 ==========
 
@@ -482,6 +639,59 @@
         if(dirEl)dirEl.value=(md.excel_dir&&md.excel_dir.path)||dirEl.value;
       var locInp=document.getElementById('cfg-location-input');
       if(locInp&&!locInp.value&&statsData.location)locInp.value=statsData.location;
+      // 同步状态
+      var syncDot=document.getElementById('sync-dot');
+      var syncText=document.getElementById('sync-text');
+      var syncItems=document.getElementById('sync-items');
+      var roleEl=document.getElementById('machine-role');
+      var cardStatusEl=document.getElementById('card-reader-status');
+      var multiSyncEl=document.getElementById('multi-sync-status');
+      var cr = md.card_reader || {};
+      if(syncDot&&md.sync){
+        if(md.sync.enabled){
+          syncDot.style.background='#22c55e';syncDot.style.boxShadow='0 0 8px #22c55e';
+          syncText.textContent='多机同步已启用 · '+md.sync.provider;
+          syncItems.textContent='共享：'+(md.sync.shared_items||[]).join(' · ');
+          syncText.style.color='#22c55e';
+        }else{
+          syncDot.style.background='#f59e0b';syncDot.style.boxShadow='0 0 6px #f59e0b';
+          syncText.textContent='仅本机存储 · 未检测到同步目录';
+          syncItems.textContent='安装百度网盘并开启同步即可多机共享';
+          syncText.style.color='#f59e0b';
+        }
+      }
+      // 多机联动状态
+      if(multiSyncEl){
+        try{
+          var ssResp=await fetch('/api/sync-status');
+          var ss=await ssResp.json();
+          multiSyncEl.textContent='联动中 · ID:'+ss.machine_id+(ss.pending_events>0?' · 待处理:'+ss.pending_events:'');
+          multiSyncEl.style.color=ss.pending_events>0?'#f59e0b':'#22c55e';
+        }catch(e){}
+      }
+      // 本机角色 + 读卡器状态
+      if(roleEl){
+        if(cr.enabled){
+          roleEl.textContent = '🟢 刷卡主机'; roleEl.style.color='#22c55e';
+          if(cardStatusEl) cardStatusEl.textContent = cr.online ? '· 读卡器在线' : '· 读卡器待连接';
+        }else{
+          roleEl.textContent = '🔵 同步终端'; roleEl.style.color='#3b82f6';
+          if(cardStatusEl) cardStatusEl.textContent = '· 仅手动签到';
+        }
+      }
+      // 按钮状态
+      var hostBtn = document.getElementById('btn-card-host');
+      var termBtn = document.getElementById('btn-card-terminal');
+      var roleText = document.getElementById('machine-role-text');
+      if(hostBtn&&termBtn){
+        if(cr.enabled){
+          hostBtn.style.background='#22c55e';termBtn.style.background='';
+          if(roleText)roleText.textContent='刷卡主机';
+        }else{
+          hostBtn.style.background='';termBtn.style.background='#3b82f6';
+          if(roleText)roleText.textContent='同步终端';
+        }
+      }
       }catch(e){}
     } catch(e){}
     if(typeof loadPeople==='function')loadPeople();
@@ -539,7 +749,6 @@
   window.addUser = _addUser;
   window.deleteUser = _deleteUser;
   window._deleteUser = _deleteUser;
-  window._changePwd = _changePwd;
   window._changePwd = async function() {
     var u = document.getElementById('pwd-user')?.value?.trim();
     var p = document.getElementById('pwd-new')?.value?.trim();
@@ -964,6 +1173,164 @@
       }
     } catch(e) { alert('保存失败'); }
   };
+
+  // ========== 百度云同步设置 ==========
+
+  async function loadSyncSettings() {
+    try {
+      var resp = await fetch('/api/monitor', { headers: authHeaders() });
+      var data = await resp.json();
+      var dirInput = document.getElementById('cfg-sync-dir');
+      var statusEl = document.getElementById('sync-dir-status');
+      var pathDisplay = document.getElementById('sync-path-display');
+      var syncDir = (data.sync && data.sync.data_dir) || '';
+      if (dirInput) dirInput.value = syncDir;
+      if (pathDisplay) pathDisplay.textContent = syncDir;
+      if (statusEl) {
+        if (syncDir) {
+          statusEl.innerHTML = '✅ 数据统一存储在此目录，将百度云同步文件夹指向这里即可';
+          statusEl.style.color = '#22c55e';
+        } else {
+          statusEl.innerHTML = '⚠️ 同步目录未就绪';
+          statusEl.style.color = '#f59e0b';
+        }
+      }
+    } catch(e) {}
+  }
+
+  window.saveMachineCfg = async function(enabled) {
+    try {
+      var resp = await fetch('/api/machine-settings', {
+        method: 'POST', headers: authHeaders(),
+        body: JSON.stringify({ card_reader: { enabled: !!enabled } })
+      });
+      var data = await resp.json();
+      if (data.ok) {
+        var roleEl = document.getElementById('machine-role');
+        var cardStatusEl = document.getElementById('card-reader-status');
+        var roleText = document.getElementById('machine-role-text');
+        var hostBtn = document.getElementById('btn-card-host');
+        var termBtn = document.getElementById('btn-card-terminal');
+        if (enabled) {
+          if(roleEl){roleEl.textContent='🟢 刷卡主机';roleEl.style.color='#22c55e';}
+          if(cardStatusEl)cardStatusEl.textContent='· 重启中...';
+          if(roleText)roleText.textContent='刷卡主机';
+          if(hostBtn)hostBtn.style.background='#22c55e';
+          if(termBtn)termBtn.style.background='';
+        } else {
+          if(roleEl){roleEl.textContent='🔵 同步终端';roleEl.style.color='#3b82f6';}
+          if(cardStatusEl)cardStatusEl.textContent='· 重启中...';
+          if(roleText)roleText.textContent='同步终端';
+          if(hostBtn)hostBtn.style.background='';
+          if(termBtn)termBtn.style.background='#3b82f6';
+        }
+        // 自动重启服务
+        try {
+          var rr = await fetch('/api/restart', { method: 'POST', headers: authHeaders() });
+          var rd = await rr.json();
+          if (rd.ok) {
+            // 等待3秒后自动刷新
+            setTimeout(function(){ location.reload(); }, 3000);
+          }
+        } catch(e) {}
+      } else {
+        alert(data.error || '保存失败');
+      }
+    } catch(e) { alert('保存失败: ' + e.message); }
+  };
+
+  window.saveReaderMode = async function() {
+    var mode = document.getElementById('cfg-reader-mode');
+    var port = document.getElementById('cfg-com-port');
+    if (!mode) return;
+    try {
+      await fetch('/api/machine-settings', {
+        method: 'POST', headers: authHeaders(),
+        body: JSON.stringify({ card_reader: { reader_mode: mode.value, com_port: (port ? port.value.trim() : '') } })
+      });
+    } catch(e) {}
+  };
+
+  // 加载读卡模式设置
+  (async function loadReaderMode(){
+    try {
+      var resp = await fetch('/api/machine-settings', { headers: authHeaders() });
+      var data = await resp.json();
+      var cr = data.card_reader || {};
+      var modeEl = document.getElementById('cfg-reader-mode');
+      var portEl = document.getElementById('cfg-com-port');
+      if (modeEl && cr.reader_mode) modeEl.value = cr.reader_mode;
+      if (portEl && cr.com_port) portEl.value = cr.com_port;
+    } catch(e) {}
+  })();
+
+  // ====== 授权管理 ======
+  var _licensePeriod = 1;
+  var _licenseUnlocked = false;
+  window._selectPeriod = function(m, el) {
+    _licensePeriod = m;
+    document.querySelectorAll('.license-period').forEach(function(b) { b.classList.remove('active'); });
+    if (el) el.classList.add('active');
+  };
+  window._unlockLicense = function() {
+    var pwd = document.getElementById('license-pwd').value;
+    var errEl = document.getElementById('license-pwd-err');
+    if (pwd === 'liaowei88') {
+      _licenseUnlocked = true;
+      document.getElementById('license-lock').style.display = 'none';
+      document.getElementById('license-main').style.display = '';
+      errEl.style.display = 'none';
+    } else {
+      errEl.textContent = '密码错误';
+      errEl.style.display = '';
+    }
+  };
+  window._genLicense = function() {
+    if (!_licenseUnlocked) { window._unlockLicense(); return; }
+    var mc = document.getElementById('license-machine').value.trim();
+    var resEl = document.getElementById('license-result');
+    var codeEl = document.getElementById('license-code');
+    var infoEl = document.getElementById('license-info');
+    var errEl = document.getElementById('license-err');
+    resEl.style.display = 'none';
+    errEl.style.display = 'none';
+    if (!mc) { errEl.textContent = '请输入目标机器码'; errEl.style.display = ''; return; }
+    var btn = event.target;
+    btn.disabled = true; btn.textContent = '生成中...';
+    fetch('/api/gen-license', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ machine_code: mc, months: _licensePeriod, password: 'liaowei88' })
+    }).then(function(r) { return r.json(); }).then(function(d) {
+      btn.disabled = false; btn.textContent = '生成授权码';
+      if (d.ok) {
+        codeEl.textContent = d.license;
+        infoEl.textContent = '机器码: ' + d.machine_code + '  有效期: ' + d.expiry + ' (' + d.months + '个月)';
+        resEl.style.display = '';
+      } else {
+        errEl.textContent = d.error || '生成失败';
+        errEl.style.display = '';
+      }
+    }).catch(function(e) {
+      btn.disabled = false; btn.textContent = '生成授权码';
+      errEl.textContent = '网络错误: ' + e.message;
+      errEl.style.display = '';
+    });
+  };
+
+  // 切到授权面板时如果锁着就重置密码输入
+  var _origNavClick = function(e) {
+    var n = e.target.closest('.nav-item');
+    if (!n) return;
+    var tab = n.getAttribute('data-tab');
+    if (tab === 'license' && !_licenseUnlocked) {
+      document.getElementById('license-lock').style.display = '';
+      document.getElementById('license-main').style.display = 'none';
+      document.getElementById('license-pwd').value = '';
+      document.getElementById('license-pwd-err').style.display = 'none';
+    }
+  };
+  document.querySelector('.sidebar-nav').addEventListener('click', _origNavClick);
 
   document.addEventListener('DOMContentLoaded', init);
 })();
