@@ -1,5 +1,9 @@
+# Python
 __pycache__/
 *.pyc
-bazi-app/backend/data/bazi.db
+
+# macOS
 .DS_Store
+
+# Claude Code
 skills-lock.json
