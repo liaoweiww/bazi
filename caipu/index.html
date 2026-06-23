@@ -8044,18 +8044,7 @@ async function loadShoplist() {
   }
 }
 
-// 点菜顶部加采购清单入口
-(function addShoplistEntry() {
-  var topbar = document.querySelector('.meal-topbar');
-  if (topbar) {
-    var btn = topbar.querySelector('button');
-    var shopBtn = document.createElement('button');
-    shopBtn.textContent = '🛒 采购清单';
-    shopBtn.onclick = openShoplist;
-    shopBtn.style.cssText = 'background:var(--c-primary)!important;color:#fff!important';
-    topbar.insertBefore(shopBtn, topbar.firstChild);
-  }
-})();
+// 点菜顶部采购清单入口已在 HTML 中，无需动态注入
 
 // ===================== 阶段8：后续功能全部实现 =====================
 
