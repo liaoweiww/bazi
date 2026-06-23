@@ -1435,11 +1435,16 @@ img { max-width: 100%; display: block; }
   min-height: 48px; align-items: center;
 }
 .meal-dish-tag {
-  display: inline-flex; align-items: center; gap: 4px;
-  padding: 5px 12px; background: var(--c-surface);
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 12px 4px 4px; background: var(--c-surface);
   border-radius: var(--radius-xl); font-size: 13px;
   box-shadow: var(--shadow-sm); cursor: pointer;
   transition: all 0.2s; border: 1px solid var(--c-border);
+}
+.meal-dish-tag__thumb {
+  width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 14px; background: var(--c-warm);
 }
 .meal-dish-tag.done { opacity: 0.5; text-decoration: line-through; }
 .meal-empty {
@@ -4720,7 +4725,8 @@ function renderMealSection(type, title, dishes) {
   }
   container.innerHTML = dishes.map((d, i) => `
     <span class="meal-dish-tag${d.done ? ' done' : ''}" onclick="toggleMealDone('${type}',${i})">
-      ${d.emoji || '🍳'} ${d.name}
+      <span class="meal-dish-tag__thumb" style="${d.image ? 'background-image:url('+d.image+');background-size:cover;background-position:center' : ''}">${d.image ? '' : (d.emoji || '🍳')}</span>
+      ${d.name}
       <span style="font-size:10px;color:var(--c-text-light)">${getStars(d.difficulty)}·${d.cook_time || '--'}</span>
       <span onclick="event.stopPropagation();removeMealDish('${type}',${i})" style="cursor:pointer;color:var(--c-danger);margin-left:2px;font-size:14px">×</span>
     </span>
@@ -4900,7 +4906,8 @@ async function renderDayMeals(dateStr) {
       var mt = p.meal_type;
       if (!plans[mt]) plans[mt] = [];
       plans[mt].push({
-        id: p.recipe_id, name: p.recipe_name || p.recipe_id, emoji: '🍳',
+        id: p.recipe_id, name: p.recipe_name || p.recipe_id,
+        image: p.recipe_image || '', emoji: p.recipe_emoji || '🍳',
         difficulty: '3', cook_time: '', done: false
       });
     });
@@ -4918,7 +4925,7 @@ async function renderDayMeals(dateStr) {
     html += '<div style="margin-bottom:6px"><span style="font-size:11px;font-weight:600;color:var(--c-text-secondary)">' + mtLabel[mt] + '</span>';
     html += '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:2px">';
     dishes.forEach(function(d) {
-      html += '<span style="padding:3px 10px;background:var(--c-warm);border-radius:var(--radius-full);font-size:11px">' + (d.emoji||'🍳') + ' ' + d.name + '</span>';
+      html += '<span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px 3px 4px;background:var(--c-warm);border-radius:var(--radius-full);font-size:11px"><span style="width:22px;height:22px;border-radius:50%;flex-shrink:0;' + (d.image ? 'background-image:url('+d.image+');background-size:cover;background-position:center' : 'display:inline-flex;align-items:center;justify-content:center;font-size:12px') + '">' + (d.image ? '' : (d.emoji||'🍳')) + '</span>' + d.name + '</span>';
     });
     html += '</div></div>';
   });
@@ -5581,7 +5588,8 @@ async function loadMealPlans() {
       mealPlansCache[ds] = mealPlansCache[ds] || { breakfast: [], lunch: [], dinner: [] };
       mealPlansCache[ds][p.meal_type] = mealPlansCache[ds][p.meal_type] || [];
       mealPlansCache[ds][p.meal_type].push({
-        id: p.recipe_id, name: p.recipe_name || p.recipe_id, emoji: '🍳',
+        id: p.recipe_id, name: p.recipe_name || p.recipe_id,
+        image: p.recipe_image || '', emoji: p.recipe_emoji || '🍳',
         difficulty: '3', cook_time: '', done: false, plan_id: p.id
       });
     });
@@ -8120,7 +8128,7 @@ function showMealMenuManager() {
         bodyHtml += '<span style="font-size:12px;font-weight:600;color:' + st.color + '">' + st.emoji + ' ' + st.label + '</span>';
         bodyHtml += '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">';
         dishes.forEach(function(d) {
-          bodyHtml += '<span style="font-size:12px;background:var(--c-surface);padding:3px 10px;border-radius:var(--radius-full);border:1px solid var(--c-border);white-space:nowrap">' + (d.emoji||'🍳') + ' ' + d.name + '</span>';
+          bodyHtml += '<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;background:var(--c-surface);padding:3px 10px 3px 4px;border-radius:var(--radius-full);border:1px solid var(--c-border);white-space:nowrap"><span style="width:20px;height:20px;border-radius:50%;flex-shrink:0;' + (d.image ? 'background-image:url('+d.image+');background-size:cover;background-position:center' : 'display:inline-flex;align-items:center;justify-content:center;font-size:11px;background:var(--c-warm)') + '">' + (d.image ? '' : (d.emoji||'🍳')) + '</span>' + d.name + '</span>';
         });
         bodyHtml += '</div></div>';
       });

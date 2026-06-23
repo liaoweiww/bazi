@@ -14,7 +14,7 @@ def list_plans():
     start_date = request.args.get('start_date')
     end_date = request.args.get('end_date')
 
-    sql = "SELECT mp.*, r.name as recipe_name FROM meal_plans mp LEFT JOIN recipes r ON mp.recipe_id = r.id WHERE 1=1"
+    sql = "SELECT mp.*, r.name as recipe_name, r.image as recipe_image, r.emoji as recipe_emoji FROM meal_plans mp LEFT JOIN recipes r ON mp.recipe_id = r.id WHERE 1=1"
     params = []
 
     if tenant_id:
@@ -71,7 +71,7 @@ def week_plan():
     with get_db() as conn:
         cur = conn.cursor()
         cur.execute(
-            "SELECT mp.*, r.name as recipe_name FROM meal_plans mp "
+            "SELECT mp.*, r.name as recipe_name, r.image as recipe_image, r.emoji as recipe_emoji FROM meal_plans mp "
             "LEFT JOIN recipes r ON mp.recipe_id = r.id "
             "WHERE mp.tenant_id = %s AND mp.plan_date >= %s AND mp.plan_date < DATE_ADD(%s, INTERVAL 7 DAY) "
             "ORDER BY mp.plan_date, FIELD(mp.meal_type,'breakfast','lunch','dinner')",
