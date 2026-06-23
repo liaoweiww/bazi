@@ -4803,8 +4803,11 @@ function renderMealSection(type, title, dishes) {
 // ----- 菜品选择弹窗 -----
 function openMealPicker(mealType) {
   currentPickMeal = mealType;
-  pickedRecipes = [];
-  document.getElementById('meal-pick-title').textContent = `添加 · ${mealType === 'breakfast' ? '早餐' : mealType === 'lunch' ? '午餐' : '晚餐'}`;
+  // 预填今日该餐段已有菜品 ID，标记已选
+  var todayPlans = mealPlansCache[mealSelectedDate] || {};
+  var existing = todayPlans[mealType] || [];
+  pickedRecipes = existing.map(function(d) { return d.id; });
+  document.getElementById('meal-pick-title').textContent = `添加 · ${mealType === 'breakfast' ? '早餐' : mealType === 'lunch' ? '午餐' : '晚餐'}${pickedRecipes.length ? '（已选'+pickedRecipes.length+'道）' : ''}`;
 
   let list = recipeData.length ? recipeData : state.recipes;
   if (!list.length) {
@@ -4836,8 +4839,9 @@ function openMealPicker(mealType) {
       html += '<div class="meal-pick-cat" style="border-left:3px solid ' + cc.bar + ';background:' + cc.bg + '">' + (catEmoji[c]||'📋') + ' ' + c + ' (' + items.length + ')</div>';
       html += '<div class="meal-pick-grid">';
       items.forEach(function(r) {
-        html += '<div class="meal-pick-item" onclick="togglePickRecipe(\'' + r.id + '\')">' +
-          '<div class="meal-pick-item__checkbox" id="pick-chk-' + r.id + '">✓</div>' +
+        var isPicked = pickedRecipes.indexOf(r.id) >= 0;
+        html += '<div class="meal-pick-item' + (isPicked ? ' picked' : '') + '" onclick="togglePickRecipe(\'' + r.id + '\')">' +
+          '<div class="meal-pick-item__checkbox' + (isPicked ? ' checked' : '') + '" id="pick-chk-' + r.id + '">✓</div>' +
           '<span class="meal-pick-item__emoji"' + (r.image ? ' style="background-image:url('+r.image+');background-size:cover;background-position:center;font-size:0"' : '') + '>' + (r.image ? '' : (r.emoji || '🍳')) + '</span>' +
           '<div class="meal-pick-item__info">' +
             '<div class="meal-pick-item__name">' + r.name + '</div>' +
@@ -4908,18 +4912,28 @@ function manualMealInput() {
 async function confirmMealPick() {
   const list = recipeData.length ? recipeData : state.recipes;
   const plans = mealPlansCache[mealSelectedDate] = mealPlansCache[mealSelectedDate] || { breakfast: [], lunch: [], dinner: [] };
-  plans[currentPickMeal] = plans[currentPickMeal] || [];
+
+  // 先删掉这个餐段的现有记录（后端+缓存），再全部重新添加
+  var oldDishes = plans[currentPickMeal] || [];
+  for (var od of oldDishes) {
+    if (od.plan_id) {
+      try { await fetch(API_BASE + '/meal-plans/' + od.plan_id, { method: 'DELETE' }); } catch(e) {}
+    }
+  }
+  plans[currentPickMeal] = [];
 
   for (const id of pickedRecipes) {
     const r = list.find(r => r.id === id);
     if (r) {
       plans[currentPickMeal].push({ id: r.id, name: r.name, image: r.image || '', emoji: r.emoji || '🍳', difficulty: r.difficulty, cook_time: r.cook_time, done: false });
-      // 保存到后端
       try {
-        await fetch(`${API_BASE}/meal-plans`, {
+        var res = await fetch(`${API_BASE}/meal-plans`, {
           method: 'POST', headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({ tenant_id: 'test_tenant', plan_date: mealSelectedDate, meal_type: currentPickMeal, recipe_id: r.id, servings: 4, created_by: getUserId() })
         });
+        var data = await res.json();
+        // 把后端分配的 plan_id 回填到缓存
+        if (data.id) plans[currentPickMeal][plans[currentPickMeal].length - 1].plan_id = data.id;
       } catch (e) {}
     }
   }
