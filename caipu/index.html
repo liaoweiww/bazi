@@ -1325,28 +1325,34 @@ img { max-width: 100%; display: block; }
 .meal-calendar__weekdays {
   display: grid; grid-template-columns: repeat(7, 1fr);
   text-align: center; font-size: 11px; color: var(--c-text-light);
-  margin-bottom: 6px;
+  margin-bottom: 0;
+  border-bottom: 1px solid var(--c-border);
+  padding-bottom: 4px;
 }
 .meal-calendar__days {
   display: grid; grid-template-columns: repeat(7, 1fr);
-  gap: 2px;
+  gap: 0; border: 1px solid var(--c-border);
+  border-radius: var(--radius-sm); overflow: hidden;
 }
 .cal-day {
   aspect-ratio: 1; display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  font-size: 13px; font-weight: 500; border-radius: 50%;
+  font-size: 13px; font-weight: 500; border-radius: 0;
   cursor: pointer; transition: all 0.15s; position: relative;
+  border-right: 1px solid var(--c-border);
+  border-bottom: 1px solid var(--c-border);
 }
+.cal-day:nth-child(7n) { border-right: none; }
 .cal-day:hover { background: var(--c-warm); }
-.cal-day.today { background: var(--c-primary-light); border: 2px solid var(--c-primary); font-weight: 700; }
+.cal-day.today { background: var(--c-primary-light); font-weight: 700; }
 .cal-day.other-month { color: var(--c-text-light); }
 .cal-day.weekend { color: #B5453A; background: #FFF0ED; }
 .cal-day.holiday { color: #B5453A; font-weight: 700; position: relative; }
 .cal-day.holiday::after { content: '休'; font-size: 7px; position: absolute; top: 0; right: 2px; color: #B5453A; font-weight: 700; }
-.cal-day.in-week { background: rgba(122,154,126,0.10); box-shadow: inset 0 0 0 2px rgba(122,154,126,0.3); border-radius: 50%; font-weight: 600; color: var(--c-text); }
+.cal-day.in-week { background: rgba(122,154,126,0.10); font-weight: 600; color: var(--c-text); }
 .cal-day.weekend.in-week { background: #FDE8E4; color: #B5453A; }
 .cal-day.selected,
-.cal-day.in-week.selected { background: var(--c-primary); color: #fff; font-weight: 700; box-shadow: 0 0 0 3px rgba(181,69,58,0.3); }
+.cal-day.in-week.selected { background: var(--c-primary); color: #fff; font-weight: 700; }
 .cal-dots { display: flex; gap: 3px; margin-top: 2px; }
 .cal-dot { width: 4px; height: 4px; border-radius: 50%; }
 .cal-dot--breakfast { background: var(--c-secondary); }
