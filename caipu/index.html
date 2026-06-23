@@ -1344,13 +1344,10 @@ img { max-width: 100%; display: block; }
 .cal-day:hover { background: var(--c-warm); }
 .cal-day.today { background: var(--c-primary-light); font-weight: 700; }
 .cal-day.other-month { color: var(--c-text-light); background: var(--c-surface); }
-.cal-day.weekend { color: #B5453A; background: #FDF8F6; }
+.cal-day.weekend { color: #B5453A; background: #FFF0ED; }
 .cal-day.holiday { color: #B5453A; font-weight: 700; position: relative; }
 .cal-day.holiday::after { content: '休'; font-size: 7px; position: absolute; top: 0; right: 2px; color: #B5453A; font-weight: 700; }
-.cal-day.in-week { font-weight: 600; color: var(--c-text); }
-.cal-day.weekend.in-week { color: #B5453A; }
-.cal-day.selected,
-.cal-day.in-week.selected { background: var(--c-primary); color: #fff; font-weight: 700; }
+.cal-day.selected { background: var(--c-primary); color: #fff; font-weight: 700; }
 .cal-dots { display: flex; flex-direction: column; gap: 1px; margin-top: auto; padding-bottom: 3px; align-items: center; }
 .cal-dot { width: 10px; height: 2px; border-radius: 1px; }
 .cal-dot--breakfast { background: #F0C060; }
@@ -4730,12 +4727,8 @@ function renderMonthCalendar() {
   var trailing = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
   for (let i = 0; i < trailing; i++) html += '<div class="cal-day other-month"></div>';
 
-  // 本周范围（今天→6天后）
-  var weekEnd = new Date(now); weekEnd.setDate(now.getDate() + 6);
-  var weekStartStr = todayStr;
-  var weekEndStr = weekEnd.toISOString().split('T')[0];
 
-  // 2026 年中国法定节假日
+// 2026 年中国法定节假日
   var HOLIDAYS_2026 = {
     '2026-01-01': '元旦', '2026-01-28': '除夕', '2026-01-29': '春节', '2026-01-30': '春节', '2026-01-31': '春节',
     '2026-02-01': '春节', '2026-02-02': '春节', '2026-02-03': '春节',
@@ -4760,7 +4753,6 @@ function renderMonthCalendar() {
     const dateStr = `${year}-${String(month + 1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const isToday = dateStr === todayStr;
     const isSel = dateStr === mealSelectedDate;
-    const inWeek = dateStr >= weekStartStr && dateStr <= weekEndStr;
     var dow = (startDow + d - 1) % 7;
     var isWeekend = dow === 0 || dow === 6;
     var holidayName = HOLIDAYS_2026[dateStr] || '';
@@ -4773,7 +4765,6 @@ function renderMonthCalendar() {
     var extraCls = '';
     if (isToday) extraCls += ' today';
     if (isSel) extraCls += ' selected';
-    if (inWeek) extraCls += ' in-week';
     if (ckDay) extraCls += ' checked-in';
     if (holidayName) extraCls += ' holiday';
     else if (isWeekend) extraCls += ' weekend';
