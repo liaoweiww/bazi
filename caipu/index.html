@@ -2190,6 +2190,7 @@ img { max-width: 100%; display: block; }
         </div>
         <input type="file" id="form-image-file" class="img-upload__input" accept="image/*" onchange="handleImagePicked(this)">
         <input class="form-input" type="text" id="form-emoji" placeholder="Emoji 兜底图标，如 🍖" value="🍖" style="margin-top:8px;font-size:13px" oninput="updateEmojiPreview()">
+        <button type="button" onclick="event.stopPropagation();showAIImagePrompt()" style="margin-top:8px;width:100%;padding:10px;background:var(--c-accent);color:#fff;border:none;border-radius:var(--radius-md);font-size:13px;font-weight:600;cursor:pointer">🤖 AI 生成菜品图片</button>
       </div>
       <div class="form-group">
         <label class="form-label">配比基准</label>
@@ -3100,6 +3101,10 @@ function renderRecipes() {
       }
     }).join('');
   }
+  var cards = container.querySelectorAll('.recipe-card--hero, .recipe-card--wide, .recipe-card--normal, .recipe-item');
+  cards.forEach(function(card, i) {
+    card.style.animation = 'cardEnter 0.35s ' + (i * 0.04) + 's var(--ease-spring) both';
+  });
 }
 
 // ----- 菜品详情页 -----
@@ -3264,10 +3269,7 @@ document.getElementById('detail-back').addEventListener('click', () => {
 });
 
 // 绑定详情页分享按钮
-document.getElementById('detail-share').addEventListener('click', function() {
-  var recipe = document.getElementById('detail-overlay')._recipe;
-  if (recipe) showToast('分享功能开发中…长按截图即可分享', 'info');
-});
+// detail-share onclick 由 showRecipePosterPreview 绑定，此处不重复处理
 
 // ----- 待学/拿手菜状态切换 -----
 async function toggleRecipeStatus() {
@@ -3516,6 +3518,71 @@ async function uploadImageAndGetUrl() {
     showToast('图片上传失败: ' + e.message, 'error');
     return formImageUrl || '';
   }
+}
+
+// ----- AI 图片生成 -----
+function showAIImagePrompt() {
+  var name = document.getElementById('form-name').value.trim() || '菜品';
+  var ingredients = '';
+  try {
+    var ingEls = document.querySelectorAll('#form-ingredients-container .ingredient-chip');
+    var names = [];
+    ingEls.forEach(function(el) { names.push(el.textContent.replace(/✕|×|\d+[克斤个勺毫升]/g, '').trim()); });
+    ingredients = names.slice(0, 5).join('、');
+  } catch(e) {}
+  var defaultPrompt = '精致的中式菜品：' + name + (ingredients ? '，食材：' + ingredients : '') + '，美食摄影，暖色调，自然光，白瓷盘，治愈风格';
+
+  var html = '<div style="padding:16px var(--page-px)">';
+  html += '<h3 style="font-family:var(--font-title);font-size:18px;font-weight:700;margin-bottom:4px">🤖 AI 生成菜品图片</h3>';
+  html += '<div style="font-size:12px;color:var(--c-text-secondary);margin-bottom:12px">根据菜名和食材自动生成漫画风图片</div>';
+  html += '<label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">描述提示词</label>';
+  html += '<textarea id="ai-prompt" style="width:100%;padding:10px;border:1px solid var(--c-border);border-radius:var(--radius-md);font-size:13px;min-height:80px;resize:vertical">' + defaultPrompt + '</textarea>';
+  html += '<div style="display:flex;gap:10px;margin-top:12px">';
+  html += '<button id="btn-ai-generate" onclick="generateAIImage()" style="flex:1;padding:12px;background:var(--c-accent);color:#fff;border:none;border-radius:var(--radius-lg);font-size:14px;font-weight:600;cursor:pointer">🎨 生成图片</button>';
+  html += '<button onclick="closeModalSheet()" style="flex:1;padding:12px;background:var(--c-warm);border:none;border-radius:var(--radius-lg);font-size:14px;font-weight:600;cursor:pointer">取消</button>';
+  html += '</div><div id="ai-result" style="margin-top:12px"></div>';
+  html += '</div>';
+  openModalSheet(html);
+}
+
+async function generateAIImage() {
+  var promptEl = document.getElementById('ai-prompt');
+  if (!promptEl) return;
+  var prompt = promptEl.value.trim();
+  if (!prompt) { showToast('请输入描述提示词', 'warn'); return; }
+
+  var btn = document.getElementById('btn-ai-generate');
+  var resultEl = document.getElementById('ai-result');
+  setBtnLoading(btn, true);
+  if (resultEl) resultEl.innerHTML = '<div style="text-align:center;padding:20px;color:var(--c-text-secondary)">⏳ AI 正在生成中…</div>';
+
+  try {
+    var emojiEl = document.getElementById('form-emoji');
+    var emoji = emojiEl ? emojiEl.value : '🍳';
+    var res = await fetchWithRetry('/api/ai/generate-image', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: prompt, emoji: emoji })
+    });
+    var data = await res.json();
+    if (data.url) {
+      formImageUrl = data.url;
+      var preview = document.getElementById('img-preview');
+      if (preview) {
+        preview.style.fontSize = '0';
+        preview.style.backgroundImage = 'url(' + data.url + ')';
+        preview.style.backgroundSize = 'cover';
+        preview.style.backgroundPosition = 'center';
+      }
+      if (resultEl) resultEl.innerHTML = '<div style="text-align:center"><img src="' + data.url + '" style="max-width:100%;border-radius:var(--radius-md);margin-top:8px;box-shadow:var(--shadow-lg)" alt="AI生成图"><div style="font-size:12px;color:var(--c-success);margin-top:4px">✅ 图片已设为菜品图</div></div>';
+      showToast('AI 图片已生成并设为菜品图', 'success');
+    } else {
+      if (resultEl) resultEl.innerHTML = '<div style="color:var(--c-danger);text-align:center">生成失败，请稍后重试</div>';
+    }
+  } catch(e) {
+    if (resultEl) resultEl.innerHTML = '<div style="color:var(--c-danger);text-align:center">网络异常，请稍后重试</div>';
+    showToast('AI 生成失败：' + e.message, 'error');
+  }
+  setBtnLoading(btn, false);
 }
 
 document.getElementById('modal-close').addEventListener('click', () => {
@@ -7064,6 +7131,159 @@ function finalizeExport(canvas) {
   document.body.removeChild(a);
   showToast('家宴图片已导出', 'success');
 }
+
+// ----- 菜谱海报生成 -----
+function generateRecipePoster(recipe) {
+  var W = 1080, H = 1920;
+  var c = document.createElement('canvas');
+  c.width = W; c.height = H;
+  var ctx = c.getContext('2d');
+
+  // 背景：温暖纸色
+  ctx.fillStyle = '#FDFAF5';
+  ctx.fillRect(0, 0, W, H);
+
+  // 装饰顶栏
+  ctx.fillStyle = '#B5453A';
+  ctx.fillRect(0, 0, W, 80);
+  ctx.fillStyle = '#C9A96E';
+  ctx.fillRect(0, 80, W, 2);
+
+  // 标题
+  ctx.fillStyle = '#2C2416';
+  ctx.font = 'bold 56px "Noto Serif SC", "Songti SC", serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(recipe.name || '家传好菜', W / 2, 160);
+
+  // Emoji / 装饰
+  ctx.font = '120px sans-serif';
+  ctx.fillText(recipe.emoji || '🍳', W / 2, 320);
+
+  // 元信息条
+  var infoY = 400;
+  ctx.font = '28px "Noto Sans SC", sans-serif';
+  ctx.fillStyle = '#7A7060';
+  var infoParts = [];
+  if (recipe.difficulty) {
+    var dMap = {'1':'⭐','2':'⭐⭐','3':'⭐⭐⭐','4':'⭐⭐⭐⭐','5':'⭐⭐⭐⭐⭐'};
+    infoParts.push((dMap[recipe.difficulty]||'') + ' ');
+  }
+  if (recipe.cook_time) infoParts.push('⏱ ' + recipe.cook_time);
+  if (recipe.servings) infoParts.push('👥 ' + recipe.servings + '人份');
+  ctx.fillText(infoParts.join('  ·  '), W / 2, infoY);
+
+  // 分隔线
+  infoY += 40;
+  ctx.strokeStyle = '#EBE3D5';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(W * 0.15, infoY);
+  ctx.lineTo(W * 0.85, infoY);
+  ctx.stroke();
+
+  // 食材清单
+  infoY += 60;
+  ctx.fillStyle = '#2C2416';
+  ctx.font = 'bold 32px "Noto Serif SC", serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('🥬 食材清单', W * 0.12, infoY);
+
+  var ings = recipe.ingredients || [];
+  infoY += 50;
+  if (ings.length) {
+    ings.slice(0, 15).forEach(function(ing, i) {
+      if (infoY > H - 400) return;
+      var col = i % 2;
+      var x = W * 0.12 + col * W * 0.42;
+      var y = infoY + Math.floor(i / 2) * 40;
+      ctx.fillStyle = '#3D2C2E';
+      ctx.font = '24px "Noto Sans SC", sans-serif';
+      ctx.fillText((ing.ingredient_emoji || '📦') + ' ' + ing.ingredient_name, x, y);
+      ctx.fillStyle = '#7A7060';
+      ctx.font = '22px "Noto Sans SC", sans-serif';
+      var amt = ing.amount ? Math.round(ing.amount) + (ing.unit||'克') : '';
+      ctx.fillText(amt, x + 280, y);
+    });
+    infoY += Math.ceil(Math.min(ings.length, 15) / 2) * 40;
+  }
+
+  // 步骤
+  infoY += 40;
+  var steps = recipe.steps || [];
+  if (steps.length) {
+    ctx.fillStyle = '#2C2416';
+    ctx.font = 'bold 32px "Noto Serif SC", serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('📋 烹饪步骤', W * 0.12, infoY);
+    infoY += 50;
+    steps.slice(0, 8).forEach(function(step, i) {
+      if (infoY > H - 250) return;
+      ctx.fillStyle = '#B5453A';
+      ctx.font = 'bold 24px "Noto Sans SC", sans-serif';
+      ctx.fillText('0' + (step.step_number || i + 1), W * 0.12, infoY);
+      ctx.fillStyle = '#3D2C2E';
+      ctx.font = '22px "Noto Sans SC", sans-serif';
+      var txt = (step.description || '').substring(0, 40);
+      if (step.description && step.description.length > 40) txt += '…';
+      ctx.fillText(txt, W * 0.12 + 70, infoY);
+      infoY += 38;
+    });
+  }
+
+  // 底部
+  var footerY = H - 120;
+  ctx.fillStyle = '#B5453A';
+  ctx.fillRect(0, footerY - 20, W, 200);
+  ctx.fillStyle = '#FFFEFA';
+  ctx.font = 'bold 28px "Noto Serif SC", serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('🏠 家庭私厨', W / 2, footerY + 10);
+  ctx.font = '20px "Noto Sans SC", sans-serif';
+  ctx.fillText(new Date().toISOString().slice(0, 10) + ' · 家的味道', W / 2, footerY + 50);
+
+  return c;
+}
+
+function showRecipePosterPreview(recipe) {
+  var canvas = generateRecipePoster(recipe);
+  var url = canvas.toDataURL('image/png');
+
+  var html = '<div style="padding:16px;text-align:center">';
+  html += '<h3 style="font-family:var(--font-title);font-size:18px;margin-bottom:8px">📸 ' + recipe.name + ' · 分享海报</h3>';
+  html += '<div style="max-height:65vh;overflow-y:auto;margin-bottom:10px"><img src="' + url + '" style="width:100%;border-radius:var(--radius-md);box-shadow:var(--shadow-lg)" alt="菜谱海报"></div>';
+  html += '<div style="display:flex;gap:10px">';
+  html += '<button onclick="saveRecipePoster()" style="flex:1;padding:12px;background:var(--c-primary);color:#fff;border-radius:var(--radius-lg);font-size:14px;font-weight:600;cursor:pointer;border:none">💾 保存到相册</button>';
+  html += '<button onclick="closeModalSheet()" style="flex:1;padding:12px;background:var(--c-warm);border-radius:var(--radius-lg);font-size:14px;font-weight:600;cursor:pointer;border:none">关闭</button>';
+  html += '</div></div>';
+  openModalSheet(html);
+
+  // 暂存 canvas 供保存
+  window._posterCanvas = canvas;
+  window._posterRecipeName = recipe.name;
+}
+
+function saveRecipePoster() {
+  if (!window._posterCanvas) { showToast('请先生成海报', 'warn'); return; }
+  var url = window._posterCanvas.toDataURL('image/png');
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = (window._posterRecipeName || '菜谱') + '_海报.png';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  showToast('海报已保存', 'success');
+}
+
+// 更新 detail-share 按钮行为
+(function() {
+  var origShowDetail = showDetail;
+  showDetail = function(recipe) {
+    origShowDetail(recipe);
+    document.getElementById('detail-share').onclick = function() {
+      showRecipePosterPreview(recipe);
+    };
+  };
+})();
 
 // ----- 更新路由加载 -----
 const origNavToFinal = navigateTo;
