@@ -1340,6 +1340,9 @@ img { max-width: 100%; display: block; }
 .cal-day:hover { background: var(--c-warm); }
 .cal-day.today { background: var(--c-primary-light); border: 2px solid var(--c-primary); font-weight: 700; }
 .cal-day.other-month { color: var(--c-text-light); }
+.cal-day.weekend { color: #B5453A; }
+.cal-day.holiday { color: #B5453A; font-weight: 700; position: relative; }
+.cal-day.holiday::after { content: '休'; font-size: 7px; position: absolute; top: 0; right: 2px; color: #B5453A; font-weight: 700; }
 .cal-day.in-week { background: rgba(122,154,126,0.10); box-shadow: inset 0 0 0 2px rgba(122,154,126,0.3); border-radius: 50%; font-weight: 600; color: var(--c-text); }
 .cal-day.selected,
 .cal-day.in-week.selected { background: var(--c-primary); color: #fff; font-weight: 700; box-shadow: 0 0 0 3px rgba(181,69,58,0.3); }
@@ -4709,7 +4712,9 @@ function renderMonthCalendar() {
     <button onclick="mealMonthOffset++;renderMonthCalendar();loadMealPlans()">›</button>
   </div>`;
   html += `<div class="meal-calendar__weekdays">`;
-  ['日','一','二','三','四','五','六'].forEach(d => html += `<span>${d}</span>`);
+  ['日','一','二','三','四','五','六'].forEach(function(d, i) {
+    html += '<span style="' + (i === 0 || i === 6 ? 'color:#B5453A;font-weight:700' : '') + '">' + d + '</span>';
+  });
   html += `</div><div class="meal-calendar__days">`;
 
   // 填充前置空白
@@ -4720,21 +4725,44 @@ function renderMonthCalendar() {
   var weekStartStr = todayStr;
   var weekEndStr = weekEnd.toISOString().split('T')[0];
 
+  // 2026 年中国法定节假日（简化版）
+  var HOLIDAYS_2026 = {
+    '2026-01-01': '元旦', '2026-01-28': '除夕', '2026-01-29': '春节', '2026-01-30': '春节', '2026-01-31': '春节',
+    '2026-02-01': '春节', '2026-02-02': '春节', '2026-02-03': '春节',
+    '2026-04-05': '清明',
+    '2026-05-01': '劳动节', '2026-05-02': '劳动节', '2026-05-03': '劳动节',
+    '2026-06-19': '端午',
+    '2026-09-25': '中秋',
+    '2026-10-01': '国庆', '2026-10-02': '国庆', '2026-10-03': '国庆', '2026-10-04': '国庆', '2026-10-05': '国庆', '2026-10-06': '国庆', '2026-10-07': '国庆'
+  };
+
   // 日期格
   for (let d = 1; d <= lastDay.getDate(); d++) {
     const dateStr = `${year}-${String(month + 1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const isToday = dateStr === todayStr;
     const isSel = dateStr === mealSelectedDate;
     const inWeek = dateStr >= weekStartStr && dateStr <= weekEndStr;
-    const plans = mealPlansCache[dateStr] || {};
-    const b = (plans.breakfast || []).length > 0;
-    const l = (plans.lunch || []).length > 0;
-    const din = (plans.dinner || []).length > 0;
-    const ckDay = checkinDates[dateStr];
-    html += `<div class="cal-day${isToday ? ' today' : ''}${isSel ? ' selected' : ''}${inWeek ? ' in-week' : ''}${ckDay ? ' checked-in' : ''}" onclick="onCalDayClick('${dateStr}')">
-      <span>${d}</span>
-      <div class="cal-dots">${b ? '<span class="cal-dot cal-dot--breakfast"></span>' : ''}${l ? '<span class="cal-dot cal-dot--lunch"></span>' : ''}${din ? '<span class="cal-dot cal-dot--dinner"></span>' : ''}${ckDay ? '<span class="cal-dot cal-dot--checkin" title=\"连续'+ckDay+'天\"></span>' : ''}</div>
-    </div>`;
+    var dayObj = new Date(year, month, d);
+    var dow = dayObj.getDay();
+    var isWeekend = dow === 0 || dow === 6;
+    var holidayName = HOLIDAYS_2026[dateStr] || '';
+    var plans = mealPlansCache[dateStr] || {};
+    var b = (plans.breakfast || []).length > 0;
+    var l = (plans.lunch || []).length > 0;
+    var din = (plans.dinner || []).length > 0;
+    var ckDay = checkinDates[dateStr];
+    var extraCls = '';
+    if (isToday) extraCls += ' today';
+    if (isSel) extraCls += ' selected';
+    if (inWeek) extraCls += ' in-week';
+    if (ckDay) extraCls += ' checked-in';
+    if (holidayName) extraCls += ' holiday';
+    else if (isWeekend) extraCls += ' weekend';
+    html += '<div class="cal-day' + extraCls + '" onclick="onCalDayClick(\'' + dateStr + '\')" title="' + (holidayName || '') + '">';
+    html += '<span>' + d + '</span>';
+    if (holidayName) html += '<span style="font-size:7px;line-height:1;color:#B5453A;margin-top:-2px">' + holidayName.charAt(0) + '</span>';
+    html += '<div class="cal-dots">' + (b ? '<span class="cal-dot cal-dot--breakfast"></span>' : '') + (l ? '<span class="cal-dot cal-dot--lunch"></span>' : '') + (din ? '<span class="cal-dot cal-dot--dinner"></span>' : '') + (ckDay ? '<span class="cal-dot cal-dot--checkin" title="连续'+ckDay+'天"></span>' : '') + '</div>';
+    html += '</div>';
   }
 
   html += `</div>`;
