@@ -1351,7 +1351,7 @@ img { max-width: 100%; display: block; }
 .cal-day.weekend.in-week { color: #B5453A; }
 .cal-day.selected,
 .cal-day.in-week.selected { background: var(--c-primary); color: #fff; font-weight: 700; }
-.cal-dots { display: flex; flex-direction: column; gap: 1px; margin-top: 2px; align-items: center; }
+.cal-dots { display: flex; flex-direction: column; gap: 1px; margin-top: auto; padding-bottom: 3px; align-items: center; }
 .cal-dot { width: 10px; height: 2px; border-radius: 1px; }
 .cal-dot--breakfast { background: #F0C060; }
 .cal-dot--lunch { background: #E8905A; }
@@ -4730,7 +4730,7 @@ function renderMonthCalendar() {
   var weekStartStr = todayStr;
   var weekEndStr = weekEnd.toISOString().split('T')[0];
 
-  // 2026 年中国法定节假日（简化版）
+  // 2026 年中国法定节假日
   var HOLIDAYS_2026 = {
     '2026-01-01': '元旦', '2026-01-28': '除夕', '2026-01-29': '春节', '2026-01-30': '春节', '2026-01-31': '春节',
     '2026-02-01': '春节', '2026-02-02': '春节', '2026-02-03': '春节',
@@ -4739,6 +4739,15 @@ function renderMonthCalendar() {
     '2026-06-19': '端午',
     '2026-09-25': '中秋',
     '2026-10-01': '国庆', '2026-10-02': '国庆', '2026-10-03': '国庆', '2026-10-04': '国庆', '2026-10-05': '国庆', '2026-10-06': '国庆', '2026-10-07': '国庆'
+  };
+  // 2026 年二十四节气（近似日期）
+  var SOLAR_TERMS_2026 = {
+    '2026-01-05':'小寒','2026-01-20':'大寒','2026-02-04':'立春','2026-02-18':'雨水',
+    '2026-03-05':'惊蛰','2026-03-20':'春分','2026-04-05':'清明','2026-04-20':'谷雨',
+    '2026-05-05':'立夏','2026-05-21':'小满','2026-06-05':'芒种','2026-06-21':'夏至',
+    '2026-07-07':'小暑','2026-07-22':'大暑','2026-08-07':'立秋','2026-08-23':'处暑',
+    '2026-09-07':'白露','2026-09-23':'秋分','2026-10-08':'寒露','2026-10-23':'霜降',
+    '2026-11-07':'立冬','2026-11-22':'小雪','2026-12-07':'大雪','2026-12-22':'冬至'
   };
 
   // 日期格
@@ -4751,6 +4760,7 @@ function renderMonthCalendar() {
     var dow = dayObj.getDay();
     var isWeekend = dow === 0 || dow === 6;
     var holidayName = HOLIDAYS_2026[dateStr] || '';
+    var termName = SOLAR_TERMS_2026[dateStr] || '';
     var plans = mealPlansCache[dateStr] || {};
     var b = (plans.breakfast || []).length > 0;
     var l = (plans.lunch || []).length > 0;
@@ -4763,10 +4773,14 @@ function renderMonthCalendar() {
     if (ckDay) extraCls += ' checked-in';
     if (holidayName) extraCls += ' holiday';
     else if (isWeekend) extraCls += ' weekend';
-    html += '<div class="cal-day' + extraCls + '" onclick="onCalDayClick(\'' + dateStr + '\')" title="' + (holidayName || '') + '">';
-    html += '<span>' + d + '</span>';
-    if (holidayName) html += '<span style="font-size:7px;line-height:1;color:#B5453A;margin-top:-2px">' + holidayName.charAt(0) + '</span>';
-    html += '<div class="cal-dots">' + (b ? '<span class="cal-dot cal-dot--breakfast"></span>' : '') + (l ? '<span class="cal-dot cal-dot--lunch"></span>' : '') + (din ? '<span class="cal-dot cal-dot--dinner"></span>' : '') + (ckDay ? '<span class="cal-dot cal-dot--checkin" title="连续'+ckDay+'天"></span>' : '') + '</div>';
+    html += '<div class="cal-day' + extraCls + '" onclick="onCalDayClick(\'' + dateStr + '\')">';
+    html += '<span style="font-size:12px;font-weight:600">' + d + '</span>';
+    if (holidayName) {
+      html += '<span style="font-size:6px;line-height:1;color:#B5453A">' + holidayName.substring(0,2) + '</span>';
+    } else if (termName) {
+      html += '<span style="font-size:6px;line-height:1;color:var(--c-accent)">' + termName + '</span>';
+    }
+    html += '<div class="cal-dots">' + (b ? '<span class="cal-dot cal-dot--breakfast"></span>' : '') + (l ? '<span class="cal-dot cal-dot--lunch"></span>' : '') + (din ? '<span class="cal-dot cal-dot--dinner"></span>' : '') + '</div>';
     html += '</div>';
   }
 
