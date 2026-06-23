@@ -754,6 +754,20 @@ img { max-width: 100%; display: block; }
 }
 .empty-state__cta:active { transform: scale(0.94); }
 
+/* ----- 待学菜谱标记 ----- */
+.learning-badge { font-size: 12px; margin-left: 4px; opacity: 0.8; }
+.detail-status-row {
+  display: flex; align-items: center; gap: 10px; margin: 8px 0 4px;
+  padding: 8px 14px; border-radius: var(--radius-md);
+  background: var(--c-warm); font-size: 12px;
+}
+.detail-status-badge {
+  display: inline-block; padding: 4px 12px; border-radius: var(--radius-full);
+  font-size: 11px; font-weight: 700; color: #fff;
+}
+.detail-status-badge--mastered { background: var(--c-secondary); }
+.detail-status-badge--learning { background: var(--c-warning); color: var(--c-text); }
+
 /* ----- Toast ----- */
 .toast {
   position: fixed;
@@ -1654,6 +1668,11 @@ img { max-width: 100%; display: block; }
 }
 .shoplist-detail span { color: var(--c-text); }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-10px); } }
+@keyframes cardEnter { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes contentReveal { from { opacity: 0; } to { opacity: 1; } }
+.page-exit { animation: fadeOut 0.2s var(--ease-smooth) forwards; }
+.recipe-grid, .recipe-list { animation: contentReveal 0.35s var(--ease-smooth); }
 .shoplist-item__check {
   width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
   border: 2px solid var(--c-border);
@@ -2123,6 +2142,11 @@ img { max-width: 100%; display: block; }
     </div>
     <div class="detail__hero" id="detail-hero"></div>
     <div class="detail__meta" id="detail-meta"></div>
+    <div class="detail-status-row" id="detail-status-row" style="display:none">
+      <span id="detail-status-badge" class="detail-status-badge"></span>
+      <span style="font-size:11px;color:var(--c-text-secondary);flex:1" id="detail-status-hint"></span>
+      <button id="detail-status-toggle" onclick="toggleRecipeStatus()" style="padding:5px 12px;border-radius:var(--radius-full);font-size:11px;font-weight:600;cursor:pointer;background:var(--c-primary);color:#fff;border:none;white-space:nowrap">切换状态</button>
+    </div>
     <div class="detail__section">
       <div class="detail__section-title">🥬 食材清单</div>
       <div id="detail-ingredients"></div>
@@ -2299,6 +2323,10 @@ img { max-width: 100%; display: block; }
           </div>
         </div>
         <div class="form-group">
+          <label class="form-label">🔗 参考来源（待学菜谱用）</label>
+          <input class="form-input" type="url" id="form-source" placeholder="例如：下厨房链接、B站视频、网页…">
+        </div>
+        <div class="form-group">
           <label class="form-label">备注 / 小贴士</label>
           <textarea class="form-textarea" id="form-notes" placeholder="做菜小技巧、替代方案…"></textarea>
         </div>
@@ -2400,12 +2428,26 @@ const state = {
 
 // ----- Tab 切换 -----
 function navigateTo(tab) {
+  if (state.currentTab === tab) return; // 避免重复切换
   state.currentTab = tab;
 
-  // 页面切换
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  const page = document.querySelector(`[data-page="${tab}"]`);
-  if (page) page.classList.add('active');
+  // 页面退出动画
+  var curPage = document.querySelector('.page.active');
+  if (curPage) {
+    curPage.classList.add('page-exit');
+    setTimeout(function() {
+      curPage.classList.remove('active', 'page-exit');
+    }, 180);
+  }
+
+  // 页面切换（延迟进入让退出动画先播放）
+  setTimeout(function() {
+    document.querySelectorAll('.page').forEach(function(p) {
+      if (!p.classList.contains('page-exit')) p.classList.remove('active');
+    });
+    var page = document.querySelector('[data-page="' + tab + '"]');
+    if (page) page.classList.add('active');
+  }, 50);
 
   // 导航高亮 + aria-current
   document.querySelectorAll('.nav-item').forEach(n => {
@@ -2776,6 +2818,45 @@ document.getElementById('fab-add-recipe').addEventListener('click', () => {
 // ===================== 阶段2：菜谱核心交互 =====================
 const API_BASE = '/api';
 
+// ----- 网络韧性：重试 + 离线 -----
+async function fetchWithRetry(url, options, maxRetries) {
+  maxRetries = maxRetries || 2;
+  for (var i = 0; i <= maxRetries; i++) {
+    try { return await fetch(url, options); }
+    catch (e) {
+      if (i === maxRetries) throw e;
+      await new Promise(function(r) { setTimeout(r, 1000 * (i + 1)); });
+    }
+  }
+}
+
+// 离线横幅
+(function() {
+  var banner = document.createElement('div');
+  banner.id = 'offline-banner';
+  banner.style.cssText = 'display:none;text-align:center;padding:8px 16px;background:var(--c-warning);color:var(--c-text);font-size:12px;font-weight:600;position:sticky;top:0;z-index:300';
+  banner.innerHTML = '⚠️ 网络连接不可用 · <button onclick="location.reload()" style="text-decoration:underline;font-weight:700;cursor:pointer;background:none;border:none;color:inherit">刷新</button>';
+  document.getElementById('app').insertBefore(banner, document.getElementById('app').firstChild);
+  window.addEventListener('online', function() { banner.style.display = 'none'; });
+  window.addEventListener('offline', function() { banner.style.display = 'block'; });
+})();
+
+// 按钮加载态辅助函数
+function setBtnLoading(el, loading) {
+  if (!el) return;
+  if (loading) {
+    el._origHTML = el.innerHTML;
+    el.disabled = true;
+    el.style.opacity = '0.6';
+    el.style.pointerEvents = 'none';
+  } else {
+    el.innerHTML = el._origHTML || el.innerHTML;
+    el.disabled = false;
+    el.style.opacity = '';
+    el.style.pointerEvents = '';
+  }
+}
+
 // ----- 通用星级转换 -----
 function getStars(d) { var n = parseInt(d) || 3; n = Math.min(5, Math.max(1, n)); return '⭐'.repeat(n); }
 function fmtAmount(n) { if (!n && n !== 0) return ''; return Math.round(parseFloat(n)); }
@@ -2824,6 +2905,14 @@ function classifyIngredient(id, name) {
 let recipeData = [];  // 全量菜谱缓存
 
 async function fetchRecipes() {
+  // 显示骨架屏
+  var skeleton = document.getElementById('recipe-skeleton');
+  var container = document.getElementById('recipe-container');
+  var empty = document.getElementById('recipe-empty');
+  if (skeleton) { skeleton.style.display = 'grid'; }
+  if (container) container.style.display = 'none';
+  if (empty) empty.style.display = 'none';
+
   try {
     const params = new URLSearchParams();
     if (state.currentTag === 'personal') { params.set('owner_id', getUserId()); params.set('tenant_id', ''); }
@@ -2833,7 +2922,7 @@ async function fetchRecipes() {
     if (state.currentCat === 'fav') params.set('is_favorited', '1');
     if (state.searchQuery) params.set('search', state.searchQuery);
 
-    const res = await fetch(`${API_BASE}/recipes?${params}`);
+    const res = await fetchWithRetry(`${API_BASE}/recipes?${params}`);
     const json = await res.json();
     recipeData = json.data || [];
     // 异步校验图片，挂了就清掉用 emoji 兜底
@@ -2848,6 +2937,8 @@ async function fetchRecipes() {
   } catch (e) {
     console.log('❌ API 未连接:', e.message);
     renderRecipes();
+  } finally {
+    if (skeleton) { skeleton.style.display = 'none'; }
   }
 }
 
@@ -2880,12 +2971,32 @@ function renderRecipes() {
 
   const container = document.getElementById('recipe-container');
   const empty = document.getElementById('recipe-empty');
-  document.getElementById('dish-count').textContent = `共 ${filtered.length} 道菜`;
+  var masteredCount = filtered.filter(function(r){ return r.status !== 'learning'; }).length;
+  var learningCount = filtered.filter(function(r){ return r.status === 'learning'; }).length;
+  var countText = '共 ' + filtered.length + ' 道菜';
+  if (learningCount > 0) countText += '（拿手 ' + masteredCount + ' · 待学 ' + learningCount + '）';
+  document.getElementById('dish-count').textContent = countText;
 
   if (!filtered.length) {
     container.innerHTML = '';
     container.style.display = 'none';
     empty.style.display = 'flex';
+    // 区分搜索无结果 vs 完全无数据
+    var iconEl = empty.querySelector('.empty-state__icon');
+    var textEl = empty.querySelector('.empty-state__text');
+    var hintEl = empty.querySelector('.empty-state__hint');
+    var ctaEl = empty.querySelector('.empty-state__cta');
+    if (state.searchQuery) {
+      if (iconEl) iconEl.textContent = '🔍';
+      if (textEl) textEl.textContent = '未找到匹配菜谱';
+      if (hintEl) hintEl.textContent = '「' + state.searchQuery + '」无结果，试试其他关键词';
+      if (ctaEl) ctaEl.style.display = 'none';
+    } else {
+      if (iconEl) iconEl.textContent = '📜';
+      if (textEl) textEl.textContent = '家传菜谱待书写';
+      if (hintEl) hintEl.textContent = '录下你的拿手好菜，为家宴添一道风味';
+      if (ctaEl) ctaEl.style.display = '';
+    }
     return;
   }
   empty.style.display = 'none';
@@ -3032,6 +3143,43 @@ function showDetail(recipe) {
     recipe.servings ? `<span class="detail__meta-tag">👥 ${recipe.servings}人份</span>` : ''
   ].join('');
 
+  // 待学/拿手菜状态标识
+  var isLearning = recipe.status === 'learning';
+  var statusRow = document.getElementById('detail-status-row');
+  var statusBadge = document.getElementById('detail-status-badge');
+  var statusHint = document.getElementById('detail-status-hint');
+  var statusToggle = document.getElementById('detail-status-toggle');
+  if (statusRow) {
+    statusRow.style.display = 'flex';
+    if (isLearning) {
+      statusBadge.textContent = '📖 待学菜谱';
+      statusBadge.className = 'detail-status-badge detail-status-badge--learning';
+      statusHint.textContent = '还未完全掌握，继续加油！';
+      statusToggle.textContent = '✅ 标为拿手菜';
+      statusToggle.style.background = 'var(--c-secondary)';
+    } else {
+      statusBadge.textContent = '⭐ 拿手菜';
+      statusBadge.className = 'detail-status-badge detail-status-badge--mastered';
+      statusHint.textContent = '已熟练掌​​握';
+      statusToggle.textContent = '📖 标为待学';
+      statusToggle.style.background = 'var(--c-warning)';
+    }
+  }
+
+  // 来源链接展示
+  if (recipe.source) {
+    var sourceEl = document.getElementById('detail-notes-section');
+    if (sourceEl) {
+      sourceEl.style.display = '';
+      var notesDiv = document.getElementById('detail-notes');
+      notesDiv.innerHTML = (recipe.notes ? '<div style="margin-bottom:8px">' + recipe.notes + '</div>' : '')
+        + '<div style="font-size:11px;color:var(--c-accent)"><a href="' + recipe.source + '" target="_blank" rel="noopener">🔗 ' + recipe.source + '</a></div>';
+    }
+  } else {
+    var srcSec = document.getElementById('detail-notes-section');
+    if (srcSec && !recipe.notes) srcSec.style.display = 'none';
+  }
+
   // 食材 - 按分类分组显示（含等比缩放）
   const ings = recipe.ingredients || [];
   // 存原始数据到 overlay 上，供缩放计算
@@ -3114,6 +3262,29 @@ function showDetail(recipe) {
 document.getElementById('detail-back').addEventListener('click', () => {
   document.getElementById('detail-overlay').classList.remove('show');
 });
+
+// 绑定详情页分享按钮
+document.getElementById('detail-share').addEventListener('click', function() {
+  var recipe = document.getElementById('detail-overlay')._recipe;
+  if (recipe) showToast('分享功能开发中…长按截图即可分享', 'info');
+});
+
+// ----- 待学/拿手菜状态切换 -----
+async function toggleRecipeStatus() {
+  var recipe = document.getElementById('detail-overlay')._recipe;
+  if (!recipe) return;
+  var newStatus = recipe.status === 'mastered' ? 'learning' : 'mastered';
+  try {
+    await fetchWithRetry(API_BASE + '/recipes/' + recipe.id, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: newStatus })
+    });
+    recipe.status = newStatus;
+    showDetail(recipe);
+    fetchRecipes(); // 后台刷新列表数据
+    showToast(newStatus === 'learning' ? '已标为待学菜谱 📖' : '已标为拿手菜 ⭐', 'success');
+  } catch(e) { showToast('状态切换失败，请检查网络', 'error'); }
+}
 
 // ----- 食材等比缩放 -----
 function applyIngScale(inputEl) {
@@ -3261,6 +3432,7 @@ function openRecipeEditor(recipe) {
   document.getElementById('form-servings').textContent = formServings;
   document.getElementById('form-cooktime').value = recipe ? (recipe.cook_time || '') : '';
   document.getElementById('form-notes').value = recipe ? (recipe.notes || '') : '';
+  var srcEl = document.getElementById('form-source'); if (srcEl) srcEl.value = recipe ? (recipe.source || '') : '';
 
   // 显示已有图片
   if (recipe && recipe.image) {
@@ -4219,6 +4391,7 @@ document.getElementById('btn-save').addEventListener('click', async () => {
     meat_type: (typeof formMeatType !== 'undefined') ? formMeatType : 'mix',
     servings: (typeof formServings !== 'undefined') ? formServings : 4,
     notes: (document.getElementById('form-notes')?.value) || '',
+    source: (document.getElementById('form-source')?.value) || '',
     is_favorited: 0,
     is_shared: 0
   };
@@ -6219,9 +6392,67 @@ function loadFeastTitle() {
   if (el && el.textContent.trim() !== feastTitle) el.textContent = feastTitle;
 }
 
-// ====== 家宴：加载（从 localStorage 恢复）======
+// ====== 家宴：API 同步辅助 ======
+var _feastCurrentId = null;  // 当前活跃的后端家宴记录 ID
+function _getFeastPayload() {
+  var dishes = [];
+  Object.keys(feastDishes).forEach(function(cat) {
+    (feastDishes[cat] || []).forEach(function(d, idx) {
+      dishes.push({ recipe_id: d.id, sort_order: idx, feast_category: cat });
+    });
+  });
+  return {
+    name: feastTitle,
+    servings: 4,
+    dishes: dishes,
+    template_type: feastTemplate || 0,
+    show_title: feastShowTitle,
+    show_date: feastShowDate,
+    footer_text: feastFooterText,
+    show_footer: feastShowFooter
+  };
+}
+
+async function _syncFeastToAPI() {
+  try {
+    var payload = _getFeastPayload();
+    if (!_feastCurrentId) {
+      var res = await fetchWithRetry(API_BASE + '/feasts', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      var data = await res.json();
+      if (data.id) { _feastCurrentId = data.id; localStorage.setItem('caipu_feast_current_id', _feastCurrentId); }
+    } else {
+      await fetchWithRetry(API_BASE + '/feasts/' + _feastCurrentId, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    }
+  } catch(e) { /* 静默失败，localStorage 保底 */ }
+}
+
+async function _syncFeastRecordToAPI(record) {
+  try {
+    var dishes = [];
+    Object.keys(record.dishes || {}).forEach(function(cat) {
+      (record.dishes[cat] || []).forEach(function(d, idx) {
+        dishes.push({ recipe_id: d.id, sort_order: idx, feast_category: cat });
+      });
+    });
+    var payload = { name: record.title, servings: 4, dishes: dishes, template_type: record.template || 0 };
+    var res = await fetchWithRetry(API_BASE + '/feasts', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    var data = await res.json();
+    if (data.id) record._apiId = data.id;
+  } catch(e) { /* 静默失败 */ }
+}
+
+// ====== 家宴：加载（从 localStorage 恢复，尝试 API 补充）======
 function loadFeasts() {
-  // 清理旧冲突数据
+  // 优先从 localStorage 恢复（已有完整数据）
   try {
     var saved = localStorage.getItem('caipu_feast_dishes');
     if (saved) feastDishes = JSON.parse(saved);
@@ -6230,6 +6461,11 @@ function loadFeasts() {
   try {
     var t = localStorage.getItem('caipu_feast_template');
     if (t !== null) feastTemplate = parseInt(t);
+  } catch(e) {}
+  // 尝试恢复 current api id
+  try {
+    var cid = localStorage.getItem('caipu_feast_current_id');
+    if (cid) _feastCurrentId = cid;
   } catch(e) {}
   loadFeastTitle();
   try { var s = localStorage.getItem('caipu_feast_showTitle'); if (s!==null) feastShowTitle = s==='1'; } catch(e){}
@@ -6241,6 +6477,7 @@ function loadFeasts() {
 }
 function saveFeastDishes() {
   localStorage.setItem('caipu_feast_dishes', JSON.stringify(feastDishes));
+  _syncFeastToAPI();  // 异步同步到后端
 }
 
 // ====== 家宴：渲染分类区结构 ======
@@ -6385,6 +6622,7 @@ function saveFeastRecord() {
   // 最多保留 20 条
   if (records.length > 20) records = records.slice(0, 20);
   localStorage.setItem('caipu_feast_records', JSON.stringify(records));
+  _syncFeastRecordToAPI(record);  // 异步同步到后端
   showToast('家宴「' + feastTitle + '」已保存', 'success');
 }
 
@@ -6439,6 +6677,11 @@ function loadFeastRecord(id) {
 function deleteFeastRecord(id) {
   var records = [];
   try { records = JSON.parse(localStorage.getItem('caipu_feast_records') || '[]'); } catch(e) {}
+  var found = records.find(function(r) { return r.id === id; });
+  // 尝试从后端删除
+  if (found && found._apiId) {
+    fetch(API_BASE + '/feasts/' + found._apiId, { method: 'DELETE' }).catch(function(){});
+  }
   records = records.filter(function(r) { return r.id !== id; });
   localStorage.setItem('caipu_feast_records', JSON.stringify(records));
   showToast('已删除', 'success');
@@ -7172,6 +7415,8 @@ function toggleShoplistCheck(key, el, e) {
     shoplistChecked[key] = true;
     el.classList.add('shoplist-item--checked');
   }
+  // 持久化勾选状态
+  localStorage.setItem('caipu_shoplist_checked', JSON.stringify(Object.keys(shoplistChecked)));
 }
 
 function toggleShoplistDetail(el, e) {
@@ -7197,6 +7442,7 @@ function clearCheckedShoplist() {
     el.remove();
   });
   shoplistChecked = {};
+  localStorage.setItem('caipu_shoplist_checked', '[]');
   renderShoplistBin();
   showToast('已移入回收站 ' + checked.length + ' 种', 'success');
 }
@@ -7320,7 +7566,12 @@ function jumpToRecipeDay(recipeId, recipeName, dateStr) {
 
 function openShoplist() {
   document.getElementById('shoplist-overlay').classList.add('show');
+  // 恢复上次勾选状态
   shoplistChecked = {};
+  try {
+    var saved = JSON.parse(localStorage.getItem('caipu_shoplist_checked') || '[]');
+    saved.forEach(function(k) { shoplistChecked[k] = true; });
+  } catch(e) {}
   loadShoplist().then(function() { renderShoplistBin(); });
 }
 
