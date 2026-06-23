@@ -1543,7 +1543,6 @@ img { max-width: 100%; display: block; }
 .meal-pick-cat {
   padding: 7px 10px; margin: 8px 0 4px; font-size: 11px; font-weight: 700;
   color: var(--c-text); border-radius: var(--radius-sm);
-  position: sticky; top: 0; z-index: 1;
   display: flex; align-items: center; gap: 4px;
   letter-spacing: 0.5px;
 }
@@ -4845,6 +4844,10 @@ function openMealPicker(mealType) {
 
   document.getElementById('meal-pick-modal').classList.add('show');
 }
+// 点击蒙层关闭
+document.getElementById('meal-pick-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeMealPicker();
+});
 
 function closeMealPicker() {
   document.getElementById('meal-pick-modal').classList.remove('show');
