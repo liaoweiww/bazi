@@ -1422,10 +1422,6 @@ img { max-width: 100%; display: block; }
 .today-meal-card--dinner .today-meal-card__count { background: #FBFAFD; color: #5E3D8A; }
 
 /* 打卡按钮 */
-.checkin-bar {
-  display: flex; align-items: center; justify-content: center; gap: 10px;
-  margin: 0 var(--page-px) 14px;
-}
 .checkin-btn {
   padding: 8px 20px; border-radius: var(--radius-xl);
   font-size: 14px; font-weight: 700; transition: all 0.2s;
@@ -1908,13 +1904,6 @@ img { max-width: 100%; display: block; }
       </div>
     </div>
 
-    <div style="display:flex;align-items:center;gap:10px;padding:8px var(--page-px)">
-      <button onclick="openRandomMealDialog()" style="padding:8px 14px;background:var(--c-secondary);color:#fff;border-radius:var(--radius-lg);font-size:12px;font-weight:600;flex-shrink:0">🎲 智能点菜</button>
-      <button onclick="generateMenuImage()" style="padding:8px 14px;background:var(--c-accent);color:#fff;border-radius:var(--radius-lg);font-size:12px;font-weight:600;flex-shrink:0">🖼 生成菜单</button>
-      <button class="checkin-btn checkin-btn--undone" id="checkin-btn" onclick="doCheckin()" style="flex-shrink:0">📅 打卡</button>
-      <span class="checkin-streak" id="checkin-streak" style="font-size:12px;font-weight:600;color:var(--c-primary-deep)">🔥 0天</span>
-    </div>
-
     <!-- 选中日期餐食 -->
     <div class="today-meals" id="today-meals-cards">
       <div class="today-meal-card today-meal-card--breakfast" onclick="openMealPicker('breakfast')">
@@ -1944,7 +1933,16 @@ img { max-width: 100%; display: block; }
         </div>
         <div class="today-meal-card__count" id="today-dinner-count">暂无安排</div>
       </div>
-      <button onclick="clearDayMeals()" id="btn-clear-day" style="display:none;padding:6px 12px;background:var(--c-danger);color:#fff;border-radius:var(--radius-sm);font-size:11px;font-weight:600;white-space:nowrap">🗑 清空当天</button>
+    </div>
+
+    <!-- 操作按钮行：智能点菜 / 生成菜单 / 打卡 / 清空当天 -->
+    <div style="display:flex;align-items:center;gap:8px;padding:4px var(--page-px) 12px;flex-wrap:wrap">
+      <button onclick="openRandomMealDialog()" style="padding:7px 12px;background:var(--c-secondary);color:#fff;border-radius:var(--radius-lg);font-size:11px;font-weight:600;flex-shrink:0">🎲 智能点菜</button>
+      <button onclick="generateMenuImage()" style="padding:7px 12px;background:var(--c-accent);color:#fff;border-radius:var(--radius-lg);font-size:11px;font-weight:600;flex-shrink:0">🖼 生成菜单</button>
+      <button class="checkin-btn checkin-btn--undone" id="checkin-btn" onclick="doCheckin()" style="padding:7px 12px;border-radius:var(--radius-lg);font-size:11px;font-weight:600;flex-shrink:0">📅 打卡一天</button>
+      <span class="checkin-streak" id="checkin-streak" style="font-size:12px;font-weight:600;color:var(--c-primary-deep);flex-shrink:0">🔥 0天</span>
+      <span style="flex:1"></span>
+      <button onclick="clearDayMeals()" id="btn-clear-day" style="display:none;padding:7px 12px;background:var(--c-danger);color:#fff;border-radius:var(--radius-lg);font-size:11px;font-weight:600;flex-shrink:0">🗑 清空当天</button>
     </div>
   </div>
 
