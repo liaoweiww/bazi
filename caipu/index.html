@@ -361,7 +361,7 @@ img { max-width: 100%; display: block; }
 .recipe-grid.cols-2 .recipe-card--hero { grid-column: span 2; }
 .recipe-grid.cols-2 .recipe-card--wide { grid-column: span 1; }
 .recipe-grid.cols-2 .recipe-card--normal { grid-column: span 1; }
-.recipe-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+.recipe-grid.cols-3 { grid-template-columns: repeat(3, 1fr); gap: 5px; padding: 0 12px; }
 .recipe-grid.cols-3 .recipe-card--hero { grid-column: span 3; }
 .recipe-grid.cols-3 .recipe-card--wide { grid-column: span 1; }
 .recipe-grid.cols-3 .recipe-card--normal { grid-column: span 1; }
@@ -490,10 +490,10 @@ img { max-width: 100%; display: block; }
 
 /* 三列视图 — 卡片比例加大 */
 .recipe-grid.cols-3 .recipe-card--normal .recipe-card__img { aspect-ratio: 4/3; }
-.recipe-grid.cols-3 .recipe-card--normal .recipe-card__emoji { font-size: 44px; }
-.recipe-grid.cols-3 .recipe-card--normal .recipe-card__body { padding: 8px 10px 10px; }
-.recipe-grid.cols-3 .recipe-card--normal .recipe-card__name { font-size: 13px; }
-.recipe-grid.cols-3 .recipe-card--normal .recipe-card__meta { display: block; }
+.recipe-grid.cols-3 .recipe-card--normal .recipe-card__emoji { font-size: 36px; }
+.recipe-grid.cols-3 .recipe-card--normal .recipe-card__body { padding: 5px 6px 7px; }
+.recipe-grid.cols-3 .recipe-card--normal .recipe-card__name { font-size: 12px; }
+.recipe-grid.cols-3 .recipe-card--normal .recipe-card__meta { display: none; }
 
 /* 图片区域通用 */
 .recipe-card__img {
