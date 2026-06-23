@@ -1324,7 +1324,7 @@ img { max-width: 100%; display: block; }
 }
 .meal-calendar__weekdays {
   display: grid; grid-template-columns: repeat(7, 1fr);
-  text-align: center; font-size: 11px; color: var(--c-text-light);
+  text-align: center; font-size: 12px; color: var(--c-text-secondary);
   margin-bottom: 0;
   border-bottom: 1px solid var(--c-border);
   padding-bottom: 4px;
@@ -1337,7 +1337,7 @@ img { max-width: 100%; display: block; }
 .cal-day {
   aspect-ratio: 1; display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  font-size: 13px; font-weight: 500; border-radius: 0;
+  font-size: 14px; font-weight: 500; border-radius: 0;
   cursor: pointer; transition: all 0.15s; position: relative;
   background: var(--c-surface);
 }
@@ -4779,11 +4779,11 @@ function renderMonthCalendar() {
     if (holidayName) extraCls += ' holiday';
     else if (isWeekend) extraCls += ' weekend';
     html += '<div class="cal-day' + extraCls + '" onclick="onCalDayClick(\'' + dateStr + '\')">';
-    html += '<span style="font-size:12px;font-weight:600">' + d + '</span>';
+    html += '<span style="font-size:13px;font-weight:600">' + d + '</span>';
     if (holidayName) {
-      html += '<span style="font-size:6px;line-height:1;color:#B5453A">' + holidayName.substring(0,2) + '</span>';
+      html += '<span style="font-size:8px;line-height:1;color:#B5453A">' + holidayName.substring(0,2) + '</span>';
     } else if (termName) {
-      html += '<span style="font-size:6px;line-height:1;color:var(--c-accent)">' + termName + '</span>';
+      html += '<span style="font-size:8px;line-height:1;color:var(--c-accent)">' + termName + '</span>';
     }
     html += '<div class="cal-dots">' + (b ? '<span class="cal-dot cal-dot--breakfast"></span>' : '') + (l ? '<span class="cal-dot cal-dot--lunch"></span>' : '') + (din ? '<span class="cal-dot cal-dot--dinner"></span>' : '') + '</div>';
     html += '</div>';
