@@ -1331,18 +1331,16 @@ img { max-width: 100%; display: block; }
 }
 .meal-calendar__days {
   display: grid; grid-template-columns: repeat(7, 1fr);
-  gap: 0; border: 1px solid var(--c-border);
-  border-radius: var(--radius-sm); overflow: hidden;
+  gap: 1px; background: var(--c-border);
+  border: 1px solid var(--c-border); border-radius: var(--radius-xs); overflow: hidden;
 }
 .cal-day {
   aspect-ratio: 1; display: flex; flex-direction: column;
   align-items: center; justify-content: center;
   font-size: 13px; font-weight: 500; border-radius: 0;
   cursor: pointer; transition: all 0.15s; position: relative;
-  border-right: 1px solid var(--c-border);
-  border-bottom: 1px solid var(--c-border);
+  background: var(--c-surface);
 }
-.cal-day:nth-child(7n) { border-right: none; }
 .cal-day:hover { background: var(--c-warm); }
 .cal-day.today { background: var(--c-primary-light); font-weight: 700; }
 .cal-day.other-month { color: var(--c-text-light); }
