@@ -1561,6 +1561,13 @@ img { max-width: 100%; display: block; }
   background: var(--c-surface); border-radius: var(--radius-sm);
   cursor: pointer; transition: all 0.15s;
   box-shadow: var(--shadow-xs);
+  border: 2px solid transparent;
+}
+.meal-pick-item.picked {
+  border-color: var(--c-primary);
+  background: var(--c-primary-light);
+  box-shadow: 0 0 0 3px rgba(181,69,58,0.15), var(--shadow-sm);
+}
   border: 1px solid var(--c-border);
 }
 .meal-pick-item:active { background: var(--c-primary-light); transform: scale(0.97); }
@@ -4855,8 +4862,17 @@ function closeMealPicker() {
 
 function togglePickRecipe(recipeId) {
   const idx = pickedRecipes.indexOf(recipeId);
-  if (idx >= 0) { pickedRecipes.splice(idx, 1); document.getElementById(`pick-chk-${recipeId}`).classList.remove('checked'); }
-  else { pickedRecipes.push(recipeId); document.getElementById(`pick-chk-${recipeId}`).classList.add('checked'); }
+  var chk = document.getElementById('pick-chk-' + recipeId);
+  var item = chk ? chk.closest('.meal-pick-item') : null;
+  if (idx >= 0) {
+    pickedRecipes.splice(idx, 1);
+    if (chk) chk.classList.remove('checked');
+    if (item) item.classList.remove('picked');
+  } else {
+    pickedRecipes.push(recipeId);
+    if (chk) chk.classList.add('checked');
+    if (item) item.classList.add('picked');
+  }
 }
 
 function randomPick() {
@@ -4865,8 +4881,12 @@ function randomPick() {
   pickedRecipes = [];
   const shuffled = [...list].sort(() => Math.random() - 0.5);
   for (let i = 0; i < Math.min(2, shuffled.length); i++) pickedRecipes.push(shuffled[i].id);
-  document.querySelectorAll('.meal-pick-item__checkbox').forEach(el => {
-    el.classList.toggle('checked', pickedRecipes.includes(el.id.replace('pick-chk-','')));
+  document.querySelectorAll('.meal-pick-item').forEach(function(el) {
+    var chk = el.querySelector('.meal-pick-item__checkbox');
+    var rid = chk ? chk.id.replace('pick-chk-','') : '';
+    var isPicked = pickedRecipes.includes(rid);
+    if (chk) chk.classList.toggle('checked', isPicked);
+    el.classList.toggle('picked', isPicked);
   });
 }
 
