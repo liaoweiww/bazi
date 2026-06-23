@@ -1323,23 +1323,22 @@ img { max-width: 100%; display: block; }
   font-family: var(--font-title); font-size: 16px; font-weight: 700;
 }
 .meal-calendar__weekdays {
-  display: grid; grid-template-columns: repeat(7, 1fr);
+  display: flex;
   text-align: center; font-size: 12px; color: var(--c-text-secondary);
   margin-bottom: 0;
   border-bottom: 1px solid var(--c-border);
   padding-bottom: 4px;
 }
+.meal-calendar__weekdays span { flex: 1; }
 .meal-calendar__days {
-  display: grid; grid-template-columns: repeat(7, 1fr);
-  gap: 1px; background: var(--c-border);
-  border: 1px solid var(--c-border); border-radius: var(--radius-xs); overflow: hidden;
+  width: 100%; border-collapse: collapse;
+  border: 1px solid var(--c-border);
 }
 .cal-day {
-  aspect-ratio: 1; display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  font-size: 14px; font-weight: 500; border-radius: 0;
-  cursor: pointer; transition: all 0.15s; position: relative;
-  background: var(--c-surface);
+  width: 14.28%; text-align: center; vertical-align: middle;
+  font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.15s;
+  position: relative; padding: 6px 2px; background: var(--c-surface);
+  border: 1px solid var(--c-border);
 }
 .cal-day:hover { background: var(--c-warm); }
 .cal-day.today { background: var(--c-primary-light); font-weight: 700; }
@@ -4717,15 +4716,55 @@ function renderMonthCalendar() {
   ['日','一','二','三','四','五','六'].forEach(function(d, i) {
     html += '<span style="' + (i === 0 || i === 6 ? 'color:#B5453A;font-weight:700' : '') + '">' + d + '</span>';
   });
-  html += `</div><div class="meal-calendar__days">`;
+  html += `</div><table class="meal-calendar__days"><tbody>`;
 
-  // 填充前置空白
-  for (let i = 0; i < startDow; i++) html += '<div class="cal-day other-month"></div>';
+  // 生成所有格子（含前后空白）
+  var allCells = [];
+  for (let i = 0; i < startDow; i++) allCells.push({ cls: 'other-month', num: '', holiday: '', term: '', dots: '' });
+  for (let d = 1; d <= lastDay.getDate(); d++) {
+    var dateStr = `${year}-${String(month + 1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    var dayObj = new Date(year, month, d);
+    var dow = dayObj.getDay();
+    var holidayName = HOLIDAYS_2026[dateStr] || '';
+    var termName = SOLAR_TERMS_2026[dateStr] || '';
+    var plans = mealPlansCache[dateStr] || {};
+    var b = (plans.breakfast || []).length > 0;
+    var l = (plans.lunch || []).length > 0;
+    var din = (plans.dinner || []).length > 0;
+    var ckDay = checkinDates[dateStr];
+    var isToday = dateStr === todayStr;
+    var isSel = dateStr === mealSelectedDate;
+    var isWeekend = dow === 0 || dow === 6;
+    var cls = '';
+    if (isToday) cls += ' today';
+    if (isSel) cls += ' selected';
+    if (ckDay) cls += ' checked-in';
+    if (holidayName) cls += ' holiday';
+    else if (isWeekend) cls += ' weekend';
+    var dotsHtml = '<div class="cal-dots">' + (b ? '<span class="cal-dot cal-dot--breakfast"></span>' : '') + (l ? '<span class="cal-dot cal-dot--lunch"></span>' : '') + (din ? '<span class="cal-dot cal-dot--dinner"></span>' : '') + '</div>';
+    allCells.push({ cls: cls.trim(), num: d, holiday: holidayName.substring(0,2), term: termName, dots: dotsHtml, dateStr: dateStr });
+  }
+  var trailing = allCells.length % 7 === 0 ? 0 : 7 - (allCells.length % 7);
+  for (let i = 0; i < trailing; i++) allCells.push({ cls: 'other-month', num: '', holiday: '', term: '', dots: '' });
 
-  // 填充末尾空白，确保最后一行也满格
-  var totalCells = startDow + lastDay.getDate();
-  var trailing = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
-  for (let i = 0; i < trailing; i++) html += '<div class="cal-day other-month"></div>';
+  // 按行输出
+  for (let i = 0; i < allCells.length; i += 7) {
+    html += '<tr>';
+    for (let j = 0; j < 7; j++) {
+      var cell = allCells[i + j];
+      var click = cell.dateStr ? ' onclick="onCalDayClick(\'' + cell.dateStr + '\')"' : '';
+      html += '<td class="cal-day' + (cell.cls ? ' ' + cell.cls : '') + '"' + click + '>';
+      if (cell.num !== '') {
+        html += '<span style="font-size:13px;font-weight:600">' + cell.num + '</span>';
+        if (cell.holiday) html += '<span style="font-size:8px;line-height:1;color:#B5453A">' + cell.holiday + '</span>';
+        else if (cell.term) html += '<span style="font-size:8px;line-height:1;color:var(--c-accent)">' + cell.term + '</span>';
+        html += cell.dots;
+      }
+      html += '</td>';
+    }
+    html += '</tr>';
+  }
+  html += '</tbody></table>';
 
 
 // 2026 年中国法定节假日
@@ -4747,39 +4786,6 @@ function renderMonthCalendar() {
     '2026-09-07':'白露','2026-09-23':'秋分','2026-10-08':'寒露','2026-10-23':'霜降',
     '2026-11-07':'立冬','2026-11-22':'小雪','2026-12-07':'大雪','2026-12-22':'冬至'
   };
-
-  // 日期格
-  for (let d = 1; d <= lastDay.getDate(); d++) {
-    const dateStr = `${year}-${String(month + 1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const isToday = dateStr === todayStr;
-    const isSel = dateStr === mealSelectedDate;
-    var dow = (startDow + d - 1) % 7;
-    var isWeekend = dow === 0 || dow === 6;
-    var holidayName = HOLIDAYS_2026[dateStr] || '';
-    var termName = SOLAR_TERMS_2026[dateStr] || '';
-    var plans = mealPlansCache[dateStr] || {};
-    var b = (plans.breakfast || []).length > 0;
-    var l = (plans.lunch || []).length > 0;
-    var din = (plans.dinner || []).length > 0;
-    var ckDay = checkinDates[dateStr];
-    var extraCls = '';
-    if (isToday) extraCls += ' today';
-    if (isSel) extraCls += ' selected';
-    if (ckDay) extraCls += ' checked-in';
-    if (holidayName) extraCls += ' holiday';
-    else if (isWeekend) extraCls += ' weekend';
-    html += '<div class="cal-day' + extraCls + '" onclick="onCalDayClick(\'' + dateStr + '\')">';
-    html += '<span style="font-size:13px;font-weight:600">' + d + '</span>';
-    if (holidayName) {
-      html += '<span style="font-size:8px;line-height:1;color:#B5453A">' + holidayName.substring(0,2) + '</span>';
-    } else if (termName) {
-      html += '<span style="font-size:8px;line-height:1;color:var(--c-accent)">' + termName + '</span>';
-    }
-    html += '<div class="cal-dots">' + (b ? '<span class="cal-dot cal-dot--breakfast"></span>' : '') + (l ? '<span class="cal-dot cal-dot--lunch"></span>' : '') + (din ? '<span class="cal-dot cal-dot--dinner"></span>' : '') + '</div>';
-    html += '</div>';
-  }
-
-  html += `</div>`;
 
   // 统计
   let totalPlans = 0, totalDishes = 0;
