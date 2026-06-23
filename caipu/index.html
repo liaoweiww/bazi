@@ -1480,7 +1480,7 @@ img { max-width: 100%; display: block; }
   font-size: 10px; color: transparent; flex-shrink: 0; transition: all 0.2s;
 }
 .meal-pick-item__checkbox.checked { background: var(--c-primary); border-color: var(--c-primary); color: #fff; }
-.meal-pick-item__emoji { font-size: 18px; width: 24px; text-align: center; flex-shrink: 0; }
+.meal-pick-item__emoji { font-size: 18px; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background-color: var(--c-warm); }
 .meal-pick-item__info { flex: 1; min-width: 0; }
 .meal-pick-item__name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .meal-pick-item__meta { font-size: 10px; color: var(--c-text-secondary); }
@@ -4771,7 +4771,7 @@ function openMealPicker(mealType) {
       items.forEach(function(r) {
         html += '<div class="meal-pick-item" onclick="togglePickRecipe(\'' + r.id + '\')">' +
           '<div class="meal-pick-item__checkbox" id="pick-chk-' + r.id + '">✓</div>' +
-          '<span class="meal-pick-item__emoji">' + (r.emoji || '🍳') + '</span>' +
+          '<span class="meal-pick-item__emoji"' + (r.image ? ' style="background-image:url('+r.image+');background-size:cover;background-position:center;font-size:0"' : '') + '>' + (r.image ? '' : (r.emoji || '🍳')) + '</span>' +
           '<div class="meal-pick-item__info">' +
             '<div class="meal-pick-item__name">' + r.name + '</div>' +
             '<div class="meal-pick-item__meta">' + getStars(r.difficulty) + ' · ' + (r.cook_time || '--') + '</div>' +
@@ -4943,7 +4943,9 @@ function updateTodayCards() {
     var el = document.getElementById('today-' + mt + '-count');
     if (el) {
       if (dishes.length) {
-        el.innerHTML = dishes.map(function(d) { return '<span style="display:block;font-size:10px;color:var(--c-text-secondary);line-height:1.4">' + (d.emoji||'🍳') + ' ' + d.name + '</span>'; }).join('');
+        el.innerHTML = dishes.map(function(d) {
+          return '<span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--c-text-secondary);line-height:1.6;margin-bottom:2px"><span style="width:18px;height:18px;border-radius:50%;flex-shrink:0;' + (d.image ? 'background-image:url('+d.image+');background-size:cover;background-position:center' : 'display:inline-flex;align-items:center;justify-content:center;font-size:11px;background:var(--c-warm)') + '">' + (d.image ? '' : (d.emoji||'🍳')) + '</span>' + d.name + '</span>';
+        }).join('');
         el.style.maxHeight = '60px'; el.style.overflowY = 'auto';
       } else {
         el.textContent = '—';
