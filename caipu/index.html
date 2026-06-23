@@ -1332,11 +1332,10 @@ img { max-width: 100%; display: block; }
   gap: 1px;
 }
 .cal-day {
-  aspect-ratio: auto; display: flex; flex-direction: column;
+  aspect-ratio: 1; display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  padding: 4px 2px; font-size: 11px; font-weight: 500; border-radius: 50%;
+  font-size: 11px; font-weight: 500; border-radius: 50%;
   cursor: pointer; transition: all 0.15s; position: relative;
-  min-height: 36px;
 }
 .cal-day:hover { background: var(--c-warm); }
 .cal-day.today { background: var(--c-primary-light); border: 2px solid var(--c-primary); font-weight: 700; }
