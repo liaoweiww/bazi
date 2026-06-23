@@ -4761,8 +4761,7 @@ function renderMonthCalendar() {
     const isToday = dateStr === todayStr;
     const isSel = dateStr === mealSelectedDate;
     const inWeek = dateStr >= weekStartStr && dateStr <= weekEndStr;
-    var dayObj = new Date(year, month, d);
-    var dow = dayObj.getDay();
+    var dow = (startDow + d - 1) % 7;
     var isWeekend = dow === 0 || dow === 6;
     var holidayName = HOLIDAYS_2026[dateStr] || '';
     var termName = SOLAR_TERMS_2026[dateStr] || '';
