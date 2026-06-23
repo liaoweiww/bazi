@@ -1343,7 +1343,7 @@ img { max-width: 100%; display: block; }
 }
 .cal-day:hover { background: var(--c-warm); }
 .cal-day.today { background: var(--c-primary-light); font-weight: 700; }
-.cal-day.other-month { color: var(--c-text-light); }
+.cal-day.other-month { color: var(--c-text-light); background: var(--c-surface); }
 .cal-day.weekend { color: #B5453A; background: #FDF8F6; }
 .cal-day.holiday { color: #B5453A; font-weight: 700; position: relative; }
 .cal-day.holiday::after { content: '休'; font-size: 7px; position: absolute; top: 0; right: 2px; color: #B5453A; font-weight: 700; }
@@ -4723,7 +4723,12 @@ function renderMonthCalendar() {
   html += `</div><div class="meal-calendar__days">`;
 
   // 填充前置空白
-  for (let i = 0; i < startDow; i++) html += `<div class="cal-day other-month"></div>`;
+  for (let i = 0; i < startDow; i++) html += '<div class="cal-day other-month"></div>';
+
+  // 填充末尾空白，确保最后一行也满格
+  var totalCells = startDow + lastDay.getDate();
+  var trailing = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+  for (let i = 0; i < trailing; i++) html += '<div class="cal-day other-month"></div>';
 
   // 本周范围（今天→6天后）
   var weekEnd = new Date(now); weekEnd.setDate(now.getDate() + 6);
