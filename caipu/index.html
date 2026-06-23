@@ -1358,18 +1358,52 @@ img { max-width: 100%; display: block; }
 
 /* 今日餐食 */
 .today-meals {
-  margin: 0 var(--page-px) 12px;
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+  margin: 0 var(--page-px) 14px;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
 }
 .today-meal-card {
-  padding: 12px 10px; background: var(--c-surface);
-  border-radius: var(--radius-md); box-shadow: var(--shadow-sm);
-  text-align: center; cursor: pointer; transition: transform 0.15s;
+  padding: 0; background: var(--c-surface);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);
+  text-align: center; cursor: pointer; transition: all 0.2s var(--ease-smooth);
+  overflow: hidden; position: relative;
+  border: 1px solid var(--c-border);
 }
 .today-meal-card:active { transform: scale(0.96); }
-.today-meal-card__icon { font-size: 24px; margin-bottom: 4px; }
-.today-meal-card__label { font-size: 11px; color: var(--c-text-secondary); font-weight: 600; }
-.today-meal-card__count { font-size: 10px; color: var(--c-text-light); margin-top: 2px; }
+.today-meal-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.today-meal-card__top {
+  padding: 10px 8px 6px; position: relative;
+}
+.today-meal-card__iconwrap {
+  width: 40px; height: 40px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 6px; font-size: 20px;
+}
+.today-meal-card__label { font-size: 12px; font-weight: 700; margin-bottom: 2px; }
+.today-meal-card__time { font-size: 10px; color: var(--c-text-light); }
+.today-meal-card__count {
+  padding: 6px 0; font-size: 10px; font-weight: 600;
+  border-top: 1px solid var(--c-border);
+  min-height: 28px; display: flex; align-items: center; justify-content: center;
+  flex-wrap: wrap; gap: 3px;
+}
+.today-meal-card__count img, .today-meal-card__count .mini-thumb {
+  width: 20px; height: 20px; border-radius: 50%; object-fit: cover;
+}
+/* 早餐配色 */
+.today-meal-card--breakfast .today-meal-card__top { background: linear-gradient(180deg, #FFF8EB, #FFFEFA); }
+.today-meal-card--breakfast .today-meal-card__iconwrap { background: #FFF0D5; }
+.today-meal-card--breakfast .today-meal-card__label { color: #C88A30; }
+.today-meal-card--breakfast .today-meal-card__count { background: #FFFDF7; color: #B07820; }
+/* 午餐配色 */
+.today-meal-card--lunch .today-meal-card__top { background: linear-gradient(180deg, #FFF5F0, #FFFEFA); }
+.today-meal-card--lunch .today-meal-card__iconwrap { background: #FFE8DA; }
+.today-meal-card--lunch .today-meal-card__label { color: #D07040; }
+.today-meal-card--lunch .today-meal-card__count { background: #FFFCF9; color: #B85A30; }
+/* 晚餐配色 */
+.today-meal-card--dinner .today-meal-card__top { background: linear-gradient(180deg, #F6F2FC, #FFFEFA); }
+.today-meal-card--dinner .today-meal-card__iconwrap { background: #E8DFF5; }
+.today-meal-card--dinner .today-meal-card__label { color: #7058A0; }
+.today-meal-card--dinner .today-meal-card__count { background: #FCFAFF; color: #5E3D8A; }
 
 /* 打卡按钮 */
 .checkin-bar {
@@ -1860,19 +1894,28 @@ img { max-width: 100%; display: block; }
 
     <!-- 选中日期餐食 -->
     <div class="today-meals" id="today-meals-cards">
-      <div class="today-meal-card" onclick="openMealPicker('breakfast')">
-        <div class="today-meal-card__icon">🌅</div>
-        <div class="today-meal-card__label">早餐</div>
+      <div class="today-meal-card today-meal-card--breakfast" onclick="openMealPicker('breakfast')">
+        <div class="today-meal-card__top">
+          <div class="today-meal-card__iconwrap">🌅</div>
+          <div class="today-meal-card__label">早餐</div>
+          <div class="today-meal-card__time">06:30–08:30</div>
+        </div>
         <div class="today-meal-card__count" id="today-breakfast-count">—</div>
       </div>
-      <div class="today-meal-card" onclick="openMealPicker('lunch')">
-        <div class="today-meal-card__icon">☀️</div>
-        <div class="today-meal-card__label">午餐</div>
+      <div class="today-meal-card today-meal-card--lunch" onclick="openMealPicker('lunch')">
+        <div class="today-meal-card__top">
+          <div class="today-meal-card__iconwrap">☀️</div>
+          <div class="today-meal-card__label">午餐</div>
+          <div class="today-meal-card__time">11:30–13:00</div>
+        </div>
         <div class="today-meal-card__count" id="today-lunch-count">—</div>
       </div>
-      <div class="today-meal-card" onclick="openMealPicker('dinner')">
-        <div class="today-meal-card__icon">🌙</div>
-        <div class="today-meal-card__label">晚餐</div>
+      <div class="today-meal-card today-meal-card--dinner" onclick="openMealPicker('dinner')">
+        <div class="today-meal-card__top">
+          <div class="today-meal-card__iconwrap">🌙</div>
+          <div class="today-meal-card__label">晚餐</div>
+          <div class="today-meal-card__time">17:30–19:30</div>
+        </div>
         <div class="today-meal-card__count" id="today-dinner-count">—</div>
       </div>
       <button onclick="clearDayMeals()" id="btn-clear-day" style="display:none;padding:6px 12px;background:var(--c-danger);color:#fff;border-radius:var(--radius-sm);font-size:11px;font-weight:600;white-space:nowrap">🗑 清空当天</button>
@@ -4943,12 +4986,17 @@ function updateTodayCards() {
     var el = document.getElementById('today-' + mt + '-count');
     if (el) {
       if (dishes.length) {
-        el.innerHTML = dishes.map(function(d) {
-          return '<span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--c-text-secondary);line-height:1.6;margin-bottom:2px"><span style="width:18px;height:18px;border-radius:50%;flex-shrink:0;' + (d.image ? 'background-image:url('+d.image+');background-size:cover;background-position:center' : 'display:inline-flex;align-items:center;justify-content:center;font-size:11px;background:var(--c-warm)') + '">' + (d.image ? '' : (d.emoji||'🍳')) + '</span>' + d.name + '</span>';
-        }).join('');
-        el.style.maxHeight = '60px'; el.style.overflowY = 'auto';
+        var showCount = Math.min(dishes.length, 3);
+        var more = dishes.length > 3 ? '<span style="font-size:10px;color:var(--c-text-light);margin-left:2px">+' + (dishes.length - 3) + '</span>' : '';
+        el.innerHTML = dishes.slice(0, 3).map(function(d) {
+          return '<span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;line-height:1.3"><span style="width:20px;height:20px;border-radius:50%;flex-shrink:0;display:inline-block;' + (d.image ? 'background-image:url('+d.image+');background-size:cover;background-position:center' : 'background:var(--c-warm);text-align:center;line-height:20px;font-size:10px') + '">' + (d.image ? '' : (d.emoji||'🍳')) + '</span><span style="max-width:50px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + d.name + '</span></span>';
+        }).join('') + more;
+        el.style.maxHeight = '72px'; el.style.overflowY = 'auto'; el.style.padding = '4px 6px';
+        el.style.display = 'flex'; el.style.flexWrap = 'wrap'; el.style.gap = '3px';
+        el.style.justifyContent = 'center';
       } else {
-        el.textContent = '—';
+        el.innerHTML = '<span style="color:var(--c-text-light);font-size:10px">暂无安排</span>';
+        el.style.display = ''; el.style.padding = ''; el.style.flexWrap = ''; el.style.gap = '';
       }
     }
   });
