@@ -358,7 +358,13 @@ img { max-width: 100%; display: block; }
 }
 /* 回退统一列模式（视图切换使用） */
 .recipe-grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+.recipe-grid.cols-2 .recipe-card--hero { grid-column: span 2; }
+.recipe-grid.cols-2 .recipe-card--wide { grid-column: span 1; }
+.recipe-grid.cols-2 .recipe-card--normal { grid-column: span 1; }
 .recipe-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+.recipe-grid.cols-3 .recipe-card--hero { grid-column: span 3; }
+.recipe-grid.cols-3 .recipe-card--wide { grid-column: span 1; }
+.recipe-grid.cols-3 .recipe-card--normal { grid-column: span 1; }
 
 /* Hero 卡片 — 占满整行 */
 .recipe-card--hero {
