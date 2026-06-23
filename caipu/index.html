@@ -1371,39 +1371,53 @@ img { max-width: 100%; display: block; }
 .today-meal-card:active { transform: scale(0.96); }
 .today-meal-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
 .today-meal-card__top {
-  padding: 10px 8px 6px; position: relative;
+  padding: 16px 8px; position: relative;
+  background-size: cover; background-position: center;
+  min-height: 70px; display: flex; align-items: center; justify-content: center;
 }
-.today-meal-card__iconwrap {
-  width: 40px; height: 40px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  margin: 0 auto 6px; font-size: 20px;
+/* 磨砂玻璃标签 */
+.today-meal-card__glass {
+  display: inline-flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 8px 18px; border-radius: var(--radius-md);
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
 }
-.today-meal-card__label { font-size: 12px; font-weight: 700; margin-bottom: 2px; }
-.today-meal-card__time { font-size: 10px; color: var(--c-text-light); }
+.today-meal-card__label { font-size: 13px; font-weight: 700; }
+.today-meal-card__time { font-size: 10px; opacity: 0.7; }
 .today-meal-card__count {
   padding: 6px 0; font-size: 10px; font-weight: 600;
   border-top: 1px solid var(--c-border);
   min-height: 28px; display: flex; align-items: center; justify-content: center;
   flex-wrap: wrap; gap: 3px;
 }
-.today-meal-card__count img, .today-meal-card__count .mini-thumb {
-  width: 20px; height: 20px; border-radius: 50%; object-fit: cover;
+/* 早餐：金黄晨光 */
+.today-meal-card--breakfast .today-meal-card__top {
+  background: linear-gradient(135deg, #FDE8C8 0%, #FCE1B8 25%, #FFF2DC 50%, #FDF0D0 75%, #FBE4BB 100%);
+  background-image: radial-gradient(ellipse at 30% 20%, rgba(255,220,150,0.6) 0%, transparent 60%),
+                    radial-gradient(ellipse at 70% 40%, rgba(255,200,120,0.3) 0%, transparent 50%);
 }
-/* 早餐配色 */
-.today-meal-card--breakfast .today-meal-card__top { background: linear-gradient(180deg, #FFF8EB, #FFFEFA); }
-.today-meal-card--breakfast .today-meal-card__iconwrap { background: #FFF0D5; }
-.today-meal-card--breakfast .today-meal-card__label { color: #C88A30; }
-.today-meal-card--breakfast .today-meal-card__count { background: #FFFDF7; color: #B07820; }
-/* 午餐配色 */
-.today-meal-card--lunch .today-meal-card__top { background: linear-gradient(180deg, #FFF5F0, #FFFEFA); }
-.today-meal-card--lunch .today-meal-card__iconwrap { background: #FFE8DA; }
-.today-meal-card--lunch .today-meal-card__label { color: #D07040; }
-.today-meal-card--lunch .today-meal-card__count { background: #FFFCF9; color: #B85A30; }
-/* 晚餐配色 */
-.today-meal-card--dinner .today-meal-card__top { background: linear-gradient(180deg, #F6F2FC, #FFFEFA); }
-.today-meal-card--dinner .today-meal-card__iconwrap { background: #E8DFF5; }
-.today-meal-card--dinner .today-meal-card__label { color: #7058A0; }
-.today-meal-card--dinner .today-meal-card__count { background: #FCFAFF; color: #5E3D8A; }
+.today-meal-card--breakfast .today-meal-card__label { color: #B87828; }
+.today-meal-card--breakfast .today-meal-card__count { background: #FFFDF5; color: #B07820; }
+/* 午餐：明亮正午 */
+.today-meal-card--lunch .today-meal-card__top {
+  background: linear-gradient(135deg, #FFE8D5 0%, #FDDCC4 25%, #FFF0E4 50%, #FEE8D2 75%, #FCD9BE 100%);
+  background-image: radial-gradient(ellipse at 50% 10%, rgba(255,255,240,0.7) 0%, transparent 55%),
+                    radial-gradient(ellipse at 40% 60%, rgba(255,180,130,0.3) 0%, transparent 40%);
+}
+.today-meal-card--lunch .today-meal-card__label { color: #C06838; }
+.today-meal-card--lunch .today-meal-card__count { background: #FFFBF7; color: #A85528; }
+/* 晚餐：静谧暮紫 */
+.today-meal-card--dinner .today-meal-card__top {
+  background: linear-gradient(135deg, #423558 0%, #503E6A 30%, #5E4878 60%, #4A3860 100%);
+  background-image: radial-gradient(ellipse at 60% 30%, rgba(180,160,210,0.3) 0%, transparent 55%),
+                    radial-gradient(ellipse at 30% 80%, rgba(140,120,180,0.15) 0%, transparent 40%);
+}
+.today-meal-card--dinner .today-meal-card__glass {
+  background: rgba(255,255,255,0.8);
+}
+.today-meal-card--dinner .today-meal-card__label { color: #4A3068; }
+.today-meal-card--dinner .today-meal-card__count { background: #FBFAFD; color: #5E3D8A; }
 
 /* 打卡按钮 */
 .checkin-bar {
@@ -1896,27 +1910,30 @@ img { max-width: 100%; display: block; }
     <div class="today-meals" id="today-meals-cards">
       <div class="today-meal-card today-meal-card--breakfast" onclick="openMealPicker('breakfast')">
         <div class="today-meal-card__top">
-          <div class="today-meal-card__iconwrap">🌅</div>
-          <div class="today-meal-card__label">早餐</div>
-          <div class="today-meal-card__time">06:30–08:30</div>
+          <div class="today-meal-card__glass">
+            <div class="today-meal-card__label">早餐</div>
+            <div class="today-meal-card__time">06:30 – 08:30</div>
+          </div>
         </div>
-        <div class="today-meal-card__count" id="today-breakfast-count">—</div>
+        <div class="today-meal-card__count" id="today-breakfast-count">暂无安排</div>
       </div>
       <div class="today-meal-card today-meal-card--lunch" onclick="openMealPicker('lunch')">
         <div class="today-meal-card__top">
-          <div class="today-meal-card__iconwrap">☀️</div>
-          <div class="today-meal-card__label">午餐</div>
-          <div class="today-meal-card__time">11:30–13:00</div>
+          <div class="today-meal-card__glass">
+            <div class="today-meal-card__label">午餐</div>
+            <div class="today-meal-card__time">11:30 – 13:00</div>
+          </div>
         </div>
-        <div class="today-meal-card__count" id="today-lunch-count">—</div>
+        <div class="today-meal-card__count" id="today-lunch-count">暂无安排</div>
       </div>
       <div class="today-meal-card today-meal-card--dinner" onclick="openMealPicker('dinner')">
         <div class="today-meal-card__top">
-          <div class="today-meal-card__iconwrap">🌙</div>
-          <div class="today-meal-card__label">晚餐</div>
-          <div class="today-meal-card__time">17:30–19:30</div>
+          <div class="today-meal-card__glass">
+            <div class="today-meal-card__label">晚餐</div>
+            <div class="today-meal-card__time">17:30 – 19:30</div>
+          </div>
         </div>
-        <div class="today-meal-card__count" id="today-dinner-count">—</div>
+        <div class="today-meal-card__count" id="today-dinner-count">暂无安排</div>
       </div>
       <button onclick="clearDayMeals()" id="btn-clear-day" style="display:none;padding:6px 12px;background:var(--c-danger);color:#fff;border-radius:var(--radius-sm);font-size:11px;font-weight:600;white-space:nowrap">🗑 清空当天</button>
     </div>
